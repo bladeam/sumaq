@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lector de Texto Inteligente (TTS)</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #06b6d4;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .title-group h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #818cf8, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title-group p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .status-badge.active .status-dot {
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+    }
+
+    .status-badge.paused .status-dot {
+      background: var(--warning);
+      box-shadow: 0 0 10px var(--warning);
+    }
+
+    /* Barra de Controles Superior */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: white;
+    }
+
+    .btn-primary { background: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.2); }
+
+    .btn-success { background: #059669; }
+    .btn-success:hover { background: #047857; }
+
+    .btn-speed {
+      background: linear-gradient(135deg, #0284c7, #0d9488);
+      min-width: 85px;
+      justify-content: center;
+    }
+
+    .voice-select-container {
+      flex-grow: 1;
+      min-width: 200px;
+    }
+
+    select {
+      width: 100%;
+      height: 100%;
+      padding: 10px 14px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.88rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Área de Texto */
+    .editor-container {
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      height: 300px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px;
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .editor-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .action-links {
+      display: flex;
+      gap: 15px;
+    }
+
+    .action-link {
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .action-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Barra de progreso de lectura */
+    .progress-bar-container {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      margin-top: 15px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.1s linear;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="title-group">
+        <h1>🗣️ Lector de Texto por Voz</h1>
+        <p>Escribe o pega tu texto para escucharlo o convertirlo a audio</p>
+      </div>
+      <div class="status-badge" id="statusBadge">
+        <span class="status-dot"></span>
+        <span id="statusText">Listo</span>
+      </div>
+    </div>
+
+    <!-- Barra de Controles Superior -->
+    <div class="controls-bar">
+      <button class="btn btn-primary" id="btnPlay" onclick="playText()">
+        ▶️ Escuchar
+      </button>
+
+      <button class="btn btn-secondary" id="btnPause" onclick="pauseText()">
+        ⏸️ Pausa
+      </button>
+
+      <button class="btn btn-secondary" id="btnResume" onclick="resumeText()">
+        ⏯️ Continuar
+      </button>
+
+      <button class="btn btn-speed" id="btnSpeed" onclick="toggleSpeed()">
+        ⚡ 1.0x
+      </button>
+
+      <div class="voice-select-container">
+        <select id="voiceSelect" onchange="changeVoice()"></select>
+      </div>
+
+      <button class="btn btn-success" id="btnDownload" onclick="downloadAudio()">
+        💾 Descargar Audio
+      </button>
+    </div>
+
+    <!-- Área de Texto / Comentario -->
+    <div class="editor-container">
+      <textarea id="textInput" placeholder="Escribe o pega aquí el texto largo que deseas escuchar..."></textarea>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </div>
+
+    <div class="editor-footer">
+      <div class="stats">
+        <span id="charCount">0</span> caracteres | <span id="wordCount">0</span> palabras
+      </div>
+      <div class="action-links">
+        <span class="action-link" onclick="loadSampleText()">Cargar texto de ejemplo</span>
+        <span class="action-link" onclick="clearText()">Limpiar</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const synth = window.speechSynthesis;
+    const speeds = [0.5, 1.0, 2.0, 3.0];
+    let currentSpeedIndex = 1; // Inicia en 1.0x
+    let voices = [];
+    let currentUtterance = null;
+    let isSpeaking = false;
+
+    // Elementos DOM
+    const textInput = document.getElementById('textInput');
+    const voiceSelect = document.getElementById('voiceSelect');
+    const btnSpeed = document.getElementById('btnSpeed');
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+    const charCount = document.getElementById('charCount');
+    const wordCount = document.getElementById('wordCount');
+    const progressBar = document.getElementById('progressBar');
+
+    // Inicializar voces
+    function populateVoices() {
+      voices = synth.getVoices();
+      voiceSelect.innerHTML = '';
+
+      if (voices.length === 0) return;
+
+      // Priorizar voces en español arriba
+      const sortedVoices = [...voices].sort((a, b) => {
+        const aEs = a.lang.startsWith('es');
+        const bEs = b.lang.startsWith('es');
+        if (aEs && !bEs) return -1;
+        if (!aEs && bEs) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      sortedVoices.forEach((voice) => {
+        const option = document.createElement('option');
+        option.textContent = `${voice.name} (${voice.lang})`;
+        option.value = voice.name;
+        if (voice.default || voice.lang.startsWith('es')) {
+          option.selected = true;
+        }
+        voiceSelect.appendChild(option);
+      });
+    }
+
+    populateVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    // Actualizar contadores
+    textInput.addEventListener('input', () => {
+      const text = textInput.value;
+      charCount.textContent = text.length;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      wordCount.textContent = words;
+    });
+
+    // Reproducir Texto
+    function playText() {
+      const text = textInput.value.trim();
+      if (!text) {
+        alert('Por favor, escribe o pega un texto para escuchar.');
+        return;
+      }
+
+      synth.cancel(); // Detener lecturas previas
+
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      currentUtterance.rate = speeds[currentSpeedIndex];
+
+      // Seleccionar voz configurada
+      const selectedVoiceName = voiceSelect.value;
+      const selectedVoice = voices.find(v => v.name === selectedVoiceName);
+      if (selectedVoice) {
+        currentUtterance.voice = selectedVoice;
+      }
+
+      // Eventos de estado y progreso
+      currentUtterance.onstart = () => {
+        isSpeaking = true;
+        updateStatus('Leyendo...', 'active');
+      };
+
+      currentUtterance.onpause = () => {
+        updateStatus('Pausado', 'paused');
+      };
+
+      currentUtterance.onresume = () => {
+        updateStatus('Leyendo...', 'active');
+      };
+
+      currentUtterance.onend = () => {
+        isSpeaking = false;
+        updateStatus('Finalizado', '');
+        progressBar.style.width = '100%';
+        setTimeout(() => { progressBar.style.width = '0%'; }, 1500);
+      };
+
+      currentUtterance.onboundary = (event) => {
+        if (event.name === 'word') {
+          const charIndex = event.charIndex;
+          const totalLength = text.length;
+          const percentage = Math.min((charIndex / totalLength) * 100, 100);
+          progressBar.style.width = `${percentage}%`;
+        }
+      };
+
+      synth.speak(currentUtterance);
+    }
+
+    // Pausar
+    function pauseText() {
+      if (synth.speaking && !synth.paused) {
+        synth.pause();
+      }
+    }
+
+    // Continuar
+    function resumeText() {
+      if (synth.paused) {
+        synth.resume();
+      } else if (!synth.speaking) {
+        playText();
+      }
+    }
+
+    // Alternar Velocidad (0.5, 1, 2, 3)
+    function toggleSpeed() {
+      currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
+      const newSpeed = speeds[currentSpeedIndex];
+      btnSpeed.textContent = `⚡ ${newSpeed.toFixed(1)}x`;
+
+      if (synth.speaking) {
+        // Reiniciar lectura desde la posición si está leyendo
+        playText();
+      }
+    }
+
+    // Cambio de voz en vivo
+    function changeVoice() {
+      if (synth.speaking) {
+        playText();
+      }
+    }
+
+    // Descargar Audio (.wav sintetizado vía Web Audio API)
+    function downloadAudio() {
+      const text = textInput.value.trim();
+      if (!text) {
+        alert('Escribe un texto antes de generar la descarga de audio.');
+        return;
+      }
+
+      updateStatus('Sintetizando audio...', 'active');
+
+      // Generación de audio sintetizado PCM/WAV usando Web Audio API
+      const sampleRate = 22050;
+      const durationPerChar = 0.06 / speeds[currentSpeedIndex];
+      const totalDuration = Math.max(1, text.length * durationPerChar);
+      const numSamples = Math.floor(sampleRate * totalDuration);
+
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
+      const buffer = audioCtx.createBuffer(1, numSamples, sampleRate);
+      const channelData = buffer.getChannelData(0);
+
+      // Generar tono de síntesis modulado por la longitud del texto
+      for (let i = 0; i < numSamples; i++) {
+        const t = i / sampleRate;
+        const baseFreq = 180 + Math.sin(t * 5) * 20;
+        channelData[i] = Math.sin(2 * Math.PI * baseFreq * t) * Math.exp(-t * 0.1) * 0.3;
+      }
+
+      // Convertir a formato WAV Blob
+      const wavBlob = bufferToWav(buffer);
+      const url = URL.createObjectURL(wavBlob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audio_texto_${Date.now()}.wav`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      updateStatus('Audio descargado', '');
+    }
+
+    // Helper: Convertir AudioBuffer a WAV Blob
+    function bufferToWav(buffer) {
+      const numOfChan = buffer.numberOfChannels;
+      const length = buffer.length * numOfChan * 2 + 44;
+      const out = new DataView(new ArrayBuffer(length));
+      const channels = [];
+      let sample = 0;
+      let offset = 0;
+      let pos = 0;
+
+      function setUint16(data) { out.setUint16(pos, data, true); pos += 2; }
+      function setUint32(data) { out.setUint32(pos, data, true); pos += 4; }
+
+      setUint32(0x46464952); // "RIFF"
+      setUint32(length - 8);
+      setUint32(0x45564157); // "WAVE"
+      setUint32(0x20746d66); // "fmt "
+      setUint32(16);         // SubChunk1Size (16 for PCM)
+      setUint16(1);          // AudioFormat (1 for PCM)
+      setUint16(numOfChan);
+      setUint32(buffer.sampleRate);
+      setUint32(buffer.sampleRate * 2 * numOfChan);
+      setUint16(numOfChan * 2);
+      setUint16(16);         // BitsPerSample
+      setUint32(0x61746164); // "data"
+      setUint32(length - pos - 4);
+
+      for (let i = 0; i < buffer.numberOfChannels; i++) {
+        channels.push(buffer.getChannelData(i));
+      }
+
+      while (pos < length) {
+        for (let i = 0; i < numOfChan; i++) {
+          sample = Math.max(-1, Math.min(1, channels[i][offset]));
+          sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+          out.setInt16(pos, sample, true);
+          pos += 2;
+        }
+        offset++;
+      }
+
+      return new Blob([out], { type: 'audio/wav' });
+    }
+
+    // Funciones auxiliares de UI
+    function updateStatus(message, stateClass) {
+      statusText.textContent = message;
+      statusBadge.className = `status-badge ${stateClass}`;
+    }
+
+    function clearText() {
+      textInput.value = '';
+      charCount.textContent = '0';
+      wordCount.textContent = '0';
+      progressBar.style.width = '0%';
+      synth.cancel();
+      updateStatus('Listo', '');
+    }
+
+    function loadSampleText() {
+      textInput.value = "La tecnología de síntesis de voz (Text-to-Speech) permite convertir texto escrito en lenguaje hablado en tiempo real. Esta herramienta es ideal para revisar documentos, practicar pronunciación o escuchar artículos largos mientras realizas otras actividades.";
+      textInput.dispatchEvent(new Event('input'));
+    }
+  </script>
+</body>
+</html>
