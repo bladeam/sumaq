@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CUADERNO VIRTUAL AYMARA</title>
+  <style>
+    :root {
+      --bg-color: #f4f6f9;
+      --panel-bg: #ffffff;
+      --primary-color: #0d6efd;
+      --text-color: #212529;
+      --aymara-color: #0d6efd;
+      --castellano-color: #495057;
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      --aymara-size: 16px;
+      --castellano-size: 15px;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: var(--panel-bg);
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    header {
+      text-align: center;
+      border-bottom: 3px solid var(--primary-color);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--primary-color);
+      font-size: 26px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+
+    .config-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+      background: #f8f9fa;
+      padding: 15px;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+    }
+
+    .config-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .config-group label {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #495057;
+    }
+
+    input[type="text"], input[type="color"], select, textarea {
+      padding: 6px 10px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+
+    input[type="color"] {
+      height: 35px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: #e9ecef;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button.btn-secondary { background-color: #6c757d; }
+    button.btn-success { background-color: #198754; }
+    button.btn-danger { background-color: #dc3545; }
+
+    .editor-section {
+      margin-top: 15px;
+    }
+
+    .editor-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 40px;
+      gap: 10px;
+      margin-bottom: 12px;
+      background: #ffffff;
+      padding: 10px;
+      border: 1px solid #dee2e6;
+      border-left: 4px solid var(--primary-color);
+      border-radius: 4px;
+      align-items: center;
+    }
+
+    .editor-field {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-field label {
+      font-size: 11px;
+      font-weight: bold;
+      color: #6c757d;
+      margin-bottom: 4px;
+    }
+
+    textarea.aymara-text, textarea.castellano-text {
+      width: 100%;
+      height: 65px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      padding: 8px;
+      resize: vertical;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    .aymara-text {
+      color: var(--aymara-color);
+      font-size: var(--aymara-size);
+    }
+
+    .castellano-text {
+      color: var(--castellano-color);
+      font-size: var(--castellano-size);
+    }
+
+    .btn-delete-row {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      height: 35px;
+      width: 35px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Modal general */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 650px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #dee2e6;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: var(--primary-color);
+    }
+
+    .modal-body {
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    .modal-search {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #dee2e6;
+      padding-top: 10px;
+      margin-top: 12px;
+      text-align: right;
+      font-weight: bold;
+      color: #0d6efd;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #dee2e6;
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      position: sticky;
+      top: 0;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+  <!-- MODAL DE INICIO (Configuración inicial) -->
+  <div class="modal" id="modalInicio" style="display: flex;">
+    <div class="modal-content" style="max-width: 750px;">
+      <div class="modal-header">
+        <h3>Configuración Inicial - Cuaderno Virtual Aymara</h3>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 15px;">
+          <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 5px;">Integrantes / Participantes (Uno por línea, opcional):</label>
+          <!-- COMENTARIO DE INTEGRANTES:
+          Integrante 1: Estudiante A
+          Integrante 2: Estudiante B
+          -->
+          <textarea id="participantesInicial" placeholder="Ingrese el nombre de los participantes (uno por fila)...&#10;Ejemplo:&#10;Juan Pérez&#10;Maria Quispe" style="width: 100%; height: 80px;"></textarea>
+        </div>
+
+        <div class="config-section">
+          <div class="config-group">
+            <label>Participante / Estudiante Seleccionado:</label>
+            <input type="text" id="nombreEstudianteModal" placeholder="Escriba su nombre...">
+          </div>
+          <div class="config-group">
+            <label>Geolocalización / Registro Fecha:</label>
+            <input type="text" id="infoMetaModal" readonly placeholder="Obteniendo información...">
+          </div>
+          <div class="config-group">
+            <label>Color Texto Aymara:</label>
+            <input type="color" id="colorAymaraModal" value="#0d6efd">
+          </div>
+          <div class="config-group">
+            <label>Color Texto Castellano:</label>
+            <input type="color" id="colorCastellanoModal" value="#495057">
+          </div>
+          <div class="config-group">
+            <label>Tamaño Texto Aymara:</label>
+            <select id="sizeAymaraModal">
+              <option value="14px">14px</option>
+              <option value="16px" selected>16px</option>
+              <option value="18px">18px</option>
+              <option value="20px">20px</option>
+            </select>
+          </div>
+          <div class="config-group">
+            <label>Tamaño Texto Castellano:</label>
+            <select id="sizeCastellanoModal">
+              <option value="13px">13px</option>
+              <option value="15px" selected>15px</option>
+              <option value="17px">17px</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Yachachiq: M.Sc. Bladimir Arias Mejia</span>
+        <button class="btn-success" onclick="confirmarInicio()">Ingresar al Cuaderno</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="cuaderno">
+    <header>
+      <h1>CUADERNO VIRTUAL AYMARA</h1>
+      <div class="subtitle">Cuaderno interactivo de aprendizaje y redacción en Aymara Boliviano</div>
+    </header>
+
+    <div class="config-section">
+      <div class="config-group">
+        <label>Participante / Estudiante:</label>
+        <input type="text" id="nombreEstudiante" placeholder="Escriba su nombre...">
+      </div>
+      <div class="config-group">
+        <label>Geolocalización / Registro Fecha:</label>
+        <input type="text" id="infoMeta" readonly placeholder="Obteniendo información...">
+      </div>
+      <div class="config-group">
+        <label>Color Texto Aymara:</label>
+        <input type="color" id="colorAymara" value="#0d6efd">
+      </div>
+      <div class="config-group">
+        <label>Color Texto Castellano:</label>
+        <input type="color" id="colorCastellano" value="#495057">
+      </div>
+      <div class="config-group">
+        <label>Tamaño Texto Aymara:</label>
+        <select id="sizeAymara" onchange="cambiarTamañoTexto()">
+          <option value="14px">14px</option>
+          <option value="16px" selected>16px</option>
+          <option value="18px">18px</option>
+          <option value="20px">20px</option>
+        </select>
+      </div>
+      <div class="config-group">
+        <label>Tamaño Texto Castellano:</label>
+        <select id="sizeCastellano" onchange="cambiarTamañoTexto()">
+          <option value="13px">13px</option>
+          <option value="15px" selected>15px</option>
+          <option value="17px">17px</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button onclick="abrirModal('modalVerbos')">Verbos Comunes</button>
+      <button onclick="abrirModal('modalSustantivos')">Sustantivos Comunes</button>
+      <button onclick="abrirModal('modalSufijos')">Sufijos</button>
+      <button onclick="abrirModal('modalPronombres')">Pronombres</button>
+      <button class="btn-success" onclick="agregarFila()">+ Nueva Fila</button>
+      <button class="btn-secondary" onclick="cambiarVista('ambos')">Ver Ambos</button>
+      <button class="btn-secondary" onclick="cambiarVista('aymara')">Solo Aymara</button>
+      <button class="btn-secondary" onclick="cambiarVista('castellano')">Solo Castellano</button>
+      <button class="btn-secondary" onclick="guardarJSON()">Guardar JSON</button>
+      <button class="btn-secondary" onclick="cargarJSON()">Cargar JSON</button>
+      <button class="btn-danger" onclick="exportarPDF()">Exportar PDF</button>
+      <input type="file" id="fileInput" class="hidden" accept=".json" onchange="procesarJSON(event)">
+    </div>
+
+    <div class="editor-section" id="editorContainer">
+      <!-- Las filas de traducción se generan dinámicamente -->
+    </div>
+  </div>
+
+  <!-- MODAL: VERBOS COMUNES -->
+  <div class="modal" id="modalVerbos">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Verbos Comunes en Aymara</h3>
+        <button class="btn-danger" onclick="cerrarModal('modalVerbos')">X</button>
+      </div>
+      <input type="text" id="buscarVerbo" class="modal-search" placeholder="Buscar verbo..." onkeyup="filtrarTabla('buscarVerbo', 'tablaVerbos')">
+      <div class="modal-body">
+        <table id="tablaVerbos">
+          <thead>
+            <tr><th>Aymara (Infinitivo)</th><th>Castellano</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Manq'aña</td><td>Comer</td></tr>
+            <tr><td>Umaña</td><td>Beber / Tomar</td></tr>
+            <tr><td>Ikiña</td><td>Dormir</td></tr>
+            <tr><td>Sarnaqaña</td><td>Caminar</td></tr>
+            <tr><td>Jalantaña</td><td>Correr</td></tr>
+            <tr><td>Aruña / Parlaña</td><td>Hablar</td></tr>
+            <tr><td>Yatichaña</td><td>Enseñar</td></tr>
+            <tr><td>Yatiqaña</td><td>Aprender</td></tr>
+            <tr><td>Qillqaña</td><td>Escribir</td></tr>
+            <tr><td>Uñjaña</td><td>Ver / Mirar</td></tr>
+            <tr><td>Isiña</td><td>Vestirse</td></tr>
+            <tr><td>Luraña</td><td>Hacer / Trabajar</td></tr>
+            <tr><td>Anataña</td><td>Jugar</td></tr>
+            <tr><td>Jutaña</td><td>Venir</td></tr>
+            <tr><td>Saraña</td><td>Ir</td></tr>
+            <tr><td>Ichuña</td><td>Llevar en brazos</td></tr>
+            <tr><td>Ajtayaña</td><td>Asustar</td></tr>
+            <tr><td>Katuña</td><td>Atrapar / Agarrar</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SUSTANTIVOS COMUNES -->
+  <div class="modal" id="modalSustantivos">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Sustantivos Comunes en Aymara</h3>
+        <button class="btn-danger" onclick="cerrarModal('modalSustantivos')">X</button>
+      </div>
+      <input type="text" id="buscarSustantivo" class="modal-search" placeholder="Buscar sustantivo..." onkeyup="filtrarTabla('buscarSustantivo', 'tablaSustantivos')">
+      <div class="modal-body">
+        <table id="tablaSustantivos">
+          <thead>
+            <tr><th>Aymara</th><th>Castellano</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Jaqi</td><td>Persona / Humano</td></tr>
+            <tr><td>Chacha</td><td>Hombre</td></tr>
+            <tr><td>Warmi</td><td>Mujer</td></tr>
+            <tr><td>Wawa</td><td>Bebé / Niño(a)</td></tr>
+            <tr><td>Uta</td><td>Casa</td></tr>
+            <tr><td>Qota / Kota</td><td>Lago</td></tr>
+            <tr><td>Qullu</td><td>Cerro / Montaña</td></tr>
+            <tr><td>Inti</td><td>Sol</td></tr>
+            <tr><td>Phaxsi</td><td>Luna</td></tr>
+            <tr><td>Uma</td><td>Agua</td></tr>
+            <tr><td>T'ant'a</td><td>Pan</td></tr>
+            <tr><td>Anu</td><td>Perro</td></tr>
+            <tr><td>Phisi</td><td>Gato</td></tr>
+            <tr><td>Yatiqiri</td><td>Estudiante</td></tr>
+            <tr><td>Yatichiri</td><td>Profesor(a)</td></tr>
+            <tr><td>Marka</td><td>Pueblo / Ciudad</td></tr>
+            <tr><td>Pacha</td><td>Tiempo / Espacio / Naturaleza</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SUFIJOS -->
+  <div class="modal" id="modalSufijos">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Sufijos Usuales en Aymara</h3>
+        <button class="btn-danger" onclick="cerrarModal('modalSufijos')">X</button>
+      </div>
+      <div class="modal-body">
+        <table>
+          <thead>
+            <tr><th>Sufijo</th><th>Función</th><th>Ejemplo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>-ru</td><td>Hacia / A</td><td>Uta-ru (A/Hacia la casa)</td></tr>
+            <tr><td>-mpi</td><td>Con / Comitativo</td><td>Jupa-mpi (Con él/ella)</td></tr>
+            <tr><td>-taki</td><td>Para / Beneficiario</td><td>Naya-taki (Para mí)</td></tr>
+            <tr><td>-na</td><td>En / Locativo</td><td>Qullu-na (En el cerro)</td></tr>
+            <tr><td>-jama</td><td>Como / Comparativo</td><td>Jama-jama (Como pájaro)</td></tr>
+            <tr><td>-layku</td><td>Por / Causalidad</td><td>Juma-layku (Por ti / A causa de ti)</td></tr>
+            <tr><td>-tha / -t'a</td><td>Desde / Procedencia</td><td>Marka-tha (Desde el pueblo)</td></tr>
+            <tr><td>-kama</td><td>Hasta / Limitativo</td><td>Qota-kama (Hasta el lago)</td></tr>
+            <tr><td>-naka</td><td>Pluralizador nominal</td><td>Anu-naka (Perros)</td></tr>
+            <tr><td>-jaki / -fuki</td><td>Limitativo (solo)</td><td>Uta-jaki (Solo casa)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRONOMBRES -->
+  <div class="modal" id="modalPronombres">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Pronombres Personales</h3>
+        <button class="btn-danger" onclick="cerrarModal('modalPronombres')">X</button>
+      </div>
+      <div class="modal-body">
+        <table>
+          <thead>
+            <tr><th>Aymara</th><th>Castellano</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Naya</td><td>Yo</td></tr>
+            <tr><td>Juma</td><td>Tú</td></tr>
+            <tr><td>Jupa</td><td>Él / Ella</td></tr>
+            <tr><td>Jiwasa</td><td>Nosotros (Inclusivo: Tú y Yo)</td></tr>
+            <tr><td>Nayanaka</td><td>Nosotros (Exclusivo: Ellos y Yo, pero no Tú)</td></tr>
+            <tr><td>Jumanaka</td><td>Ustedes</td></tr>
+            <tr><td>Jupanaka</td><td>Ellos / Ellas</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const fecha = new Date().toLocaleDateString('es-BO', { year: 'numeric', month: 'long', day: 'numeric' });
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const geoStr = `${fecha} | Lat: ${pos.coords.latitude.toFixed(3)}, Lon: ${pos.coords.longitude.toFixed(3)}`;
+            document.getElementById('infoMeta').value = geoStr;
+            document.getElementById('infoMetaModal').value = geoStr;
+          },
+          () => {
+            document.getElementById('infoMeta').value = `${fecha} | Ubicación no obtenida`;
+            document.getElementById('infoMetaModal').value = `${fecha} | Ubicación no obtenida`;
+          }
+        );
+      } else {
+        document.getElementById('infoMeta').value = `${fecha}`;
+        document.getElementById('infoMetaModal').value = `${fecha}`;
+      }
+
+      // Sincronización de eventos de color
+      document.getElementById('colorAymara').addEventListener('input', (e) => {
+        document.documentElement.style.setProperty('--aymara-color', e.target.value);
+        document.getElementById('colorAymaraModal').value = e.target.value;
+      });
+      document.getElementById('colorCastellano').addEventListener('input', (e) => {
+        document.documentElement.style.setProperty('--castellano-color', e.target.value);
+        document.getElementById('colorCastellanoModal').value = e.target.value;
+      });
+
+      document.getElementById('colorAymaraModal').addEventListener('input', (e) => {
+        document.documentElement.style.setProperty('--aymara-color', e.target.value);
+        document.getElementById('colorAymara').value = e.target.value;
+      });
+      document.getElementById('colorCastellanoModal').addEventListener('input', (e) => {
+        document.documentElement.style.setProperty('--castellano-color', e.target.value);
+        document.getElementById('colorCastellano').value = e.target.value;
+      });
+
+      // Filas iniciales
+      for(let i = 0; i < 3; i++) {
+        agregarFila();
+      }
+    });
+
+    function confirmarInicio() {
+      // Transferir valores del modal inicial a la vista principal
+      const nombreModal = document.getElementById('nombreEstudianteModal').value;
+      const participantesLista = document.getElementById('participantesInicial').value.trim();
+
+      if (participantesLista !== "") {
+        const lineas = participantesLista.split('\n').filter(l => l.trim() !== "");
+        document.getElementById('nombreEstudiante').value = lineas.join(', ');
+      } else if (nombreModal !== "") {
+        document.getElementById('nombreEstudiante').value = nombreModal;
+      }
+
+      document.getElementById('sizeAymara').value = document.getElementById('sizeAymaraModal').value;
+      document.getElementById('sizeCastellano').value = document.getElementById('sizeCastellanoModal').value;
+      
+      cambiarTamañoTexto();
+      cerrarModal('modalInicio');
+    }
+
+    function agregarFila(textAymara = '', textCastellano = '') {
+      const container = document.getElementById('editorContainer');
+      const row = document.createElement('div');
+      row.className = 'editor-row';
+      row.innerHTML = `
+        <div class="editor-field col-aymara">
+          <label>AYMARA:</label>
+          <textarea class="aymara-text" placeholder="Qillqam aymarata...">${textAymara}</textarea>
+        </div>
+        <div class="editor-field col-castellano">
+          <label>CASTELLANO:</label>
+          <textarea class="castellano-text" placeholder="Escriba la traducción...">${textCastellano}</textarea>
+        </div>
+        <button class="btn-delete-row" onclick="eliminarFila(this)" title="Eliminar fila">X</button>
+      `;
+      container.appendChild(row);
+      cambiarTamañoTexto();
+    }
+
+    function eliminarFila(btn) {
+      const container = document.getElementById('editorContainer');
+      if (container.children.length > 1) {
+        btn.parentElement.remove();
+      } else {
+        alert("Debe mantener al menos una fila de edición.");
+      }
+    }
+
+    function cambiarTamañoTexto() {
+      const sizeAymara = document.getElementById('sizeAymara').value;
+      const sizeCastellano = document.getElementById('sizeCastellano').value;
+      document.documentElement.style.setProperty('--aymara-size', sizeAymara);
+      document.documentElement.style.setProperty('--castellano-size', sizeCastellano);
+    }
+
+    function cambiarVista(tipo) {
+      const colAymara = document.querySelectorAll('.col-aymara');
+      const colCastellano = document.querySelectorAll('.col-castellano');
+
+      colAymara.forEach(el => el.classList.remove('hidden'));
+      colCastellano.forEach(el => el.classList.remove('hidden'));
+
+      if (tipo === 'aymara') {
+        colCastellano.forEach(el => el.classList.add('hidden'));
+      } else if (tipo === 'castellano') {
+        colAymara.forEach(el => el.classList.add('hidden'));
+      }
+    }
+
+    function abrirModal(id) {
+      document.getElementById(id).style.display = 'flex';
+    }
+
+    function cerrarModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function filtrarTabla(inputId, tablaId) {
+      const input = document.getElementById(inputId).value.toLowerCase();
+      const rows = document.querySelectorAll(`#${tablaId} tbody tr`);
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? '' : 'none';
+      });
+    }
+
+    function guardarJSON() {
+      const filas = document.querySelectorAll('.editor-row');
+      const datos = {
+        estudiante: document.getElementById('nombreEstudiante').value,
+        meta: document.getElementById('infoMeta').value,
+        contenido: []
+      };
+
+      filas.forEach(f => {
+        datos.contenido.push({
+          aymara: f.querySelector('.aymara-text').value,
+          castellano: f.querySelector('.castellano-text').value
+        });
+      });
+
+      const blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `cuaderno_aymara_${Date.now()}.json`;
+      a.click();
+    }
+
+    function cargarJSON() {
+      document.getElementById('fileInput').click();
+    }
+
+    function procesarJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const datos = JSON.parse(event.target.result);
+          document.getElementById('nombreEstudiante').value = datos.estudiante || '';
+          document.getElementById('editorContainer').innerHTML = '';
+          
+          if (datos.contenido && datos.contenido.length > 0) {
+            datos.contenido.forEach(item => agregarFila(item.aymara, item.castellano));
+          } else {
+            agregarFila();
+          }
+        } catch(err) {
+          alert('El archivo cargado no tiene un formato JSON válido.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function exportarPDF() {
+      const element = document.getElementById('cuaderno');
+      const opt = {
+        margin:       8,
+        filename:     'cuaderno_aymara.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+  </script>
+</body>
+</html>
