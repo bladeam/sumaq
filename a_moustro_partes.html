@@ -1,0 +1,527 @@
+<!--
+===================================================================
+ CONFIGURACIÓN DE PARTICIPANTES (Format: Un participante por línea)
+===================================================================
+PARTICIPANTES:
+- Juan Pérez
+- María Quispe
+- Carlos Condori
+
+NÚMERO DE PREGUNTAS (Máximo 30):
+CANTIDAD_PREGUNTAS = 10
+===================================================================
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Monstruo Runa - Aprender Partes del Cuerpo en Quechua</title>
+    <style>
+        :root {
+            --primary-color: #6C5CE7;
+            --secondary-color: #00B894;
+            --accent-color: #FF7675;
+            --bg-color: #F9F9FB;
+            --card-bg: #FFFFFF;
+            --text-color: #2D3436;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            overflow: hidden;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Config Screen */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        textarea, input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, input[type="number"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background: #5A4AD1;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Game Screen */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #F0EDFF;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .prompt-box {
+            text-align: center;
+            background: #FFF3BF;
+            border: 2px dashed #FAB005;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .prompt-quechua {
+            font-size: 1.5rem;
+            color: #D9480F;
+            font-weight: bold;
+        }
+
+        .game-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* SVG Monster Styling */
+        #runa-monster {
+            max-width: 380px;
+            height: auto;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,0.1));
+        }
+
+        .body-part {
+            cursor: pointer;
+            transition: filter 0.2s, transform 0.2s;
+        }
+
+        .body-part:hover {
+            filter: brightness(1.2) drop-shadow(0 0 8px rgba(108, 92, 231, 0.6));
+        }
+
+        /* Results Screen */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F8F9FA;
+        }
+
+        .feedback-message {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            height: 30px;
+            margin-top: 10px;
+        }
+
+        .feedback-correct { color: #00B894; }
+        .feedback-incorrect { color: #FF7675; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- CONFIGURATION SCREEN -->
+    <div id="screen-config" class="screen active">
+        <h1>👾 El Monstruo Runa</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 25px;">Aprende las partes del cuerpo en Quechua</p>
+        
+        <div class="form-group">
+            <label for="input-participants">Participantes (un nombre por línea):</label>
+            <textarea id="input-participants" rows="4" placeholder="Juan Pérez&#10;María Quispe&#10;Carlos Condori"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="input-questions">Número de preguntas por jugador (Máx. 30):</label>
+            <input type="number" id="input-questions" min="1" max="30" value="5">
+        </div>
+
+        <button class="btn" onclick="startGame()">¡Comenzar Juego!</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="screen-game" class="screen">
+        <div class="hud">
+            <div>Jugador: <span id="hud-player" style="color: var(--primary-color);"></span></div>
+            <div>Pregunta: <span id="hud-progress">0/0</span></div>
+            <div>Puntos: <span id="hud-score">0</span></div>
+        </div>
+
+        <div class="prompt-box">
+            <div id="prompt-quechua" class="prompt-quechua">"Munaqtiyqa, ñawiykita quway"</div>
+        </div>
+
+        <div class="game-area">
+            <!-- SVG INTERACTIVE MONSTER -->
+            <svg id="runa-monster" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+                <!-- Orejas (Rinri) -->
+                <g class="body-part" data-part="rinri">
+                    <circle cx="80" cy="130" r="28" fill="#A29BFE" />
+                    <circle cx="80" cy="130" r="16" fill="#74B9FF" />
+                    <circle cx="320" cy="130" r="28" fill="#A29BFE" />
+                    <circle cx="320" cy="130" r="16" fill="#74B9FF" />
+                </g>
+
+                <!-- Pie (Chaki) -->
+                <g class="body-part" data-part="chaki">
+                    <ellipse cx="140" cy="460" rx="35" ry="18" fill="#6C5CE7" />
+                    <ellipse cx="260" cy="460" rx="35" ry="18" fill="#6C5CE7" />
+                </g>
+
+                <!-- Cuerpo / Tronco -->
+                <rect x="110" y="210" width="180" height="220" rx="40" fill="#A29BFE" />
+
+                <!-- Pecho / Barriga (Wiksa) -->
+                <g class="body-part" data-part="wiksa">
+                    <ellipse cx="200" cy="320" rx="65" ry="70" fill="#FFEAA7" />
+                </g>
+
+                <!-- Brazos / Manos (Maki) -->
+                <g class="body-part" data-part="maki">
+                    <!-- Mano Izquierda -->
+                    <path d="M 110 240 Q 50 280 60 330" stroke="#6C5CE7" stroke-width="24" stroke-linecap="round" fill="none"/>
+                    <circle cx="60" cy="330" r="20" fill="#FF7675" />
+                    <!-- Mano Derecha -->
+                    <path d="M 290 240 Q 350 280 340 330" stroke="#6C5CE7" stroke-width="24" stroke-linecap="round" fill="none"/>
+                    <circle cx="340" cy="330" r="20" fill="#FF7675" />
+                </g>
+
+                <!-- Cabeza (Uma) -->
+                <g class="body-part" data-part="uma">
+                    <circle cx="200" cy="140" r="90" fill="#A29BFE" />
+                </g>
+
+                <!-- Ojos (Ñawi) -->
+                <g class="body-part" data-part="ñawi">
+                    <circle cx="165" cy="120" r="22" fill="white" />
+                    <circle cx="165" cy="120" r="10" fill="#2D3436" />
+                    <circle cx="235" cy="120" r="22" fill="white" />
+                    <circle cx="235" cy="120" r="10" fill="#2D3436" />
+                </g>
+
+                <!-- Nariz (Sinqa) -->
+                <g class="body-part" data-part="sinqa">
+                    <polygon points="200,135 188,160 212,160" fill="#FF7675" />
+                </g>
+
+                <!-- Boca (Simi) -->
+                <g class="body-part" data-part="simi">
+                    <path d="M 160 175 Q 200 210 240 175 Z" fill="#D63031" />
+                </g>
+            </svg>
+        </div>
+
+        <div id="feedback" class="feedback-message"></div>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div id="screen-results" class="screen">
+        <h1>📊 Historial de Resultados</h1>
+        
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Aciertos</th>
+                        <th>Puntaje (%)</th>
+                        <th>Fecha</th>
+                        <th>Inicio</th>
+                        <th>Fin</th>
+                        <th>Tiempo Total</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body">
+                    <!-- Dinámico -->
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn" onclick="resetToConfig()">Volver a Configurar</button>
+    </div>
+</div>
+
+<script>
+    // Vocabulario e Indicaciones únicamente en Quechua
+    const bodyPartsData = [
+        { id: 'uma', quechua: 'Uma', sentence: 'Munaqtiyqa, umaykita quway' },
+        { id: 'ñawi', quechua: 'Ñawi', sentence: 'Munaqtiyqa, ñawiykita quway' },
+        { id: 'rinri', quechua: 'Rinri', sentence: 'Munaqtiyqa, rinriykita quway' },
+        { id: 'sinqa', quechua: 'Sinqa', sentence: 'Munaqtiyqa, sinqaykita quway' },
+        { id: 'simi', quechua: 'Simi', sentence: 'Munaqtiyqa, simiykita quway' },
+        { id: 'maki', quechua: 'Maki', sentence: 'Munaqtiyqa, makiykita quway' },
+        { id: 'wiksa', quechua: 'Wiksa', sentence: 'Munaqtiyqa, wiksaykita quway' },
+        { id: 'chaki', quechua: 'Chaki', sentence: 'Munaqtiyqa, chakiykita quway' }
+    ];
+
+    // Estado del Juego
+    let participants = [];
+    let totalQuestionsPerUser = 5;
+    let currentParticipantIndex = 0;
+    let currentQuestionNumber = 0;
+    let currentScore = 0;
+    let currentTargetPart = null;
+    let participantStartTime = null;
+    let historyData = [];
+
+    // Audio síntesis simple (Web Audio API)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(isCorrect) {
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (isCorrect) {
+            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        } else {
+            osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+            osc.frequency.setValueAtTime(174.61, audioCtx.currentTime + 0.15); // F3
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const rawParticipants = document.getElementById('input-participants').value.trim();
+        const rawQuestions = parseInt(document.getElementById('input-questions').value, 10);
+
+        // Validar participantes
+        participants = rawParticipants.split('\n')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
+
+        if (participants.length === 0) {
+            alert('Por favor, ingresa al menos un participante.');
+            return;
+        }
+
+        // Validar límite de preguntas
+        totalQuestionsPerUser = Math.min(Math.max(1, rawQuestions || 5), 30);
+
+        currentParticipantIndex = 0;
+        historyData = [];
+        
+        setupEventListeners();
+        startParticipantTurn();
+    }
+
+    function startParticipantTurn() {
+        currentQuestionNumber = 0;
+        currentScore = 0;
+        participantStartTime = new Date();
+
+        document.getElementById('hud-player').textContent = participants[currentParticipantIndex];
+        document.getElementById('hud-score').textContent = currentScore;
+        
+        showScreen('screen-game');
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        if (currentQuestionNumber >= totalQuestionsPerUser) {
+            endParticipantTurn();
+            return;
+        }
+
+        currentQuestionNumber++;
+        document.getElementById('hud-progress').textContent = `${currentQuestionNumber}/${totalQuestionsPerUser}`;
+        document.getElementById('feedback').textContent = '';
+
+        // Seleccionar parte del cuerpo aleatoria
+        currentTargetPart = bodyPartsData[Math.floor(Math.random() * bodyPartsData.length)];
+        
+        document.getElementById('prompt-quechua').textContent = `"${currentTargetPart.sentence}"`;
+    }
+
+    function handlePartClick(e) {
+        const clickedPartId = e.currentTarget.getAttribute('data-part');
+        const feedbackEl = document.getElementById('feedback');
+
+        if (clickedPartId === currentTargetPart.id) {
+            playSound(true);
+            currentScore++;
+            document.getElementById('hud-score').textContent = currentScore;
+            feedbackEl.className = 'feedback-message feedback-correct';
+            feedbackEl.textContent = '¡Allin! (¡Correcto!)';
+        } else {
+            playSound(false);
+            feedbackEl.className = 'feedback-message feedback-incorrect';
+            feedbackEl.textContent = `¡Pantay! (${currentTargetPart.quechua})`;
+        }
+
+        // Deshabilitar temporalmente clics para evitar respuestas rápidas duplicadas
+        disableMonsterClicks();
+        setTimeout(() => {
+            enableMonsterClicks();
+            nextQuestion();
+        }, 1200);
+    }
+
+    function setupEventListeners() {
+        document.querySelectorAll('.body-part').forEach(part => {
+            part.removeEventListener('click', handlePartClick);
+            part.addEventListener('click', handlePartClick);
+        });
+    }
+
+    function disableMonsterClicks() {
+        document.querySelectorAll('.body-part').forEach(p => p.style.pointerEvents = 'none');
+    }
+
+    function enableMonsterClicks() {
+        document.querySelectorAll('.body-part').forEach(p => p.style.pointerEvents = 'auto');
+    }
+
+    function endParticipantTurn() {
+        const endTime = new Date();
+        const durationSec = Math.round((endTime - participantStartTime) / 1000);
+        const percentage = Math.round((currentScore / totalQuestionsPerUser) * 100);
+
+        historyData.push({
+            name: participants[currentParticipantIndex],
+            score: `${currentScore}/${totalQuestionsPerUser}`,
+            percentage: `${percentage}%`,
+            date: participantStartTime.toLocaleDateString(),
+            startTime: participantStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+            endTime: endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+            duration: `${durationSec} seg`
+        });
+
+        currentParticipantIndex++;
+
+        if (currentParticipantIndex < participants.length) {
+            alert(`Turno de ${participants[currentParticipantIndex - 1]} finalizado. ¡Siguiente participante!`);
+            startParticipantTurn();
+        } else {
+            renderResults();
+            showScreen('screen-results');
+        }
+    }
+
+    function renderResults() {
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = '';
+
+        historyData.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${item.name}</strong></td>
+                <td>${item.score}</td>
+                <td><strong>${item.percentage}</strong></td>
+                <td>${item.date}</td>
+                <td>${item.startTime}</td>
+                <td>${item.endTime}</td>
+                <td>${item.duration}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function resetToConfig() {
+        showScreen('screen-config');
+    }
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!--
+    ====================================================================
+    CONFIGURACIÓN DE PARTICIPANTES (Lista inicial por defecto)
+    Cada participante en una fila:
+    - Participante 1: Juan
+    - Participante 2: María
+    - Participante 3: Carlos
+    ====================================================================
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matemática Quechua - Calculadora y Suma</title>
+    <style>
+        :root {
+            --primary: #d97706;
+            --primary-hover: #b45309;
+            --bg: #fef3c7;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --accent: #059669;
+            --danger: #dc2626;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 650px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-hover);
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+        }
+
+        p.subtitle {
+            color: #6b7280;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Formulario inicial */
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Botones generales */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Pantalla de juego */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fffbe3;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #fde68a;
+            font-size: 0.9rem;
+        }
+
+        .turn-badge {
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .problem-card {
+            background-color: #f9fafb;
+            border: 2px dashed #cbd5e1;
+            border-radius: var(--border-radius);
+            padding: 30px 20px;
+            margin-bottom: 20px;
+        }
+
+        .problem-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        /* Botones de opciones con colores vivos */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .opt-btn {
+            border: none;
+            color: white;
+            padding: 16px 10px;
+            border-radius: 10px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* Colores dinámicos por posición */
+        .opt-btn:nth-child(1) {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        }
+        .opt-btn:nth-child(2) {
+            background: linear-gradient(135deg, #10b981, #047857);
+        }
+        .opt-btn:nth-child(3) {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+        }
+        .opt-btn:nth-child(4) {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .opt-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .opt-btn:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .opt-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 10px;
+            min-height: 28px;
+        }
+
+        .feedback.correct { color: var(--accent); }
+        .feedback.incorrect { color: var(--danger); }
+
+        /* Pantalla de Resultados */
+        .stats-table, .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        .stats-table th, .stats-table td,
+        .history-table th, .history-table td {
+            border: 1px solid #e5e7eb;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stats-table th, .history-table th {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+
+        .time-info {
+            text-align: left;
+            background-color: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .history-container {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+
+        /* Adaptabilidad en Celulares */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+            .problem-text {
+                font-size: 1.4rem;
+            }
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            .opt-btn {
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Yupayta yachakuna (Matemática Quechua)</h1>
+    <p class="subtitle">Aprende sumas y restas en Quechua jugando</p>
+
+    <!-- PANTALLA 1: INICIO Y CONFIGURACIÓN -->
+    <div id="start-screen" class="screen active">
+        <div class="form-group">
+            <label for="players-input">Participantes (un nombre por fila):</label>
+            <textarea id="players-input" placeholder="Juan&#10;María&#10;Carlos">Juan&#10;María</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="total-questions">Número total de preguntas (Máximo 30):</label>
+            <input type="number" id="total-questions" min="1" max="30" value="10">
+        </div>
+
+        <button class="btn" onclick="startGame()">¡Comenzar Juego!</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+    </div>
+
+    <!-- PANTALLA 2: JUEGO EN CURSO -->
+    <div id="game-screen" class="screen">
+        <div class="game-header">
+            <div>Pregunta: <b id="current-q-num">1</b>/<span id="max-q-num">10</span></div>
+            <div>Turno de: <span id="current-player" class="turn-badge">-</span></div>
+        </div>
+
+        <div class="problem-card">
+            <div id="problem-text" class="problem-text">Iskay + Kimsa = ?</div>
+        </div>
+
+        <div id="options-container" class="options-grid">
+            <!-- Opciones con color generadas por JS -->
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+    </div>
+
+    <!-- PANTALLA 3: HISTORIAL Y RESULTADOS -->
+    <div id="end-screen" class="screen">
+        <h2>¡Juego Finalizado!</h2>
+        
+        <div class="time-info" id="time-summary">
+            <!-- Información de tiempos por JS -->
+        </div>
+
+        <h3>Puntaje por Participante</h3>
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Participante</th>
+                    <th>Correctas</th>
+                    <th>Totales</th>
+                    <th>Porcentaje</th>
+                </tr>
+            </thead>
+            <tbody id="stats-body">
+                <!-- Estadísticas por JS -->
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 20px;">Historial de Preguntas</h3>
+        <div class="history-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Jugador</th>
+                        <th>Operación</th>
+                        <th>Respuesta</th>
+                        <th>Resultado</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body">
+                    <!-- Historial por JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn" onclick="resetGame()" style="margin-top: 20px;">Jugar de Nuevo</button>
+    </div>
+</div>
+
+<script>
+    /* ===================================================================
+       DICCIONARIO Y CONVERTIDOR DE NÚMEROS A QUECHUA (1 - 99)
+       =================================================================== */
+    const QUECHUA_UNITS = ["", "Juk", "Iskay", "Kimsa", "Tawa", "Phichqa", "Suqta", "Qanchis", "Pusaq", "Jisq'un"];
+
+    function numberToQuechua(num) {
+        if (num === 0) return "Ch'usaq";
+        if (num < 10) return QUECHUA_UNITS[num];
+        
+        const tens = Math.floor(num / 10);
+        const units = num % 10;
+        
+        let tensText = tens === 1 ? "Chunka" : QUECHUA_UNITS[tens] + " chunka";
+        
+        if (units === 0) return tensText;
+        
+        const unitName = QUECHUA_UNITS[units];
+        const suffix = "aeiouAEIOU".includes(unitName.slice(-1)) ? "yuq" : "niyuq";
+        
+        return `${tensText} ${unitName}${suffix}`;
+    }
+
+    /* ===================================================================
+       ESTADO DEL JUEGO
+       =================================================================== */
+    let players = [];
+    let currentPlayerIdx = 0;
+    let totalQuestions = 10;
+    let currentQuestion = 0;
+    
+    let startTime, endTime;
+    let playerStats = {};
+    let questionHistory = [];
+    let currentCorrectAnswer = "";
+
+    /* ===================================================================
+       CONTROL DE PANTALLAS Y LÓGICA
+       =================================================================== */
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const playersText = document.getElementById('players-input').value.trim();
+        players = playersText.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+
+        if (players.length === 0) {
+            alert("Por favor ingrese al menos un participante.");
+            return;
+        }
+
+        const qInput = parseInt(document.getElementById('total-questions').value);
+        if (isNaN(qInput) || qInput < 1 || qInput > 30) {
+            alert("El número de preguntas debe ser entre 1 y 30.");
+            return;
+        }
+
+        totalQuestions = qInput;
+        currentQuestion = 0;
+        currentPlayerIdx = 0;
+        questionHistory = [];
+        playerStats = {};
+
+        players.forEach(p => {
+            playerStats[p] = { correct: 0, total: 0 };
+        });
+
+        startTime = new Date();
+        document.getElementById('max-q-num').innerText = totalQuestions;
+        
+        showScreen('game-screen');
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        if (currentQuestion >= totalQuestions) {
+            endGame();
+            return;
+        }
+
+        currentQuestion++;
+        document.getElementById('current-q-num').innerText = currentQuestion;
+        
+        // Asignar turno rotativo
+        const activePlayer = players[currentPlayerIdx];
+        document.getElementById('current-player').innerText = activePlayer;
+
+        // Limpiar feedback
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('feedback').className = "feedback";
+
+        // Generar ejercicio aleatorio (Suma o Resta)
+        const isAddition = Math.random() > 0.3;
+        let a, b, result;
+
+        if (isAddition) {
+            a = Math.floor(Math.random() * 15) + 1;
+            b = Math.floor(Math.random() * 15) + 1;
+            result = a + b;
+        } else {
+            a = Math.floor(Math.random() * 20) + 5;
+            b = Math.floor(Math.random() * a) + 1;
+            result = a - b;
+        }
+
+        const qA = numberToQuechua(a);
+        const qB = numberToQuechua(b);
+        const symbol = isAddition ? "+" : "-";
+        
+        currentCorrectAnswer = numberToQuechua(result);
+
+        // Mostrar solo texto en Quechua (sin números entre paréntesis)
+        document.getElementById('problem-text').innerText = `${qA} ${symbol} ${qB} = ?`;
+
+        // Generar opciones múltiples
+        generateOptions(result);
+    }
+
+    function generateOptions(correctVal) {
+        let optionsValues = new Set([correctVal]);
+        
+        while (optionsValues.size < 4) {
+            let offset = (Math.floor(Math.random() * 7) - 3);
+            let wrongVal = correctVal + offset;
+            if (wrongVal >= 0 && wrongVal !== correctVal) {
+                optionsValues.add(wrongVal);
+            }
+        }
+
+        const optionsArray = Array.from(optionsValues).sort(() => Math.random() - 0.5);
+        const container = document.getElementById('options-container');
+        container.innerHTML = "";
+
+        optionsArray.forEach(val => {
+            const qWord = numberToQuechua(val);
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = qWord;
+            btn.onclick = () => selectAnswer(qWord);
+            container.appendChild(btn);
+        });
+    }
+
+    function selectAnswer(selectedAnswer) {
+        // Deshabilitar botones temporalmente
+        const buttons = document.querySelectorAll('.opt-btn');
+        buttons.forEach(b => b.disabled = true);
+
+        const activePlayer = players[currentPlayerIdx];
+        const isCorrect = selectedAnswer === currentCorrectAnswer;
+
+        playerStats[activePlayer].total++;
+        if (isCorrect) {
+            playerStats[activePlayer].correct++;
+        }
+
+        // Registrar historial
+        questionHistory.push({
+            qIndex: currentQuestion,
+            player: activePlayer,
+            operation: document.getElementById('problem-text').innerText,
+            userAnswer: selectedAnswer,
+            correctAnswer: currentCorrectAnswer,
+            isCorrect: isCorrect
+        });
+
+        // Mostrar retroalimentación
+        const feedbackEl = document.getElementById('feedback');
+        if (isCorrect) {
+            feedbackEl.innerText = "¡Allin! (¡Correcto!)";
+            feedbackEl.className = "feedback correct";
+        } else {
+            feedbackEl.innerText = `Mana allinchu (Incorrecto). Era: ${currentCorrectAnswer}`;
+            feedbackEl.className = "feedback incorrect";
+        }
+
+        // Siguiente jugador y siguiente pregunta tras pausa
+        currentPlayerIdx = (currentPlayerIdx + 1) % players.length;
+
+        setTimeout(() => {
+            nextQuestion();
+        }, 1600);
+    }
+
+    function endGame() {
+        endTime = new Date();
+        showScreen('end-screen');
+
+        const formatDate = date => date.toLocaleDateString();
+        const formatTime = date => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        const durationMs = endTime - startTime;
+        const durationSec = Math.floor(durationMs / 1000);
+        const minutes = Math.floor(durationSec / 60);
+        const seconds = durationSec % 60;
+
+        // Resumen de tiempos
+        document.getElementById('time-summary').innerHTML = `
+            <strong>Fecha:</strong> ${formatDate(startTime)}<br>
+            <strong>Hora de inicio:</strong> ${formatTime(startTime)}<br>
+            <strong>Hora de finalización:</strong> ${formatTime(endTime)}<br>
+            <strong>Tiempo total de juego:</strong> ${minutes} min ${seconds} seg
+        `;
+
+        // Estadísticas por participante
+        const statsBody = document.getElementById('stats-body');
+        statsBody.innerHTML = "";
+
+        players.forEach(p => {
+            const stats = playerStats[p];
+            const percentage = stats.total > 0 ? ((stats.correct / stats.total) * 100).toFixed(1) : "0.0";
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${p}</b></td>
+                <td>${stats.correct}</td>
+                <td>${stats.total}</td>
+                <td><b>${percentage}%</b></td>
+            `;
+            statsBody.appendChild(tr);
+        });
+
+        // Historial detallado
+        const historyBody = document.getElementById('history-body');
+        historyBody.innerHTML = "";
+
+        questionHistory.forEach(h => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${h.qIndex}</td>
+                <td>${h.player}</td>
+                <td>${h.operation}</td>
+                <td>${h.userAnswer}</td>
+                <td style="color: ${h.isCorrect ? 'var(--accent)' : 'var(--danger)'}">
+                    ${h.isCorrect ? '✔ Correcto' : `✖ (${h.correctAnswer})`}
+                </td>
+            `;
+            historyBody.appendChild(tr);
+        });
+    }
+
+    function resetGame() {
+        showScreen('start-screen');
+    }
+</script>
+
+</body>
+</html>
+
+

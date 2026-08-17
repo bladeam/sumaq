@@ -1,0 +1,681 @@
+<!--
+===================================================================
+ CONFIGURACIÓN INICIAL DEL JUEGO - NAVEGADOR QUECHUA
+===================================================================
+PARTICIPANTES:
+- Juan Pérez
+- María Quispe
+- Carlos Condori
+
+SUFIJOS DE DIRECCIÓN / LUGAR EN QUECHUA:
+- -man (hacia / dirección)
+- -manta (desde / origen)
+- -pi (en / ubicación)
+- -ñiq (por / cerca de)
+
+SUSTANTIVOS/PERSONAJES INCLUIDOS:
+- Misi (Gato 🐱), Allqu (Perro 🐶), Runa (Hombre 👤)
+- Warmi (Mujer 👩), Wawa (Bebé 👶), K'usillu (Mono 🐒)
+- Wasi (Casa 🏠), Urqu (Cerro 🏔️), Mayu (Río 🌊)
+- Sach'a (Árbol 🌳), Rumi (Piedra 🪨), Kaja (Caja 📦)
+===================================================================
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Laberinto Quechua Dinámico</title>
+    <style>
+        :root {
+            --primary: #FFB300;
+            --primary-dark: #FF8F00;
+            --bg-color: #121212;
+            --card-bg: #1E1E1E;
+            --text-color: #FFFFFF;
+
+            /* Colores de Direcciones */
+            --btn-pata: #00E676;  /* PATA (Arriba) - Verde */
+            --btn-ura: #FF5252;   /* URA (Abajo) - Rojo */
+            --btn-lluqi: #29B6F6; /* LLUQ'I (Izquierda) - Azul */
+            --btn-pana: #FF7043;  /* PAÑA (Derecha) - Naranja */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 20px;
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #AAA;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Formulario de Configuración */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        textarea, input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #333;
+            background: #2A2A2A;
+            color: #FFF;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        textarea:focus, input[type="number"], select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            color: #FFF;
+        }
+
+        /* HUD */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2A2A2A;
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+        }
+
+        .turn-banner {
+            text-align: center;
+            background: var(--primary-dark);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .instruction-box {
+            background: #252830;
+            border-left: 4px solid var(--primary);
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .instruction-box strong {
+            color: var(--primary);
+        }
+
+        /* Tablero */
+        .maze-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 4px;
+            background: #333;
+            padding: 6px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 380px;
+            aspect-ratio: 1 / 1;
+        }
+
+        .cell {
+            background: #1A1A1A;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            user-select: none;
+            position: relative;
+        }
+
+        .cell.wall {
+            background: #424242;
+        }
+
+        .cell.start {
+            background: #1B5E20;
+        }
+
+        .cell.target {
+            background: #0D47A1;
+        }
+
+        /* Fila de Botones */
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto 10px auto;
+        }
+
+        .cmd-btn {
+            flex: 1;
+            color: white;
+            border: none;
+            padding: 14px 2px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s, filter 0.2s;
+        }
+
+        .cmd-btn:active {
+            transform: scale(0.95);
+            filter: brightness(0.85);
+        }
+
+        .cmd-btn.pata { background-color: var(--btn-pata); color: #000; }
+        .cmd-btn.ura { background-color: var(--btn-ura); }
+        .cmd-btn.lluqi { background-color: var(--btn-lluqi); color: #000; }
+        .cmd-btn.pana { background-color: var(--btn-pana); }
+
+        /* Resultados */
+        .summary-card {
+            background: #2A2A2A;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: var(--primary-dark);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #222;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PANTALLA 1: CONFIGURACIÓN -->
+    <div id="screen-config" class="screen active">
+        <h1>Laberinto Quechua</h1>
+
+        <p class="subtitle">Aprende Sufijos Locativos navegando por laberintos dinámicos</p>
+
+        <div class="form-group">
+            <label for="input-participants">Participantes (un nombre por fila):</label>
+            <textarea id="input-participants" rows="4">Juan Pérez
+María Quispe
+Carlos Condori</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="select-board-size">Tamaño del Tablero:</label>
+            <select id="select-board-size">
+                <option value="4">4 x 4 (Muy Fácil)</option>
+                <option value="5">5 x 5 (Fácil)</option>
+                <option value="6" selected>6 x 6 (Normal)</option>
+                <option value="7">7 x 7 (Intermedio)</option>
+                <option value="8">8 x 8 (Difícil)</option>
+                <option value="9">9 x 9 (Experto)</option>
+                <option value="10">10 x 10 (Maestro)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="input-rounds">Número de partidas por jugador (Máximo 30):</label>
+            <input type="number" id="input-rounds" min="1" max="30" value="5">
+        </div>
+
+        <button class="btn" id="btn-start">¡Iniciar Juego!</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+    </div>
+
+    <!-- PANTALLA 2: JUEGO -->
+    <div id="screen-game" class="screen">
+        <div class="hud">
+            <div>Partida: <span id="hud-progress">1/5</span></div>
+            <div>Fecha: <span id="hud-date"></span></div>
+            <div>Inicio: <span id="hud-starttime"></span></div>
+        </div>
+
+        <div id="turn-banner" class="turn-banner">
+            Turno de: <span id="current-player-name">--</span>
+        </div>
+
+        <div class="instruction-box" id="instruction-box">
+            Mueve al personaje
+        </div>
+
+        <div class="maze-container">
+            <div class="grid" id="maze-grid"></div>
+        </div>
+
+        <!-- Controles en una sola fila (Se reorganizan aleatoriamente por turno) -->
+        <div class="controls-row" id="controls-container"></div>
+    </div>
+
+    <!-- PANTALLA 3: RESULTADOS -->
+    <div id="screen-results" class="screen">
+        <h1>Historial y Resultados Finales</h1>
+
+        <div class="summary-card" id="summary-card"></div>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Partidas Ganadas</th>
+                        <th>Partidas Totales</th>
+                        <th>Efectividad (%)</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body"></tbody>
+            </table>
+        </div>
+
+        <button class="btn" id="btn-restart">Volver a Configurar</button>
+    </div>
+</div>
+
+<script>
+    // RETOS: SUSTANTIVOS/PERSONAJES Y SUS OBJETIVOS EN QUECHUA
+    const challenges = [
+        // Misi (Gato 🐱)
+        { text: "Lleva al <strong>Misi</strong> 🐱 <strong>Wasi-man</strong> (Hacia la casa 🏠)", playerSymbol: "🐱", targetSymbol: "🏠" },
+        { text: "Lleva al <strong>Misi</strong> 🐱 <strong>Urqu-man</strong> (Hacia el cerro 🏔️)", playerSymbol: "🐱", targetSymbol: "🏔️" },
+        { text: "Lleva al <strong>Misi</strong> 🐱 <strong>Kaja-man</strong> (A la caja 📦)", playerSymbol: "🐱", targetSymbol: "📦" },
+
+        // Allqu (Perro 🐶)
+        { text: "Lleva al <strong>Allqu</strong> 🐶 <strong>Mayu-man</strong> (Al río 🌊)", playerSymbol: "🐶", targetSymbol: "🌊" },
+        { text: "Lleva al <strong>Allqu</strong> 🐶 <strong>Sach'a-man</strong> (Al árbol 🌳)", playerSymbol: "🐶", targetSymbol: "🌳" },
+
+        // Runa (Hombre / Persona 👤)
+        { text: "Lleva al <strong>Runa</strong> 👤 <strong>Urqu-man</strong> (Hacia el cerro 🏔️)", playerSymbol: "👤", targetSymbol: "🏔️" },
+        { text: "Lleva al <strong>Runa</strong> 👤 <strong>Rumi-man</strong> (Hacia la piedra 🪨)", playerSymbol: "👤", targetSymbol: "🪨" },
+
+        // Warmi (Mujer 👩)
+        { text: "Lleva a la <strong>Warmi</strong> 👩 <strong>Wasi-man</strong> (Hacia la casa 🏠)", playerSymbol: "👩", targetSymbol: "🏠" },
+        { text: "Lleva a la <strong>Warmi</strong> 👩 <strong>Mayu-man</strong> (Hacia el río 🌊)", playerSymbol: "👩", targetSymbol: "🌊" },
+
+        // Wawa (Bebé / Niño 👶)
+        { text: "Lleva a la <strong>Wawa</strong> 👶 <strong>Wasi-man</strong> (Hacia la casa 🏠)", playerSymbol: "👶", targetSymbol: "🏠" },
+        { text: "Lleva a la <strong>Wawa</strong> 👶 <strong>Sach'a-man</strong> (Al árbol 🌳)", playerSymbol: "👶", targetSymbol: "🌳" },
+
+        // K'usillu (Mono 🐒)
+        { text: "Lleva al <strong>K'usillu</strong> 🐒 <strong>Sach'a-man</strong> (Al árbol 🌳)", playerSymbol: "🐒", targetSymbol: "🌳" }
+    ];
+
+    // DIRECCIONES
+    const defaultButtons = [
+        { label: "PATA", cssClass: "pata", dr: -1, dc: 0 },
+        { label: "URA", cssClass: "ura", dr: 1, dc: 0 },
+        { label: "LLUQ'I", cssClass: "lluqi", dr: 0, dc: -1 },
+        { label: "PAÑA", cssClass: "pana", dr: 0, dc: 1 }
+    ];
+
+    // ESTADO GENERAL
+    let players = [];
+    let currentPlayerIndex = 0;
+    let roundsPerPlayer = 5;
+    let boardSize = 6;
+    let totalTurns = 0;
+    let currentTurnIndex = 0;
+    let gameStartTime = null;
+    let gameEndTime = null;
+
+    // ESTADO DEL TURNO
+    let currentMaze = [];
+    let playerPos = { r: 0, c: 0 };
+    let targetPos = { r: 0, c: 0 };
+    let currentChallenge = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('btn-start').addEventListener('click', startGame);
+        document.getElementById('btn-restart').addEventListener('click', resetToConfig);
+
+        window.addEventListener('keydown', (e) => {
+            if (!document.getElementById('screen-game').classList.contains('active')) return;
+            if (e.key === 'ArrowUp') movePlayer(-1, 0);   // PATA
+            if (e.key === 'ArrowDown') movePlayer(1, 0);  // URA
+            if (e.key === 'ArrowLeft') movePlayer(0, -1); // LLUQ'I
+            if (e.key === 'ArrowRight') movePlayer(0, 1); // PAÑA
+        });
+    });
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const rawParticipants = document.getElementById('input-participants').value.trim();
+        const rawRounds = parseInt(document.getElementById('input-rounds').value, 10);
+        boardSize = parseInt(document.getElementById('select-board-size').value, 10);
+
+        const parsedNames = rawParticipants.split('\n')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
+
+        if (parsedNames.length === 0) {
+            alert('Por favor, ingresa al menos un participante.');
+            return;
+        }
+
+        roundsPerPlayer = Math.min(Math.max(1, rawRounds || 5), 30);
+        
+        players = parsedNames.map(name => ({
+            name: name,
+            score: 0,
+            roundsPlayed: 0
+        }));
+
+        currentPlayerIndex = 0;
+        currentTurnIndex = 0;
+        totalTurns = players.length * roundsPerPlayer;
+        gameStartTime = new Date();
+
+        document.getElementById('hud-date').textContent = gameStartTime.toLocaleDateString();
+        document.getElementById('hud-starttime').textContent = gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        showScreen('screen-game');
+        loadTurn();
+    }
+
+    function generateDynamicMaze(size) {
+        let grid = Array.from({ length: size }, () => Array(size).fill(0));
+        
+        for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+                if (Math.random() < 0.32) {
+                    grid[r][c] = 1;
+                }
+            }
+        }
+
+        let startR = Math.floor(Math.random() * size);
+        let startC = Math.floor(Math.random() * size);
+        let targetR = Math.floor(Math.random() * size);
+        let targetC = Math.floor(Math.random() * size);
+
+        while (Math.abs(startR - targetR) + Math.abs(startC - targetC) < Math.floor(size / 1.5)) {
+            targetR = Math.floor(Math.random() * size);
+            targetC = Math.floor(Math.random() * size);
+        }
+
+        playerPos = { r: startR, c: startC };
+        targetPos = { r: targetR, c: targetC };
+
+        grid[playerPos.r][playerPos.c] = 0;
+        grid[targetPos.r][targetPos.c] = 0;
+
+        if (!hasPath(grid, size, playerPos, targetPos)) {
+            return generateDynamicMaze(size);
+        }
+
+        return grid;
+    }
+
+    function hasPath(grid, size, start, end) {
+        let visited = Array.from({ length: size }, () => Array(size).fill(false));
+        let queue = [start];
+        visited[start.r][start.c] = true;
+
+        const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+        while (queue.length > 0) {
+            let { r, c } = queue.shift();
+            if (r === end.r && c === end.c) return true;
+
+            for (let [dr, dc] of dirs) {
+                let nr = r + dr;
+                let nc = c + dc;
+
+                if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                    if (!visited[nr][nc] && grid[nr][nc] !== 1) {
+                        visited[nr][nc] = true;
+                        queue.push({ r: nr, c: nc });
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    function loadTurn() {
+        if (currentTurnIndex >= totalTurns) {
+            endGame();
+            return;
+        }
+
+        const currentPlayer = players[currentPlayerIndex];
+        document.getElementById('current-player-name').textContent = currentPlayer.name;
+        document.getElementById('hud-progress').textContent = `${currentPlayer.roundsPlayed + 1}/${roundsPerPlayer}`;
+
+        // Consigna y sustantivos aleatorios por turno
+        currentChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+        document.getElementById('instruction-box').innerHTML = currentChallenge.text;
+
+        currentMaze = generateDynamicMaze(boardSize);
+
+        renderMaze();
+        renderShuffledButtons();
+    }
+
+    function renderShuffledButtons() {
+        const container = document.getElementById('controls-container');
+        container.innerHTML = '';
+
+        let shuffled = [...defaultButtons];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        shuffled.forEach(btnInfo => {
+            const btn = document.createElement('button');
+            btn.className = `cmd-btn ${btnInfo.cssClass}`;
+            btn.textContent = btnInfo.label;
+            btn.onclick = () => movePlayer(btnInfo.dr, btnInfo.dc);
+            container.appendChild(btn);
+        });
+    }
+
+    function renderMaze() {
+        const mazeGrid = document.getElementById('maze-grid');
+        mazeGrid.innerHTML = '';
+        mazeGrid.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+
+        const fontSize = boardSize > 7 ? '0.85rem' : '1.1rem';
+
+        for (let r = 0; r < boardSize; r++) {
+            for (let c = 0; c < boardSize; c++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.style.fontSize = fontSize;
+
+                if (currentMaze[r][c] === 1) {
+                    cell.classList.add('wall');
+                    cell.textContent = '🧱';
+                } else if (r === playerPos.r && c === playerPos.c) {
+                    cell.classList.add('start');
+                    cell.textContent = currentChallenge.playerSymbol; // Ícono del personaje/sustantivo (misi, allqu, warmi, etc.)
+                } else if (r === targetPos.r && c === targetPos.c) {
+                    cell.classList.add('target');
+                    cell.textContent = currentChallenge.targetSymbol; // Ícono del destino (wasi, Urqu, mayu, etc.)
+                }
+
+                mazeGrid.appendChild(cell);
+            }
+        }
+    }
+
+    function movePlayer(dr, dc) {
+        const newR = playerPos.r + dr;
+        const newC = playerPos.c + dc;
+
+        if (newR >= 0 && newR < boardSize && newC >= 0 && newC < boardSize) {
+            if (currentMaze[newR][newC] !== 1) {
+                playerPos.r = newR;
+                playerPos.c = newC;
+                renderMaze();
+
+                if (playerPos.r === targetPos.r && playerPos.c === targetPos.c) {
+                    handleSuccess();
+                }
+            }
+        }
+    }
+
+    function handleSuccess() {
+        const currentPlayer = players[currentPlayerIndex];
+        currentPlayer.score++;
+        currentPlayer.roundsPlayed++;
+
+        alert(`¡Allin (Excelente)! ${currentPlayer.name} completó el laberinto.`);
+
+        currentTurnIndex++;
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+        loadTurn();
+    }
+
+    function endGame() {
+        gameEndTime = new Date();
+        const durationSec = Math.round((gameEndTime - gameStartTime) / 1000);
+        const minutes = Math.floor(durationSec / 60);
+        const seconds = durationSec % 60;
+
+        const summaryCard = document.getElementById('summary-card');
+        summaryCard.innerHTML = `
+            <p><strong>Fecha:</strong> ${gameStartTime.toLocaleDateString()}</p>
+            <p><strong>Hora de Inicio:</strong> ${gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
+            <p><strong>Hora de Finalización:</strong> ${gameEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
+            <p><strong>Tiempo Transcurrido:</strong> ${minutes} min ${seconds} seg</p>
+            <p><strong>Dimensión del Tablero:</strong> ${boardSize} x ${boardSize}</p>
+        `;
+
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = '';
+
+        const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
+        sortedPlayers.forEach(p => {
+            const percentage = p.roundsPlayed > 0 
+                ? Math.round((p.score / p.roundsPlayed) * 100) 
+                : 0;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${p.name}</strong></td>
+                <td>${p.score}</td>
+                <td>${p.roundsPlayed}</td>
+                <td><strong>${percentage}%</strong></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        showScreen('screen-results');
+    }
+
+    function resetToConfig() {
+        showScreen('screen-config');
+    }
+</script>
+</body>
+
+</html>
+
+

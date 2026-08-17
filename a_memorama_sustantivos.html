@@ -1,0 +1,667 @@
+<!--
+===================================================================
+ CONFIGURACIÓN INICIAL DEL JUEGO
+===================================================================
+PARTICIPANTES:
+- Juan Pérez
+- María Quispe
+- Carlos Condori
+
+CANTIDAD_PREGUNTAS = 8
+===================================================================
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memorama de Objetos y Sustantivos en Quechua</title>
+    <style>
+        :root {
+            --primary-color: #00B894;
+            --secondary-color: #6C5CE7;
+            --matched-bg: #E6F7F4;
+            --matched-border: #00B894;
+            --card-bg-front: #FFFFFF;
+            --card-bg-back: #6C5CE7;
+            --bg-color: #F0F3F7;
+            --text-color: #2D3436;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 950px;
+            background: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Configuración */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        textarea, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, input[type="number"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background: #00A383;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Panel Superior HUD */
+        .hud {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            background: #E6F7F4;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            gap: 10px;
+        }
+
+        .turn-banner {
+            text-align: center;
+            background: var(--secondary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        /* Barra de Puntajes */
+        .scores-bar {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+        }
+
+        .player-chip {
+            background: #F0F0F0;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            border: 2px solid transparent;
+        }
+
+        .player-chip.active {
+            border-color: var(--secondary-color);
+            background: #E0DBFC;
+            font-weight: bold;
+        }
+
+        /* Tablero */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 15px;
+            justify-content: center;
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        /* Flip Card 3D */
+        .memory-card {
+            width: 100%;
+            height: 120px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            cursor: pointer;
+        }
+
+        .memory-card.flip {
+            transform: rotateY(180deg);
+        }
+
+        /* Cartas emparejadas: Permanecen totalmente visibles */
+        .memory-card.matched {
+            transform: rotateY(180deg);
+            cursor: default;
+        }
+
+        .memory-card.matched .card-front {
+            background-color: var(--matched-bg);
+            border: 2px solid var(--matched-border);
+            box-shadow: 0 0 10px rgba(0, 184, 148, 0.3);
+        }
+
+        .card-face {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            user-select: none;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .card-front {
+            background-color: var(--card-bg-front);
+            border: 2px solid var(--primary-color);
+            transform: rotateY(180deg);
+        }
+
+        .card-back {
+            background-color: var(--card-bg-back);
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .card-icon {
+            font-size: 2.2rem;
+        }
+
+        .card-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+            text-transform: capitalize;
+        }
+
+        /* Tabla de Resultados */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F8F9FA;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PANTALLA DE CONFIGURACIÓN -->
+    <div id="screen-config" class="screen active">
+        <h1>🎴 Memorama en Quechua</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 25px;">Modo Turnos Intercalados por Participante</p>
+
+        <div class="form-group">
+            <label for="input-participants">Participantes (un nombre por fila):</label>
+            <textarea id="input-participants" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="input-questions">Número de preguntas / pares (Máximo 30):</label>
+            <input type="number" id="input-questions" min="2" max="30" value="8">
+        </div>
+
+        <button class="btn" onclick="startGame()">¡Comenzar Juego!</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+    </div>
+
+    <!-- PANTALLA DE JUEGO -->
+    <div id="screen-game" class="screen">
+        <div class="hud">
+            <div>Pares Restantes: <span id="hud-pairs">0/0</span></div>
+            <div>Fecha: <span id="hud-date"></span></div>
+            <div>Hora Inicio: <span id="hud-starttime"></span></div>
+        </div>
+
+        <div id="turn-banner" class="turn-banner">
+            Turno de: <span id="current-player-name">--</span>
+        </div>
+
+        <div id="scores-bar" class="scores-bar">
+            <!-- Chips con puntos en tiempo real -->
+        </div>
+
+        <div id="memory-board" class="grid-container">
+            <!-- Cartas dinámicas -->
+        </div>
+    </div>
+
+    <!-- PANTALLA DE RESULTADOS -->
+    <div id="screen-results" class="screen">
+        <h1>📊 Historial y Resultados Finales</h1>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Pares Encontrados</th>
+                        <th>Intentos</th>
+                        <th>Efectividad (%)</th>
+                        <th>Fecha</th>
+                        <th>Hora Inicio</th>
+                        <th>Hora Fin</th>
+                        <th>Tiempo Total</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body">
+                    <!-- Filas dinámicas -->
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn" onclick="resetToConfig()">Volver a Jugar</button>
+    </div>
+</div>
+
+<script>
+    // Nueva Base de datos de elementos en Quechua: [palabra, icono, imagen]
+    const rawVocabularyDatabase = [
+        ['misi', '🐱', '🐱'],
+        ['warmi', '👩', '👩'],
+        ['allqu', '🐶', '🐶'],
+        ['runtu', '🥚', '🥚'],
+        ['sik\'imira', '🐜', '🐜'],
+        ['atuq', '🦊', '🦊'],
+        ['wallpa', '🐔', '🐔'],
+        ['chaki', '🦶', '🦶'],
+        ['maki', '✋', '✋'],
+        ['katari', '🐍', '🐍'],
+        ['lachiwana', '🐝', '🐝'],
+        ['punku', '🚪', '🚪'],
+        ['manka', '🏺', '🏺'],
+        ['inti', '☀️', '☀️'],
+        ['killa', '🌙', '🌙'],
+        ['qhari', '👨', '👨'],
+        ['ñawi', '👁️', '👁️'],
+        ['ninri', '👂', '👂'],
+        ['sinqa', '👃', '👃'],
+        ['kiru', '🦷', '🦷'],
+        ['t\'anta', '🍞', '🍞'],
+        ['wawa', '👶', '👶'],
+        ['papa', '🥔', '🥔'],
+        ['Juk’ucha', '🐭', '🐭'],
+        ['khuchi', '🐷', '🐷'],
+        ['Yuthu', '🐦', '🐦'],
+        ['chillwi', '🐥', '🐥'],
+        ['jamp’atu', '🐸', '🐸'],
+        ['chawlla', '🐟', '🐟'],
+        ['waka', '🐮', '🐮'],
+        ['uwija', '🐑', '🐑'],
+        ['pili', '🦆', '🦆'],
+        ['llama', '🦙', '🦙'],
+        ['kuntur', '🦅', '🦅'],
+        ['jukumari', '🐻', '🐻'],
+        ['charapa', '🐢', '🐢'],
+        ['k’usillu', '🐒', '🐒'],
+        ['kirkinchu', '🦔', '🦔'],
+        ['p’isqu', '🐦', '🐦'],
+        ['urpi', '🕊️', '🕊️'],
+        ['ararankha', '🦎', '🦎'],
+        ['ch’uspi', '🪰', '🪰'],
+        ['wayruru', '🕷️', '🕷️'],
+        ['piki', '🐞', '🐞'],
+        ['ñuqtu', '🧠', '🧠'],
+        ['tullu', '🦴', '🦴'],
+        ['angula', '🐰', '🐰'],
+        ['khuru', '🐛', '🐛'],
+        ['ch’uru', '🐌', '🐌'],
+        ['kawallu', '🐎', '🐎'],
+        ['karwa', '🐐', '🐐'],
+        ['sach\'a', '🌳', '🌳'],
+        ['mansana', '🍎', '🍎'],
+        ['platanu', '🍌', '🍌'],
+        ['awaranku', '🍍', '🍍'],
+        ['sara', '🌽', '🌽'],
+        ['sanawrya', '🥕', '🥕'],
+        ['kumputarura', '💻', '💻'],
+        ['inti watana', '🕰️', '🕰️'],
+        ['tiyana', '🪑', '🪑'],
+        ['puñuna', '🛏️', '🛏️'],
+        ['awtu', '🚗', '🚗'],
+        ['abiyon', '✈️', '✈️'],
+        ['wiksilita', '🚲', '🚲'],
+        ['phuyu', '☁️', '☁️'],
+        ['ch’aska', '⭐', '⭐'],
+        ['wasi', '🏠', '🏠'],
+        ['iglisia', '⛪', '⛪']
+    ];
+
+    // Mapeo automático de la base de datos a un formato estruturado de objetos
+    const vocabularyDatabase = rawVocabularyDatabase.map((item, index) => ({
+        id: index + 1,
+        quechua: item[0],
+        icon: item[1]
+    }));
+
+    // Variables de Estado
+    let players = [];
+    let currentPlayerIndex = 0;
+    let totalPairsPerGame = 8;
+    let matchedPairsCount = 0;
+    
+    let hasFlippedCard = false;
+    let lockBoard = false;
+    let firstCard = null;
+    let secondCard = null;
+    
+    let gameStartTime = null;
+
+    // Parseo automático de comentarios del HTML
+    document.addEventListener('DOMContentLoaded', () => {
+        let commentContent = '';
+        const nodeIterator = document.createNodeIterator(document, NodeFilter.SHOW_COMMENT, null, false);
+        let currentNode;
+        while (currentNode = nodeIterator.nextNode()) {
+            commentContent += currentNode.nodeValue + '\n';
+        }
+
+        const nameMatches = commentContent.match(/-\s*([^\r\n]+)/g);
+        let initialNames = [];
+        if (nameMatches) {
+            initialNames = nameMatches.map(m => m.replace(/^-\s*/, '').trim());
+        }
+
+        const questionMatch = commentContent.match(/CANTIDAD_PREGUNTAS\s*=\s*(\d+)/);
+        let initialQuestions = 8;
+        if (questionMatch) {
+            initialQuestions = parseInt(questionMatch[1], 10);
+        }
+
+        document.getElementById('input-participants').value = initialNames.length > 0 
+            ? initialNames.join('\n') 
+            : 'Jugador 1\nJugador 2';
+        document.getElementById('input-questions').value = Math.min(Math.max(2, initialQuestions), 30);
+    });
+
+    // Mezcla Fisher-Yates
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const rawParticipants = document.getElementById('input-participants').value.trim();
+        const rawQuestions = parseInt(document.getElementById('input-questions').value, 10);
+
+        const parsedNames = rawParticipants.split('\n')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
+
+        if (parsedNames.length === 0) {
+            alert('Ingresa al menos un participante.');
+            return;
+        }
+
+        totalPairsPerGame = Math.min(Math.max(2, rawQuestions || 8), 30);
+        
+        players = parsedNames.map(name => ({
+            name: name,
+            score: 0,
+            attempts: 0
+        }));
+
+        currentPlayerIndex = 0;
+        matchedPairsCount = 0;
+        hasFlippedCard = false;
+        lockBoard = false;
+        firstCard = null;
+        secondCard = null;
+        gameStartTime = new Date();
+
+        document.getElementById('hud-pairs').textContent = `0/${totalPairsPerGame}`;
+        document.getElementById('hud-date').textContent = gameStartTime.toLocaleDateString();
+        document.getElementById('hud-starttime').textContent = gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        updateTurnUI();
+        buildBoard();
+        showScreen('screen-game');
+    }
+
+    function updateTurnUI() {
+        const currentPlayer = players[currentPlayerIndex];
+        document.getElementById('current-player-name').textContent = currentPlayer.name;
+
+        const scoresBar = document.getElementById('scores-bar');
+        scoresBar.innerHTML = '';
+        players.forEach((p, idx) => {
+            const chip = document.createElement('div');
+            chip.classList.add('player-chip');
+            if (idx === currentPlayerIndex) chip.classList.add('active');
+            chip.textContent = `${p.name}: ${p.score} pts (${p.attempts} int)`;
+            scoresBar.appendChild(chip);
+        });
+    }
+
+    function nextTurn() {
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+        updateTurnUI();
+    }
+
+    function buildBoard() {
+        const board = document.getElementById('memory-board');
+        board.innerHTML = '';
+
+        let selectedItems = shuffle([...vocabularyDatabase]).slice(0, totalPairsPerGame);
+        let cardsData = [];
+
+        selectedItems.forEach(item => {
+            cardsData.push({ pairId: item.id, type: 'text', content: item.quechua });
+            cardsData.push({ pairId: item.id, type: 'icon', content: item.icon });
+        });
+
+        cardsData = shuffle(cardsData);
+
+        cardsData.forEach(data => {
+            const card = document.createElement('div');
+            card.classList.add('memory-card');
+            card.dataset.pairId = data.pairId;
+
+            const contentHtml = data.type === 'icon' 
+                ? `<div class="card-icon">${data.content}</div>` 
+                : `<div class="card-text">${data.content}</div>`;
+
+            card.innerHTML = `
+                <div class="card-face card-front">${contentHtml}</div>
+                <div class="card-face card-back">?</div>
+            `;
+
+            card.addEventListener('click', flipCard);
+            board.appendChild(card);
+        });
+    }
+
+    function flipCard() {
+        if (lockBoard) return;
+        if (this === firstCard) return;
+
+        this.classList.add('flip');
+
+        if (!hasFlippedCard) {
+            hasFlippedCard = true;
+            firstCard = this;
+            return;
+        }
+
+        secondCard = this;
+        players[currentPlayerIndex].attempts++;
+        updateTurnUI();
+        checkForMatch();
+    }
+
+    function checkForMatch() {
+        let isMatch = firstCard.dataset.pairId === secondCard.dataset.pairId;
+
+        if (isMatch) {
+            disableCards();
+        } else {
+            unflipCards();
+        }
+    }
+
+    function disableCards() {
+        firstCard.classList.add('matched');
+        secondCard.classList.add('matched');
+
+        firstCard.removeEventListener('click', flipCard);
+        secondCard.removeEventListener('click', flipCard);
+
+        players[currentPlayerIndex].score++;
+        matchedPairsCount++;
+        document.getElementById('hud-pairs').textContent = `${matchedPairsCount}/${totalPairsPerGame}`;
+
+        resetBoard();
+        updateTurnUI();
+
+        if (matchedPairsCount === totalPairsPerGame) {
+            setTimeout(endGame, 700);
+        }
+    }
+
+    function unflipCards() {
+        lockBoard = true;
+
+        setTimeout(() => {
+            firstCard.classList.remove('flip');
+            secondCard.classList.remove('flip');
+            resetBoard();
+            nextTurn();
+        }, 900);
+    }
+
+    function resetBoard() {
+        [hasFlippedCard, lockBoard] = [false, false];
+        [firstCard, secondCard] = [null, null];
+    }
+
+    function endGame() {
+        const gameEndTime = new Date();
+        const durationSec = Math.round((gameEndTime - gameStartTime) / 1000);
+
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = '';
+
+        const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
+        sortedPlayers.forEach(p => {
+            const percentage = p.attempts > 0 
+                ? Math.round((p.score / p.attempts) * 100) 
+                : 0;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${p.name}</strong></td>
+                <td>${p.score}</td>
+                <td>${p.attempts}</td>
+                <td><strong>${percentage}%</strong></td>
+                <td>${gameStartTime.toLocaleDateString()}</td>
+                <td>${gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                <td>${gameEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                <td>${durationSec} seg</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        showScreen('screen-results');
+    }
+
+    function resetToConfig() {
+        showScreen('screen-config');
+    }
+</script>
+</body>
+</html>
+
+

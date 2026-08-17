@@ -1,0 +1,757 @@
+<!-- 
+==================================================
+PARTICIPANTES DEL PROYECTO (Un integrante por fila):
+- Integrante 1: [Nombre y Apellido]
+- Integrante 2: [Nombre y Apellido]
+- Integrante 3: [Nombre y Apellido]
+==================================================
+-->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>El Detective de Pronombres Quechua</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --secondary: #06b6d4;
+      --success: #10b981;
+      --error: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 650px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      padding: 32px;
+      border: 1px solid var(--border);
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    h1, h2, h3 {
+      text-align: center;
+      color: var(--text);
+    }
+
+    .title-gradient {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Form Styles */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    input[type="text"], input[type="number"] {
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background-color: #e0e7ff;
+      color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background-color: #c7d2fe;
+    }
+
+    /* Game Header / HUD */
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .hud-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Card Visual */
+    .game-card {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      background: #fafafa;
+    }
+
+    .card-visual {
+      width: 100%;
+      max-width: 320px;
+      height: 180px;
+      margin: 0 auto 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: white;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 10px;
+    }
+
+    .card-visual svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .card-prompt {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Options Grid */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .option-btn {
+      padding: 16px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background-color: #f5f3ff;
+      color: var(--primary);
+    }
+
+    .option-btn.correct {
+      background-color: #d1fae5 !important;
+      border-color: var(--success) !important;
+      color: #065f46 !important;
+    }
+
+    .option-btn.incorrect {
+      background-color: #fee2e2 !important;
+      border-color: var(--error) !important;
+      color: #991b1b !important;
+    }
+
+    .feedback {
+      min-height: 48px;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+    }
+
+    .feedback.correct {
+      background-color: #ecfdf5;
+      color: var(--success);
+    }
+
+    .feedback.incorrect {
+      background-color: #fef2f2;
+      color: var(--error);
+    }
+
+    /* Results Screen */
+    .results-summary {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--bg);
+      padding: 14px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-card .value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .stat-card .label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* History Table */
+    .history-section {
+      margin-top: 10px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .history-table-container {
+      max-height: 180px;
+      overflow-y: auto;
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    th, td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background-color: var(--bg);
+      color: var(--text-muted);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- INICIO: REGISTRO DE JUGADOR Y CONFIGURACIÓN -->
+    <div id="start-screen" class="screen active">
+      <h1 class="title-gradient">El Detective de Pronombres</h1>
+      <p class="subtitle">Aprende la diferencia entre <b>Ñuqanchik</b> (inclusivo) y <b>Ñuqayku</b> (exclusivo) en Quechua.</p>
+
+      <form id="player-form" onsubmit="startGame(event)">
+        <div class="form-group">
+          <label for="player-name">Nombre del participante:</label>
+          <input type="text" id="player-name" placeholder="Ej. Ana García" required autocomplete="off" />
+        </div>
+
+        <div class="form-group" style="margin-top: 10px;">
+          <label for="questions-count">Número de preguntas:</label>
+          <input type="number" id="questions-count" min="1" max="20" value="5" required />
+          <small style="color: var(--text-muted); font-size: 0.8rem;">Elige entre 1 y 20 preguntas.</small>
+        </div>
+
+        <button type="submit" class="btn" style="margin-top: 10px;">Comenzar Investigación</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+      </form>
+
+      <div class="history-section">
+        <h3>Historial de Partidas</h3>
+        <div class="history-table-container">
+          <table id="history-table">
+            <thead>
+              <tr>
+                <th>Jugador</th>
+                <th>Puntaje</th>
+                <th>Tiempo</th>
+                <th>Fecha / Hora</th>
+              </tr>
+            </thead>
+            <tbody id="history-body">
+              <!-- Se completa dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA DE JUEGO -->
+    <div id="game-screen" class="screen">
+      <div class="hud">
+        <div class="hud-item">👤 <span id="hud-player">--</span></div>
+        <div class="hud-item">📋 <span id="hud-progress">1 / 5</span></div>
+        <div class="hud-item">⭐ <span id="hud-score">0 pts</span></div>
+      </div>
+
+      <div class="game-card">
+        <div class="card-visual" id="card-visual">
+          <!-- Gráfico SVG renderizado mediante JS -->
+        </div>
+        <div class="card-prompt" id="card-prompt">
+          <!-- Pregunta / Contexto -->
+        </div>
+      </div>
+
+      <div class="options-grid">
+        <button class="option-btn" onclick="selectOption('Ñuqanchik')">Ñuqanchik<br><small style="font-weight:normal; font-size:0.75rem;">(Inclusivo)</small></button>
+        <button class="option-btn" onclick="selectOption('Ñuqayku')">Ñuqayku<br><small style="font-weight:normal; font-size:0.75rem;">(Exclusivo)</small></button>
+      </div>
+
+      <div id="feedback" class="feedback" style="visibility: hidden;">
+        Feedback de la respuesta
+      </div>
+
+      <button id="next-btn" class="btn btn-secondary" style="display: none;" onclick="nextQuestion()">Siguiente Pregunta ➔</button>
+    </div>
+
+    <!-- PANTALLA DE RESULTADOS -->
+    <div id="results-screen" class="screen">
+      <h2 class="title-gradient">¡Caso Resuelto!</h2>
+      <p class="subtitle" id="results-player">Resumen de la partida</p>
+
+      <div class="results-summary">
+        <div class="stat-card">
+          <div class="value" id="res-percentage">0%</div>
+          <div class="label">Efectividad</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="res-score">0 / 0</div>
+          <div class="label">Puntos</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="res-time">0s</div>
+          <div class="label">Tiempo Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="res-dates">--:--</div>
+          <div class="label">Inicio / Fin</div>
+        </div>
+      </div>
+
+      <button class="btn" onclick="resetToStart()">Volver a Jugar</button>
+    </div>
+  </div>
+
+  <script>
+    // --- BASE DE DATOS AMPLIADA A 20 PREGUNTAS ---
+    const questionsDB = [
+      {
+        id: 1,
+        prompt: "Le dices a tu oyente: «Nosotros (tú y yo) estamos comiendo juntos».",
+        correct: "Ñuqanchik",
+        explanation: "¡Correcto! Ñuqanchik incluye al hablante y al oyente (Nosotros + Tú).",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="70" cy="45" r="20" fill="#4f46e5"/><circle cx="130" cy="45" r="20" fill="#06b6d4"/><path d="M40,100 C40,75 100,75 100,100" fill="#4f46e5"/><path d="M100,100 C100,75 160,75 160,100" fill="#06b6d4"/><ellipse cx="100" cy="65" rx="75" ry="48" fill="none" stroke="#10b981" stroke-width="4" stroke-dasharray="6,6"/><text x="100" y="112" font-size="10" text-anchor="middle" fill="#065f46" font-weight="bold">Incluye al oyente (Tú + Yo)</text></svg>`
+      },
+      {
+        id: 2,
+        prompt: "Un amigo y tú le dicen a una tercera persona: «Nosotros jugamos (pero tú no)».",
+        correct: "Ñuqayku",
+        explanation: "¡Correcto! Ñuqayku es EXCLUSIVO: incluye al hablante pero EXCLUYE al oyente.",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="50" cy="45" r="18" fill="#4f46e5"/><circle cx="90" cy="45" r="18" fill="#4f46e5"/><path d="M25,100 C25,75 115,75 115,100" fill="#4f46e5"/><ellipse cx="70" cy="65" rx="55" ry="48" fill="none" stroke="#4f46e5" stroke-width="3"/><circle cx="160" cy="45" r="18" fill="#94a3b8"/><path d="M135,100 C135,80 185,80 185,100" fill="#94a3b8"/><text x="160" y="112" font-size="10" text-anchor="middle" fill="#ef4444" font-weight="bold">Excluye al oyente</text></svg>`
+      },
+      {
+        id: 3,
+        prompt: "Hablas con tu profesor y dices: «Nosotros los estudiantes fuimos a la excursión (el profesor no fue)».",
+        correct: "Ñuqayku",
+        explanation: "¡Excelente! Como el profesor (oyente) no participó, se usa Ñuqayku.",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="50" cy="40" r="16" fill="#6366f1"/><circle cx="85" cy="40" r="16" fill="#6366f1"/><path d="M30,95 C30,70 105,70 105,95" fill="#6366f1"/><text x="67" y="110" font-size="9" text-anchor="middle" fill="#4338ca">Estudiantes</text><line x1="120" y1="20" x2="120" y2="100" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4"/><circle cx="155" cy="40" r="16" fill="#f59e0b"/><path d="M135,95 C135,70 175,70 175,95" fill="#f59e0b"/><text x="155" y="110" font-size="9" text-anchor="middle" fill="#b45309">Profesor (Oyente)</text></svg>`
+      },
+      {
+        id: 4,
+        prompt: "Miras a todos tus compañeros en clase y dices: «Todos nosotros pertenecemos a este colegio».",
+        correct: "Ñuqanchik",
+        explanation: "¡Bien hecho! Incluyes a todos los presentes en la conversación (Ñuqanchik).",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="50" cy="45" r="16" fill="#10b981"/><circle cx="100" cy="45" r="16" fill="#10b981"/><circle cx="150" cy="45" r="16" fill="#10b981"/><path d="M30,95 C30,75 170,75 170,95" fill="#10b981" opacity="0.8"/><text x="100" y="112" font-size="10" text-anchor="middle" fill="#047857" font-weight="bold">¡Todos incluidos!</text></svg>`
+      },
+      {
+        id: 5,
+        prompt: "Tu familia le dice a un turista: «Nosotros vivimos en Cusco (tú solo estás de visita)».",
+        correct: "Ñuqayku",
+        explanation: "¡Correcto! Se excluye al turista de la condición de residentes.",
+        svg: `<svg viewBox="0 0 200 120"><rect x="20" y="30" width="80" height="70" rx="8" fill="#e0e7ff" stroke="#6366f1"/><text x="60" y="70" font-size="12" text-anchor="middle" fill="#4338ca">Familia</text><circle cx="155" cy="50" r="16" fill="#ec4899"/><path d="M135,100 C135,80 175,80 175,100" fill="#ec4899"/><text x="155" y="115" font-size="9" text-anchor="middle" fill="#be185d">Turista</text></svg>`
+      },
+      {
+        id: 6,
+        prompt: "Le dices a tu hermano: «Nosotros (tú y yo) debemos limpiar la casa hoy».",
+        correct: "Ñuqanchik",
+        explanation: "¡Correcto! Ambos comparten la tarea, la persona que escucha está incluida.",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="65" cy="45" r="18" fill="#3b82f6"/><circle cx="135" cy="45" r="18" fill="#3b82f6"/><path d="M40,100 C40,75 160,75 160,100" fill="#93c5fd"/><text x="100" y="112" font-size="10" text-anchor="middle" fill="#1e3a8a" font-weight="bold">Hermanos en acción</text></svg>`
+      },
+      {
+        id: 7,
+        prompt: "Un grupo de músicos le dice al público: «Nosotros vamos a cantar una canción».",
+        correct: "Ñuqayku",
+        explanation: "¡Muy bien! Los músicos cantan, pero el público sólo escucha (exclusivo).",
+        svg: `<svg viewBox="0 0 200 120"><rect x="30" y="30" width="60" height="60" rx="5" fill="#8b5cf6"/><text x="60" y="65" font-size="11" text-anchor="middle" fill="white">Banda</text><circle cx="150" cy="50" r="15" fill="#64748b"/><text x="150" y="110" font-size="10" text-anchor="middle" fill="#334155">Público</text></svg>`
+      },
+      {
+        id: 8,
+        prompt: "Hablas con tu amigo mientras ambos caminan: «Nosotros estamos yendo al mercado».",
+        correct: "Ñuqanchik",
+        explanation: "¡Correcto! Tu amigo camina a tu lado hacia el mismo lugar, está incluido.",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="70" cy="40" r="15" fill="#10b981"/><circle cx="120" cy="40" r="15" fill="#10b981"/><path d="M50,90 L140,90" stroke="#059669" stroke-width="4"/><text x="105" y="110" font-size="10" text-anchor="middle" fill="#047857">Camino juntos</text></svg>`
+      },
+      {
+        id: 9,
+        prompt: "Le dices a un vecino: «Mis primos y yo fuimos al cine (tú no estabas)».",
+        correct: "Ñuqayku",
+        explanation: "¡Así es! El vecino no estuvo en la actividad, por ende es excluido.",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="50" cy="45" r="16" fill="#f59e0b"/><circle cx="90" cy="45" r="16" fill="#f59e0b"/><circle cx="160" cy="45" r="16" fill="#94a3b8"/><text x="160" y="110" font-size="9" text-anchor="middle" fill="#475569">Vecino</text></svg>`
+      },
+      {
+        id: 10,
+        prompt: "En una reunión de equipo le dices a todos: «Nosotros podemos lograr esta meta juntos».",
+        correct: "Ñuqanchik",
+        explanation: "¡Correcto! Es un mensaje motivacional e inclusivo para todos los oyentes.",
+        svg: `<svg viewBox="0 0 200 120"><ellipse cx="100" cy="60" rx="80" ry="40" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/><text x="100" y="65" font-size="12" text-anchor="middle" fill="#15803d" font-weight="bold">Equipo Unido</text></svg>`
+      },
+      {
+        id: 11,
+        prompt: "Le dices a tu mamá: «Mi hermano y yo limpiaremos el patio (tú descansa)».",
+        correct: "Ñuqayku",
+        explanation: "¡Excelente! La mamá es la oyente pero queda excluida del trabajo.",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="60" cy="40" r="16" fill="#06b6d4"/><circle cx="100" cy="40" r="16" fill="#06b6d4"/><circle cx="160" cy="40" r="16" fill="#f43f5e"/><text x="160" y="105" font-size="9" text-anchor="middle" fill="#be123c">Mamá (Descansa)</text></svg>`
+      },
+      {
+        id: 12,
+        prompt: "El guía turístico dice al grupo: «Nosotros vamos a subir la montaña ahora».",
+        correct: "Ñuqanchik",
+        explanation: "¡Correcto! Tanto el guía como los turistas harán la caminata juntos.",
+        svg: `<svg viewBox="0 0 200 120"><polygon points="100,20 30,100 170,100" fill="#cbd5e1"/><text x="100" y="80" font-size="11" text-anchor="middle" fill="#0f172a" font-weight="bold">Guía + Turistas</text></svg>`
+      },
+      {
+        id: 13,
+        prompt: "Tú y tu amigo le dicen a un rival: «Nosotros ganaremos el torneo».",
+        correct: "Ñuqayku",
+        explanation: "¡Correcto! El rival es el oyente pero forma parte del otro equipo (exclusivo).",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="60" cy="45" r="16" fill="#4f46e5"/><circle cx="150" cy="45" r="16" fill="#ef4444"/><text x="60" y="105" font-size="9" text-anchor="middle" fill="#4338ca">Equipo A</text><text x="150" y="105" font-size="9" text-anchor="middle" fill="#b91c1c">Rival</text></svg>`
+      },
+      {
+        id: 14,
+        prompt: "Le dices a tu compañero de carpeta: «Nosotros debemos exponer mañana».",
+        correct: "Ñuqanchik",
+        explanation: "¡Bien! Ambos comparten la responsabilidad de la exposición.",
+        svg: `<svg viewBox="0 0 200 120"><rect x="40" y="40" width="120" height="50" rx="6" fill="#fef08a" stroke="#eab308"/><text x="100" y="70" font-size="11" text-anchor="middle" fill="#854d0e">Pareja de exposición</text></svg>`
+      },
+      {
+        id: 15,
+        prompt: "Le dices a un transeúnte: «Nosotros somos de esta ciudad (tú no eres de aquí)».",
+        correct: "Ñuqayku",
+        explanation: "¡Muy bien! Se excluye a la persona que escucha de la condición local.",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="60" cy="40" r="15" fill="#3b82f6"/><circle cx="150" cy="40" r="15" fill="#a855f7"/><text x="150" y="105" font-size="9" text-anchor="middle" fill="#7e22ce">Forastero</text></svg>`
+      },
+      {
+        id: 16,
+        prompt: "Dices a tus amigos en la mesa: «Nosotros estamos disfrutando la cena».",
+        correct: "Ñuqanchik",
+        explanation: "¡Correcto! Todos los presentes están cenando juntos en la misma mesa.",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="100" cy="60" r="35" fill="#fed7aa"/><text x="100" y="64" font-size="10" text-anchor="middle" fill="#9a3412">Mesa compartida</text></svg>`
+      },
+      {
+        id: 17,
+        prompt: "Dos doctores le dicen a un paciente: «Nosotros lo examinaremos ahora».",
+        correct: "Ñuqayku",
+        explanation: "¡Correcto! Los doctores realizan el examen; el paciente es el receptor (exclusivo).",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="50" cy="40" r="15" fill="#06b6d4"/><circle cx="85" cy="40" r="15" fill="#06b6d4"/><circle cx="150" cy="40" r="15" fill="#64748b"/><text x="150" y="105" font-size="9" text-anchor="middle" fill="#334155">Paciente</text></svg>`
+      },
+      {
+        id: 18,
+        prompt: "Le dices a tu compañero de equipo en el juego: «Nosotros vamos a ganar este nivel».",
+        correct: "Ñuqanchik",
+        explanation: "¡Exacto! El compañero de juego está totalmente incluido en el objetivo.",
+        svg: `<svg viewBox="0 0 200 120"><rect x="50" y="30" width="100" height="60" rx="10" fill="#38bdf8"/><text x="100" y="65" font-size="11" text-anchor="middle" fill="#0369a1" font-weight="bold">Gamers (Tú + Yo)</text></svg>`
+      },
+      {
+        id: 19,
+        prompt: "Los cocineros le dicen a los clientes: «Nosotros preparamos la comida con insumos frescos».",
+        correct: "Ñuqayku",
+        explanation: "¡Muy bien! Los cocineros preparan la comida, no los clientes.",
+        svg: `<svg viewBox="0 0 200 120"><circle cx="60" cy="40" r="16" fill="#f97316"/><circle cx="150" cy="40" r="16" fill="#0284c7"/><text x="60" y="105" font-size="9" text-anchor="middle" fill="#c2410c">Cocineros</text><text x="150" y="105" font-size="9" text-anchor="middle" fill="#0369a1">Clientes</text></svg>`
+      },
+      {
+        id: 20,
+        prompt: "Le dices a tu comunidad: «Nosotros debemos cuidar la naturaleza de nuestro valle».",
+        correct: "Ñuqanchik",
+        explanation: "¡Perfecto! Es una responsabilidad compartida por toda la comunidad (inclusivo).",
+        svg: `<svg viewBox="0 0 200 120"><path d="M20,100 C60,40 140,40 180,100 Z" fill="#86efac"/><text x="100" y="85" font-size="11" text-anchor="middle" fill="#14532d" font-weight="bold">Comunidad Unida</text></svg>`
+      }
+    ];
+
+    // --- ESTADO DEL JUEGO ---
+    let activeQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let playerName = "";
+    let startTime = null;
+    let endTime = null;
+    let gameHistory = [];
+
+    // Cargar historial inicial si existe en localStorage
+    window.addEventListener('DOMContentLoaded', () => {
+      const storedHistory = localStorage.getItem('detective_quechua_history');
+      if (storedHistory) {
+        try { gameHistory = JSON.parse(storedHistory); } catch(e) {}
+      }
+      renderHistory();
+
+      const questionsInput = document.getElementById('questions-count');
+      questionsInput.max = questionsDB.length;
+      questionsInput.value = Math.min(5, questionsDB.length);
+    });
+
+    // Algoritmo para mezclar array (Fisher-Yates)
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // --- FUNCIONES DE NAVEGACIÓN Y LÓGICA ---
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame(e) {
+      e.preventDefault();
+      const inputName = document.getElementById('player-name').value.trim();
+      let numQuestions = parseInt(document.getElementById('questions-count').value, 10);
+
+      if (!inputName) return;
+
+      // Validar rango del número de preguntas (1 a 20)
+      if (isNaN(numQuestions) || numQuestions < 1) numQuestions = 1;
+      if (numQuestions > questionsDB.length) numQuestions = questionsDB.length;
+
+      playerName = inputName;
+      
+      // Mezclar preguntas aleatoriamente y seleccionar la cantidad solicitada
+      const shuffled = shuffleArray(questionsDB);
+      activeQuestions = shuffled.slice(0, numQuestions);
+
+      currentQuestionIndex = 0;
+      score = 0;
+      startTime = new Date();
+
+      document.getElementById('hud-player').innerText = playerName;
+      showScreen('game-screen');
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = activeQuestions[currentQuestionIndex];
+      document.getElementById('hud-progress').innerText = `${currentQuestionIndex + 1} / ${activeQuestions.length}`;
+      document.getElementById('hud-score').innerText = `${score} pts`;
+      document.getElementById('card-visual').innerHTML = q.svg;
+      document.getElementById('card-prompt').innerText = q.prompt;
+
+      // Reset UI de opciones y feedback
+      const feedbackEl = document.getElementById('feedback');
+      feedbackEl.style.visibility = 'hidden';
+      feedbackEl.className = 'feedback';
+      
+      document.getElementById('next-btn').style.display = 'none';
+
+      const buttons = document.querySelectorAll('.option-btn');
+      buttons.forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('correct', 'incorrect');
+      });
+    }
+
+    function selectOption(selectedPronoun) {
+      const q = activeQuestions[currentQuestionIndex];
+      const buttons = document.querySelectorAll('.option-btn');
+      buttons.forEach(btn => btn.disabled = true);
+
+      const feedbackEl = document.getElementById('feedback');
+      feedbackEl.style.visibility = 'visible';
+
+      if (selectedPronoun === q.correct) {
+        score++;
+        feedbackEl.innerText = q.explanation;
+        feedbackEl.classList.add('correct');
+      } else {
+        feedbackEl.innerText = `Incorrecto. La respuesta era ${q.correct}. ${q.explanation}`;
+        feedbackEl.classList.add('incorrect');
+      }
+
+      // Marcar botones visualmente
+      buttons.forEach(btn => {
+        if (btn.innerText.includes(q.correct)) {
+          btn.classList.add('correct');
+        } else if (btn.innerText.includes(selectedPronoun) && selectedPronoun !== q.correct) {
+          btn.classList.add('incorrect');
+        }
+      });
+
+      document.getElementById('hud-score').innerText = `${score} pts`;
+      document.getElementById('next-btn').style.display = 'inline-flex';
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < activeQuestions.length) {
+        loadQuestion();
+      } else {
+        finishGame();
+      }
+    }
+
+    function finishGame() {
+      endTime = new Date();
+      const totalTimeMs = endTime - startTime;
+      const totalSeconds = Math.round(totalTimeMs / 1000);
+      const percentage = Math.round((score / activeQuestions.length) * 100);
+
+      const startDateStr = startTime.toLocaleDateString();
+      const startTimeStr = startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const endTimeStr = endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Actualizar pantalla de resultados
+      document.getElementById('results-player').innerText = `Participante: ${playerName}`;
+      document.getElementById('res-percentage').innerText = `${percentage}%`;
+      document.getElementById('res-score').innerText = `${score} / ${activeQuestions.length}`;
+      document.getElementById('res-time').innerText = `${totalSeconds}s`;
+      document.getElementById('res-dates').innerText = `${startTimeStr} - ${endTimeStr}`;
+
+      // Guardar en el historial
+      const record = {
+        name: playerName,
+        score: `${score}/${activeQuestions.length} (${percentage}%)`,
+        duration: `${totalSeconds}s`,
+        date: startDateStr,
+        timeRange: `${startTimeStr} - ${endTimeStr}`
+      };
+
+      gameHistory.unshift(record);
+      try {
+        localStorage.setItem('detective_quechua_history', JSON.stringify(gameHistory));
+      } catch(e) {}
+
+      renderHistory();
+      showScreen('results-screen');
+    }
+
+    function renderHistory() {
+      const tbody = document.getElementById('history-body');
+      tbody.innerHTML = '';
+
+      if (gameHistory.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">Sin partidas registradas</td></tr>';
+        return;
+      }
+
+      gameHistory.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><b>${escapeHtml(item.name)}</b></td>
+          <td>${item.score}</td>
+          <td>${item.duration}</td>
+          <td>${item.date} <br><small style="color:#64748b;">${item.timeRange}</small></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function resetToStart() {
+      document.getElementById('player-name').value = '';
+      showScreen('start-screen');
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+</html>
+
+

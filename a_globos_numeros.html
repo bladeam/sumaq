@@ -1,0 +1,688 @@
+<!--
+===================================================================
+ CONFIGURACIÓN INICIAL DEL JUEGO - Yupaykunata P'atachina (QUECHUA)
+===================================================================
+PARTICIPANTES:
+- Juan Pérez
+- María Quispe
+- Carlos Condori
+
+SUFIJOS DE NÚMEROS EN QUECHUA:
+- Termina en vocal -> -yuq (ej: Kimsa-yuq)
+- Termina en consonante -> -niyuq (ej: Juk-niyuq)
+===================================================================
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yupaykunata P'atachina - Quechua</title>
+    <style>
+        :root {
+            --primary: #FFB300;
+            --primary-dark: #FF8F00;
+            --bg-color: #0F172A;
+            --card-bg: #1E293B;
+            --text-color: #F8FAFC;
+            --accent-green: #22C55E;
+            --accent-red: #EF4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            height: 95vh;
+            max-height: 850px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94A3B8;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .screen {
+            display: none;
+            height: 100%;
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* FORMULARIO DE CONFIGURACIÓN */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        textarea, input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #334155;
+            background: #0F172A;
+            color: #FFF;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        textarea:focus, input[type="number"]:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: auto;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            color: #FFF;
+        }
+
+        /* HUD DEL JUEGO */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0F172A;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .turn-banner {
+            text-align: center;
+            background: var(--primary-dark);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .target-box {
+            background: #334155;
+            border: 2px solid var(--primary);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #FFF;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .audio-btn {
+            background: var(--primary);
+            border: none;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .audio-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* ÁREA DE JUEGO Y GLOBOS */
+        .game-area {
+            flex: 1;
+            background: #090D16;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed #334155;
+        }
+
+        /* ESTILO DE LOS GLOBOS Y NÚMEROS VISIBLES */
+        .balloon {
+            --b-color: #3B82F6;
+            position: absolute;
+            width: 70px;
+            height: 85px;
+            background-color: var(--b-color);
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: inset -8px -8px 0px rgba(0,0,0,0.25), 0 6px 12px rgba(0,0,0,0.4);
+            z-index: 2;
+        }
+
+        /* NÚMERO DENTRO DEL GLOBO (ALTA VISIBILIDAD) */
+        .balloon-number {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #FFFFFF;
+            text-shadow: 
+                2px 2px 0px #000,
+               -2px -2px 0px #000,
+                2px -2px 0px #000,
+               -2px 2px 0px #000,
+                0px 3px 6px rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
+
+        /* NUDO DEL GLOBO */
+        .balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 9px solid var(--b-color);
+        }
+
+        /* HILO DEL GLOBO */
+        .balloon::before {
+            content: '';
+            position: absolute;
+            bottom: -22px;
+            left: 50%;
+            width: 2px;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .balloon:active {
+            transform: scale(0.9);
+        }
+
+        /* PANTALLA RESULTADOS */
+        .summary-card {
+            background: #0F172A;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: var(--primary-dark);
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:nth-child(even) {
+            background: #0F172A;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PANTALLA 1: CONFIGURACIÓN -->
+    <div id="screen-config" class="screen active">
+        <h1>Yupaykunata P'atachina</h1>
+        <p class="subtitle">Aprende los números en Quechua reventando globos</p>
+
+        <div class="form-group">
+            <label for="input-participants">Participantes (uno por fila):</label>
+            <textarea id="input-participants" rows="4">Juan Pérez
+María Quispe
+Carlos Condori</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="input-questions">Número de preguntas por participante (Máx 30):</label>
+            <input type="number" id="input-questions" min="1" max="30" value="5">
+        </div>
+
+        <div class="form-group">
+            <label for="select-range">Rango de Números:</label>
+            <select id="select-range">
+                <option value="10">1 al 10 (Básico)</option>
+                <option value="20" selected>1 al 20 (Intermedio)</option>
+                <option value="50">1 al 50 (Avanzado)</option>
+                <option value="100">1 al 100 (Experto)</option>
+            </select>
+        </div>
+
+        <button class="btn" id="btn-start">¡Iniciar Juego!</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+    </div>
+
+    <!-- PANTALLA 2: JUEGO -->
+    <div id="screen-game" class="screen">
+        <div class="hud">
+            <div>Pregunta: <span id="hud-turn">1/5</span></div>
+            <div>Fecha: <span id="hud-date">--</span></div>
+            <div>Inicio: <span id="hud-starttime">--</span></div>
+        </div>
+
+        <div class="turn-banner">
+            Turno de: <span id="current-player-name">--</span>
+        </div>
+
+        <div class="target-box">
+            <span>Revienta el número: <strong id="quechua-word" style="color: var(--primary);">--</strong></span>
+            <button class="audio-btn" id="btn-speak" title="Escuchar pronunciación">🔊</button>
+        </div>
+
+        <div class="game-area" id="game-area"></div>
+    </div>
+
+    <!-- PANTALLA 3: RESULTADOS -->
+    <div id="screen-results" class="screen">
+        <h1>Historial y Puntajes</h1>
+
+        <div class="summary-card" id="summary-card"></div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Aciertos</th>
+                        <th>Preguntas</th>
+                        <th>Efectividad</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body"></tbody>
+            </table>
+        </div>
+
+        <button class="btn" id="btn-restart">Volver a Configurar</button>
+    </div>
+</div>
+
+<script>
+    // GENERADOR DE NÚMEROS EN QUECHUA (DEL 1 AL 100)
+    const baseUnits = {
+        1: "Juk", 2: "Iskay", 3: "Kimsa", 4: "Tawa", 5: "Phichqa",
+        6: "Suqta", 7: "Qanchis", 8: "Pusaq", 9: "Jisq'un", 10: "Chunka"
+    };
+
+    function getQuechuaNumber(num) {
+        if (num <= 10) return baseUnits[num];
+        if (num === 100) return "Pachak";
+
+        const tens = Math.floor(num / 10);
+        const units = num % 10;
+
+        let tensText = "";
+        if (tens === 1) {
+            tensText = "Chunka";
+        } else {
+            tensText = `${baseUnits[tens]} chunka`;
+        }
+
+        if (units === 0) return tensText;
+
+        const unitWord = baseUnits[units];
+        const lastChar = unitWord.slice(-1).toLowerCase();
+        const isVowel = ['a', 'e', 'i', 'o', 'u'].includes(lastChar);
+        const suffix = isVowel ? "-yuq" : "-niyuq";
+
+        return `${tensText} ${unitWord.toLowerCase()}${suffix}`;
+    }
+
+    const balloonColors = ['#EF4444', '#3B82F6', '#22C55E', '#EAB308', '#A855F7', '#EC4899', '#F97316', '#06B6D4'];
+
+    // ESTADO GENERAL
+    let players = [];
+    let currentPlayerIndex = 0;
+    let questionsPerPlayer = 5;
+    let maxNumberRange = 20;
+    let totalQuestionsCount = 0;
+    let currentQuestionIndex = 0;
+    
+    let gameStartTime = null;
+    let gameEndTime = null;
+
+    let targetNumber = 1;
+    let activeBalloons = [];
+    let animationFrameId = null;
+    let isRoundActive = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('btn-start').addEventListener('click', startGame);
+        document.getElementById('btn-restart').addEventListener('click', resetToConfig);
+        document.getElementById('btn-speak').addEventListener('click', speakQuechuaWord);
+    });
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const rawParticipants = document.getElementById('input-participants').value.trim();
+        const rawQuestions = parseInt(document.getElementById('input-questions').value, 10);
+        maxNumberRange = parseInt(document.getElementById('select-range').value, 10);
+
+        const parsedNames = rawParticipants.split('\n')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
+
+        if (parsedNames.length === 0) {
+            alert('Por favor, ingresa al menos un participante.');
+            return;
+        }
+
+        questionsPerPlayer = Math.min(Math.max(1, rawQuestions || 5), 30);
+
+        players = parsedNames.map(name => ({
+            name: name,
+            score: 0,
+            questionsPlayed: 0
+        }));
+
+        currentPlayerIndex = 0;
+        currentQuestionIndex = 0;
+        totalQuestionsCount = players.length * questionsPerPlayer;
+        gameStartTime = new Date();
+
+        document.getElementById('hud-date').textContent = gameStartTime.toLocaleDateString();
+        document.getElementById('hud-starttime').textContent = gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        showScreen('screen-game');
+        nextTurn();
+    }
+
+    function speakQuechuaWord() {
+        if ('speechSynthesis' in window) {
+            const word = getQuechuaNumber(targetNumber);
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.85;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function nextTurn() {
+        if (currentQuestionIndex >= totalQuestionsCount) {
+            endGame();
+            return;
+        }
+
+        const currentPlayer = players[currentPlayerIndex];
+        document.getElementById('current-player-name').textContent = currentPlayer.name;
+        document.getElementById('hud-turn').textContent = `${currentPlayer.questionsPlayed + 1}/${questionsPerPlayer}`;
+
+        // Seleccionar número objetivo aleatorio
+        targetNumber = Math.floor(Math.random() * maxNumberRange) + 1;
+        const qWord = getQuechuaNumber(targetNumber);
+        document.getElementById('quechua-word').textContent = `"${qWord}"`;
+
+        // Reproducir voz
+        setTimeout(speakQuechuaWord, 300);
+
+        // Crear globos
+        spawnBalloons();
+        isRoundActive = true;
+
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        animationFrameId = requestAnimationFrame(updateGameLoop);
+    }
+
+    function spawnBalloons() {
+        const gameArea = document.getElementById('game-area');
+        gameArea.innerHTML = '';
+        activeBalloons = [];
+
+        // Crear lista de 5 números distintos incluyendo el correcto
+        let numbersList = [targetNumber];
+        while (numbersList.length < 5) {
+            let randomNum = Math.floor(Math.random() * maxNumberRange) + 1;
+            if (!numbersList.includes(randomNum)) {
+                numbersList.push(randomNum);
+            }
+        }
+
+        // Mezclar orden
+        numbersList.sort(() => Math.random() - 0.5);
+
+        const areaWidth = gameArea.clientWidth || 320;
+        const balloonWidth = 70;
+        const stepX = (areaWidth - balloonWidth - 10) / numbersList.length;
+
+        numbersList.forEach((num, index) => {
+            const el = document.createElement('div');
+            el.className = 'balloon';
+
+            // Color del globo
+            const color = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+            el.style.setProperty('--b-color', color);
+
+            // Span con el número VISIBLE
+            const numSpan = document.createElement('span');
+            numSpan.className = 'balloon-number';
+            numSpan.textContent = num;
+            el.appendChild(numSpan);
+
+            // Coordenadas iniciales
+            const startX = Math.max(10, Math.floor(index * stepX + Math.random() * (stepX - 10)));
+            const startY = -90 - (Math.random() * 150);
+            const speed = 1.2 + Math.random() * 1.3;
+
+            el.style.left = `${startX}px`;
+            el.style.top = `${startY}px`;
+
+            // Evento para móvil y PC (pointerdown para instantaneidad)
+            el.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                if (!isRoundActive) return;
+                popBalloon(num, el);
+            });
+
+            gameArea.appendChild(el);
+
+            activeBalloons.push({
+                element: el,
+                number: num,
+                x: startX,
+                y: startY,
+                speed: speed,
+                popped: false
+            });
+        });
+    }
+
+    function updateGameLoop() {
+        if (!isRoundActive) return;
+
+        const gameArea = document.getElementById('game-area');
+        const areaHeight = gameArea.clientHeight || 400;
+        let allPassed = true;
+
+        activeBalloons.forEach(b => {
+            if (!b.popped) {
+                b.y += b.speed;
+                b.element.style.top = `${b.y}px`;
+
+                if (b.y < areaHeight) {
+                    allPassed = false;
+                }
+            }
+        });
+
+        // Si cayeron todos los globos sin reventar el correcto
+        if (allPassed) {
+            isRoundActive = false;
+            handleTurnResult(false, `¡Tiempo agotado! Los globos cayeron al suelo. La respuesta era el número ${targetNumber}.`);
+            return;
+        }
+
+        animationFrameId = requestAnimationFrame(updateGameLoop);
+    }
+
+    function popBalloon(selectedNum, element) {
+        if (!isRoundActive) return;
+        isRoundActive = false;
+        cancelAnimationFrame(animationFrameId);
+
+        // Animación de reventado
+        element.style.transform = 'scale(1.5)';
+        element.style.opacity = '0';
+        element.style.transition = 'all 0.15s ease-out';
+
+        const isCorrect = (selectedNum === targetNumber);
+        const player = players[currentPlayerIndex];
+
+        if (isCorrect) {
+            player.score++;
+            setTimeout(() => {
+                handleTurnResult(true, `¡Allin (Correcto)! Reventaste el globo ${selectedNum}.`);
+            }, 180);
+        } else {
+            setTimeout(() => {
+                handleTurnResult(false, `¡Pantanki (Incorrecto)! Reventaste el ${selectedNum}. "${getQuechuaNumber(targetNumber)}" es el número ${targetNumber}.`);
+            }, 180);
+        }
+    }
+
+    function handleTurnResult(success, message) {
+        const currentPlayer = players[currentPlayerIndex];
+        currentPlayer.questionsPlayed++;
+        currentQuestionIndex++;
+
+        alert(message);
+
+        // Rotación de turnos
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+        nextTurn();
+    }
+
+    function endGame() {
+        isRoundActive = false;
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+        gameEndTime = new Date();
+        const durationSec = Math.round((gameEndTime - gameStartTime) / 1000);
+        const minutes = Math.floor(durationSec / 60);
+        const seconds = durationSec % 60;
+
+        const summaryCard = document.getElementById('summary-card');
+        summaryCard.innerHTML = `
+            <p><strong>Fecha:</strong> ${gameStartTime.toLocaleDateString()}</p>
+            <p><strong>Hora de Inicio:</strong> ${gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
+            <p><strong>Hora de Finalización:</strong> ${gameEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
+            <p><strong>Tiempo de Juego:</strong> ${minutes} min ${seconds} seg</p>
+        `;
+
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = '';
+
+        const sortedPlayers = [...players].sort((a, b) => (b.score / (b.questionsPlayed || 1)) - (a.score / (a.questionsPlayed || 1)));
+
+        sortedPlayers.forEach(p => {
+            const percentage = p.questionsPlayed > 0
+                ? Math.round((p.score / p.questionsPlayed) * 100)
+                : 0;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${p.name}</strong></td>
+                <td>${p.score}</td>
+                <td>${p.questionsPlayed}</td>
+                <td><strong>${percentage}%</strong></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        showScreen('screen-results');
+    }
+
+    function resetToConfig() {
+        showScreen('screen-config');
+    }
+</script>
+</body>
+</html>
+
+

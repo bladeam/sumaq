@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inducción - Base de Datos I (BAD 402)</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --highlight: #f59e0b;
+            --success: #10b981;
+            --border-radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Top Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--highlight));
+            width: 10%;
+            transition: width 0.3s ease;
+        }
+
+        /* Slide Deck Area */
+        .deck {
+            width: 90%;
+            max-width: 1000px;
+            height: 80vh;
+            margin-top: 25px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.98);
+            transition: all 0.4s ease-in-out;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Typography & Layout */
+        .slide-header {
+            border-bottom: 2px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-color);
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+        }
+
+        p, li {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+        }
+
+        .highlight-text {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .content-body {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        /* Grid Cards inside slides */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .info-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--accent-color);
+            padding: 18px;
+            border-radius: 8px;
+        }
+
+        .info-box.orange {
+            border-left-color: var(--highlight);
+        }
+
+        .info-box.green {
+            border-left-color: var(--success);
+        }
+
+        .info-box h3 {
+            color: #ffffff;
+            font-size: 1.15rem;
+            margin-bottom: 6px;
+        }
+
+        /* Interactive Element */
+        .interactive-btn {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px dashed var(--accent-color);
+            color: var(--accent-color);
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .interactive-btn:hover {
+            background: var(--accent-color);
+            color: #000000;
+        }
+
+        .hidden-details {
+            display: none;
+            background: #090d16;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        /* Controls */
+        .controls {
+            width: 90%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .btn-nav {
+            background: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-nav:hover {
+            background: var(--accent-hover);
+            color: #ffffff;
+        }
+
+        .btn-nav:disabled {
+            background: #334155;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            .slide {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Slide Deck -->
+    <div class="deck">
+
+        <!-- Slide 1 -->
+        <div class="slide active">
+            <div class="slide-header">
+                <span class="tag">ULAT - Ingeniería de Sistemas</span>
+                <h1>Base de Datos I (BAD 402)</h1>
+                <p>Nivel: Cuarto Semestre | Prerrequisito: TAP 302</p>
+            </div>
+            <div class="content-body">
+                <div class="info-box green">
+                    <h3>👋 ¡Bienvenidos al Motor del Software Moderno!</h3>
+                    <p>Detrás de cada app que usas a diario (WhatsApp, Netflix, la banca digital o videojuegos), existe una estructura que almacena y organiza la información en milisegundos.</p>
+                </div>
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h3>⏱️ Carga Horaria</h3>
+                        <p><span class="highlight-text">4 Hrs Teóricas + 2 Hrs Prácticas</span> semanales diseñadas para darte la teoría fundamental y la práctica real.</p>
+                    </div>
+                    <div class="info-box orange">
+                        <h3>🎯 Meta del Curso</h3>
+                        <p>Pasar de usuario pasivo a <span class="highlight-text">Diseñador y Arquitecto de Datos profesional</span>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Visión General</span>
+                <h1>¿Por qué existen las Bases de Datos?</h1>
+            </div>
+            <div class="content-body">
+                <div class="grid-2">
+                    <div class="info-box orange">
+                        <h3>❌ El Pasado: Archivos Tradicionales</h3>
+                        <p>Archivos de texto o Excel dispersos provocaban:</p>
+                        <ul style="margin-left: 20px; margin-top: 8px;">
+                            <li>Redundancia e inconsistencia de datos.</li>
+                            <li>Dificultad para acceder a la información.</li>
+                            <li>Aislamiento de datos y falta de seguridad.</li>
+                        </ul>
+                    </div>
+                    <div class="info-box green">
+                        <h3>✅ El Presente: Sistemas de BD</h3>
+                        <p>Un enfoque centralizado e inteligente que brinda:</p>
+                        <ul style="margin-left: 20px; margin-top: 8px;">
+                            <li>Integridad y consistencia en todo momento.</li>
+                            <li>Independencia entre datos y programas.</li>
+                            <li>Seguridad y acceso concurrente multiusuario.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="interactive-btn" onclick="toggleDetails('det1')">💡 Haz clic para ver un ejemplo del mundo real</div>
+                <div id="det1" class="hidden-details">
+                    <strong>Ejemplo:</strong> Imagina un banco donde se registre tu saldo en un archivo TXT. Si realizas un retiro en el cajero y al mismo tiempo realizas una compra online, ¡un archivo tradicional fallaría! Una Base de Datos gestiona esto con transacciones seguras.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad I</span>
+                <h1>Arquitectura de un SGBD</h1>
+            </div>
+            <div class="content-body">
+                <p>Un <span class="highlight-text">Sistema Gestor de Bases de Datos (SGBD)</span> es el software que actúa como intermediario entre los usuarios y los datos.</p>
+                <div class="grid-3">
+                    <div class="info-box">
+                        <h3>Nivel Externo</h3>
+                        <p>La vista personalizada para cada usuario o aplicación.</p>
+                    </div>
+                    <div class="info-box">
+                        <h3>Nivel Conceptual</h3>
+                        <p>Lo que se almacena: La estructura global y las relaciones entre entidades.</p>
+                    </div>
+                    <div class="info-box">
+                        <h3>Nivel Interno</h3>
+                        <p>Cómo se almacena físicamente en el disco duro o servidor.</p>
+                    </div>
+                </div>
+                <div class="info-box orange">
+                    <h3>Lenguajes Clave</h3>
+                    <p><strong>DDL (Data Definition Language):</strong> Define estructuras | <strong>DML (Data Manipulation Language):</strong> Consulta y modifica datos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad I</span>
+                <h1>Álgebra Relacional: La Lógica Matemática</h1>
+            </div>
+            <div class="content-body">
+                <p>No le temas a la matemática: el Álgebra Relacional es simplemente la base teórica para saber realizar consultas eficientes.</p>
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h3>Operaciones Operativas</h3>
+                        <p><strong>Selección (σ):</strong> Filtra filas de una tabla.</p>
+                        <p><strong>Proyección (π):</strong> Filtra columnas específicas.</p>
+                    </div>
+                    <div class="info-box">
+                        <h3>Operaciones de Conjuntos</h3>
+                        <p><strong>Unión (∪), Intersección (∩), Diferencia (−) y Producto Cartesiano (×).</strong></p>
+                    </div>
+                </div>
+                <div class="interactive-btn" onclick="toggleDetails('det2')">❓ Pregunta rápida: ¿Por qué es útil esto?</div>
+                <div id="det2" class="hidden-details">
+                    Porque antes de escribir código SQL en una computadora, debes ser capaz de razonar cómo filtrar y unir información lógicamente. ¡El motor del SGBD usa exactamente esta lógica internamente!
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II</span>
+                <h1>Diseño Conceptual: El Modelo Entidad-Relación</h1>
+            </div>
+            <div class="content-body">
+                <p>Antes de programar, debemos <strong>diseñar el plano</strong> de la base de datos.</p>
+                <div class="grid-3">
+                    <div class="info-box green">
+                        <h3>Entidades</h3>
+                        <p>Objetos o cosas del mundo real sobre los que guardamos datos (ej. <i>Estudiante, Materia, Docente</i>).</p>
+                    </div>
+                    <div class="info-box">
+                        <h3>Atributos</h3>
+                        <p>Propiedades que describen a una entidad (ej. <i>CI, Nombre, Fecha de Nacimiento</i>).</p>
+                    </div>
+                    <div class="info-box orange">
+                        <h3>Relaciones</h3>
+                        <p>Cómo interactúan entre sí (ej. <i>Un Estudiante INSCRIBE una Materia</i>).</p>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <h3>Herencia de Tipos</h3>
+                    <p>Aprenderemos conceptos de Especialización y Generalización (Superclase y Subclases) para representar conceptos avanzados.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II</span>
+                <h1>Transformación al Modelo Relacional y Reglas</h1>
+            </div>
+            <div class="content-body">
+                <p>Convertimos el diagrama gráfico (E-R) en esquemas de tablas reales con claves e integridad.</p>
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h3>Las Claves (Keys)</h3>
+                        <p>• <strong>Clave Primaria (PK):</strong> Identificador único e irrepetible de cada fila (ej. Tu número de Carnet).</p>
+                        <p>• <strong>Clave Foránea (FK):</strong> Conecta una tabla con otra para mantener la relación.</p>
+                    </div>
+                    <div class="info-box orange">
+                        <h3>Reglas de Integridad</h3>
+                        <p>• <strong>De Entidad:</strong> La PK nunca puede ser nula.</p>
+                        <p>• <strong>Referencial:</strong> Una FK debe existir previamente en la tabla de origen (evita datos huérfanos).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II</span>
+                <h1>Normalización: El Arte del Orden</h1>
+            </div>
+            <div class="content-body">
+                <div class="info-box red" style="border-left-color: #ef4444;">
+                    <h3>¿Qué es la Normalización?</h3>
+                    <p>Un proceso sistemático para descomponer tablas complejas y eliminar datos duplicados sin perder información.</p>
+                </div>
+                <div class="grid-3">
+                    <div class="info-box">
+                        <h3>1FN</h3>
+                        <p>Eliminar valores repetidos y asegurar atributos atómicos (indivisibles).</p>
+                    </div>
+                    <div class="info-box">
+                        <h3>2FN y 3FN</h3>
+                        <p>Eliminar dependencias parciales y transitivas entre columnas.</p>
+                    </div>
+                    <div class="info-box">
+                        <h3>4FN y 5FN</h3>
+                        <p>Niveles avanzados para casos especiales de multidependencias.</p>
+                    </div>
+                </div>
+                <div class="interactive-btn" onclick="toggleDetails('det3')">🔍 ¿Qué evitamos con la normalización?</div>
+                <div id="det3" class="hidden-details">
+                    Evitamos las temidas <strong>Anomalías de Actualización, Inserción y Eliminación</strong>. Por ejemplo: si cambias la dirección de un cliente, ¡solo debes actualizarla en un solo lugar y no en 500 filas!
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad III</span>
+                <h1>SQL: Operaciones y Manipulación</h1>
+            </div>
+            <div class="content-body">
+                <p><span class="highlight-text">SQL (Structured Query Language)</span> es el estándar mundial para comunicarse con la Base de Datos.</p>
+                <div class="grid-2">
+                    <div class="info-box green">
+                        <h3>Consultas Básicas y Avanzadas</h3>
+                        <p>Uso de <code>SELECT</code>, <code>WHERE</code>, filtros, ordenamiento y funciones de agrupación (<code>SUM</code>, <code>AVG</code>, <code>COUNT</code>).</p>
+                    </div>
+                    <div class="info-box">
+                        <h3>Consultas Multi-Tabla (JOINs)</h3>
+                        <p>Aprenderemos a combinar 2 o más tablas de manera eficiente para generar reportes complejos.</p>
+                    </div>
+                </div>
+                <div class="info-box orange">
+                    <h3>Subconsultas y Vistas</h3>
+                    <p>Consultas anidadas dentro de otras y creación de tablas virtuales para simplificar la lectura de datos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad III</span>
+                <h1>Lógica Programable y Seguridad</h1>
+            </div>
+            <div class="content-body">
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h3>⚡ Objetos de Base de Datos</h3>
+                        <p>• <strong>Procedimientos y Funciones:</strong> Código guardado listo para ejecutarse en el servidor.</p>
+                        <p>• <strong>Triggers (Disparadores):</strong> Acciones automáticas que se ejecutan cuando ocurre un evento (ej. Insertar un log de auditoría al borrar un registro).</p>
+                    </div>
+                    <div class="info-box green">
+                        <h3>🔒 Seguridad de la Información</h3>
+                        <p>• Gestión de Usuarios Administrativos.</p>
+                        <p>• Definición de <strong>Roles y Privilegios</strong> (otorgar o denegar permisos de lectura o modificación).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Conclusión</span>
+                <h1>¿Cómo serás Evaluado y Próximos Pasos?</h1>
+            </div>
+            <div class="content-body">
+                <div class="grid-3">
+                    <div class="info-box">
+                        <h3>1. Teoría Solida</h3>
+                        <p>Comprender los modelos y normas esenciales en la ingeniería.</p>
+                    </div>
+                    <div class="info-box orange">
+                        <h3>2. Casos Prácticos</h3>
+                        <p>Resolución de problemas de negocio y ejercicios reales.</p>
+                    </div>
+                    <div class="info-box green">
+                        <h3>3. Proyecto de BD</h3>
+                        <p>Diseño e implementación de una Base de Datos funcional desde cero.</p>
+                    </div>
+                </div>
+                <div class="info-box" style="text-align: center; margin-top: 15px; border-left: none; background: linear-gradient(90deg, #1e293b, #0f172a); border: 1px solid var(--accent-color);">
+                    <h3 style="color: var(--accent-color);">🚀 ¡Listos para Empezar!</h3>
+                    <p>Trae curiosidad, pensamiento lógico y entusiasmo en cada sesión.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="btn-nav" id="prevBtn" onclick="changeSlide(-1)" disabled>← Anterior</button>
+        <span class="slide-counter" id="slideCounter">Diapositiva 1 de 10</span>
+        <button class="btn-nav" id="nextBtn" onclick="changeSlide(1)">Siguiente →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const slideCounter = document.getElementById('slideCounter');
+        const progressBar = document.getElementById('progressBar');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            // Update counter
+            slideCounter.textContent = `Diapositiva ${currentSlide + 1} de ${totalSlides}`;
+
+            // Update progress bar
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Update buttons
+            prevBtn.disabled = (currentSlide === 0);
+            if (currentSlide === totalSlides - 1) {
+                nextBtn.textContent = 'Finalizar 🎉';
+            } else {
+                nextBtn.textContent = 'Siguiente →';
+            }
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+            updateSlide();
+        }
+
+        function toggleDetails(id) {
+            const el = document.getElementById(id);
+            if (el.style.display === "block") {
+                el.style.display = "none";
+            } else {
+                el.style.display = "block";
+            }
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                if (currentSlide < totalSlides - 1) changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlide > 0) changeSlide(-1);
+            }
+        });
+
+        // Initialize
+        updateSlide();
+    </script>
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!--
+===================================================================
+ CONFIGURACIÓN INICIAL DEL JUEGO
+===================================================================
+PARTICIPANTES:
+- Juan Pérez
+- María Quispe
+- Carlos Condori
+
+CANTIDAD_PREGUNTAS = 10
+===================================================================
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ahorcado en Quechua (Yachay Hangman)</title>
+    <style>
+        :root {
+            --primary-color: #E74C3C;
+            --secondary-color: #2C3E50;
+            --accent-color: #3498DB;
+            --bg-color: #F4F6F7;
+            --card-bg: #FFFFFF;
+            --text-color: #2C3E50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Formulario Configuración */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        textarea, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #BDC3C7;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        textarea:focus, input[type="number"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #C0392B;
+        }
+
+        /* Panel Superior HUD */
+        .hud {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            background: #FDEDEC;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+
+        .turn-banner {
+            text-align: center;
+            background: var(--secondary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .scores-bar {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+        }
+
+        .player-chip {
+            background: #ECF0F1;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            border: 2px solid transparent;
+        }
+
+        .player-chip.active {
+            border-color: var(--primary-color);
+            background: #FADBD8;
+            font-weight: bold;
+        }
+
+        /* Área del Ahorcado */
+        .game-layout {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        @media (min-width: 600px) {
+            .game-layout {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+        }
+
+        canvas {
+            background: #F9EBEA;
+            border-radius: 12px;
+            border: 2px solid #E6B0AA;
+            max-width: 100%;
+        }
+
+        .word-display {
+            font-size: 1.8rem;
+            letter-spacing: 6px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+            color: var(--secondary-color);
+            min-height: 45px;
+            word-wrap: break-word;
+        }
+
+        .hint-box {
+            font-size: 1.1rem;
+            color: #2C3E50;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        /* Teclado Virtual (Celulares y Clics) */
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(32px, 1fr));
+            gap: 6px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .key-btn {
+            background: #EAECEE;
+            border: 1px solid #BDC3C7;
+            border-radius: 6px;
+            padding: 10px 0;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            color: var(--text-color);
+        }
+
+        .key-btn:disabled {
+            background: #BDC3C7;
+            color: #7F8C8D;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* Tabla Resultados */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #E0E0E0;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F8F9FA;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PANTALLA 1: CONFIGURACIÓN -->
+    <div id="screen-config" class="screen active">
+        <h1>🪢 Ahorcado en Quechua (Yachay)</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 25px;">Adivina las palabras en Quechua según su traducción</p>
+
+        <div class="form-group">
+            <label for="input-participants">Participantes (un nombre por fila):</label>
+            <textarea id="input-participants" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="input-questions">Número de palabras / preguntas (Máximo 30):</label>
+            <input type="number" id="input-questions" min="1" max="30" value="10">
+        </div>
+
+        <button class="btn" onclick="startGame()">¡Comenzar Juego!</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+    </div>
+
+    <!-- PANTALLA 2: JUEGO -->
+    <div id="screen-game" class="screen">
+        <div class="hud">
+            <div>Palabra: <span id="hud-progress">0/0</span></div>
+            <div>Fecha: <span id="hud-date"></span></div>
+            <div>Hora Inicio: <span id="hud-starttime"></span></div>
+        </div>
+
+        <div id="turn-banner" class="turn-banner">
+            Turno de: <span id="current-player-name">--</span>
+        </div>
+
+        <div id="scores-bar" class="scores-bar"></div>
+
+        <div class="game-layout">
+            <canvas id="hangmanCanvas" width="200" height="200"></canvas>
+            
+            <div style="flex: 1; width: 100%;">
+                <div class="hint-box" id="hint-text">Traducción: --</div>
+                <div class="word-display" id="word-display">_ _ _ _</div>
+            </div>
+        </div>
+
+        <!-- Teclado Virtual para pantallas táctiles -->
+        <div class="keyboard" id="keyboard"></div>
+    </div>
+
+    <!-- PANTALLA 3: RESULTADOS -->
+    <div id="screen-results" class="screen">
+        <h1>📊 Historial y Resultados Finales</h1>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Aciertos</th>
+                        <th>Intentos Totales</th>
+                        <th>Efectividad (%)</th>
+                        <th>Fecha</th>
+                        <th>Hora Inicio</th>
+                        <th>Hora Fin</th>
+                        <th>Tiempo Total</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body"></tbody>
+            </table>
+        </div>
+
+        <button class="btn" onclick="resetToConfig()">Volver a Jugar</button>
+    </div>
+</div>
+
+<script>
+    // Base de Datos Ampliada en Quechua
+    const familyDatabase = [
+        // Familiares
+        { word: 'JATUN TATA', hint: '👴 Abuelo' },
+        { word: 'JATUN MAMA', hint: '👵 Abuela' },
+        { word: 'TATA', hint: '👨‍👧 Padre' },
+        { word: 'MAMA', hint: '👩‍👧‍👦 Madre' },
+        { word: 'WAWQI', hint: '👦 Hermano del hermano' },
+        { word: 'PANA', hint: '👧 Hermana del hermano' },
+        { word: 'TURA', hint: '👦 Hermano de la hermana' },
+        { word: 'ÑAÑA', hint: '👧 Hermana de la hermana' },
+        { word: 'USUSI', hint: '👧 Hija' },
+        { word: 'CHURI', hint: '👦 Hijo' },
+        { word: 'WAWA', hint: '👶 Bebé / Hijo(a)' },
+        { word: 'ALLCHHI', hint: '👶 Nieto (nieta)' },
+        
+        // Vocabulario Ampliado
+        { word: 'MISI', hint: '🐈 Gato' },
+        { word: 'WARMI', hint: '👩 Mujer' },
+        { word: 'ALLQU', hint: '🐶 Perro' },
+        { word: 'RUNTU', hint: '🥚 Huevo' },
+        { word: 'SIK\'IMIRA', hint: '🐜 Hormiga' },
+        { word: 'ATUQ', hint: '🦊 Zorro' },
+        { word: 'WALLPA', hint: '🐔 Gallina' },
+        { word: 'CHAKI', hint: '🦶 Pie' },
+        { word: 'MAKI', hint: '✋ Mano' },
+        { word: 'KATARI', hint: '🐍 Serpiente' },
+        { word: 'LACHIWANA', hint: '🐝 Abeja' },
+        { word: 'PUNKU', hint: '🚪 Puerta' },
+        { word: 'MANKA', hint: '🍲 Olla' },
+        { word: 'INTI', hint: '☀️ Sol' },
+        { word: 'KILLA', hint: '🌕 Luna' },
+        { word: 'QHARI', hint: '👨 Hombre' },
+        { word: 'ÑAWI', hint: '👀 Ojo' },
+        { word: 'NINRI', hint: '👂 Oreja' },
+        { word: 'SINQA', hint: '👃 Nariz' },
+        { word: 'KIRU', hint: '🦷 Diente' },
+        { word: 'T\'ANTA', hint: '🍞 Pan' },
+        { word: 'PAPA', hint: '🥔 Patata' },
+        { word: 'JUK\'UCHA', hint: '🐭 Ratón' },
+        { word: 'KHUCHI', hint: '🐖 Cerdo' },
+        { word: 'YUTHU', hint: 'Perdiz' },
+        { word: 'CHILLWI', hint: '🐤 Pollito' },
+        { word: 'JAMP\'ATU', hint: 'Sapo' },
+        { word: 'CHAWLLA', hint: '🐟 Pez' },
+        { word: 'WAKA', hint: '🐄 Vaca' },
+        { word: 'UWIJA', hint: '🐑 Oveja' },
+        { word: 'PILI', hint: '🦆 Pato' },
+        { word: 'LLAMA', hint: '🦙 Llama' },
+        { word: 'KUNTUR', hint: '🦅 Cóndor' },
+        { word: 'JUKUMARI', hint: '🐻 Oso' },
+        { word: 'CHARAPA', hint: '🐢 Tortuga' },
+        { word: 'K\'USILLU', hint: '🐒 Mono' },
+        { word: 'KIRKINCHU', hint: 'Erizo' },
+        { word: 'P\'ISQU', hint: '🐦 Pájaro' },
+        { word: 'URPI', hint: '🕊️ Paloma' },
+        { word: 'ARARANKHA', hint: 'Lagartija' },
+        { word: 'CH\'USPI', hint: 'Moscas' },
+        { word: 'WAYRURU', hint: '🕸️ Araña' },
+        { word: 'PIKI', hint: '🦠 Pulga' },
+        { word: 'ÑUQTU', hint: 'Cerebro' },
+        { word: 'TULLU', hint: 'Hueso' },
+        { word: 'ANGULA', hint: '🐰 Conejo' },
+        { word: 'KHURU', hint: 'Gusano' },
+        { word: 'CH\'URU', hint: '🐌 Caracol' },
+        { word: 'KAWALLU', hint: '🐴 Caballo' },
+        { word: 'KARWA', hint: '🐐 Cabra' },
+        { word: 'SACH\'A', hint: '🌳 Árbol' },
+        { word: 'MANSANA', hint: '🍎 Manzana' },
+        { word: 'PLATANU', hint: '🍌 Plátano' },
+        { word: 'AWARANKU', hint: '🍍 Piña' },
+        { word: 'SARA', hint: '🌽 Maíz' },
+        { word: 'SANAWRYA', hint: '🥕 Zanahoria' },
+        { word: 'KUMPUTARURA', hint: '💻 Portátil' },
+        { word: 'INTI WATANA', hint: '⌚ Reloj' },
+        { word: 'TIYANA', hint: '🪑 Silla' },
+        { word: 'PUÑUNA', hint: '🛏️ Cama' },
+        { word: 'AWTU', hint: '🚗 Coche' },
+        { word: 'ABIYON', hint: '✈️ Avión' },
+        { word: 'WIKSILITA', hint: '🚲 Bicicleta' },
+        { word: 'PHUYU', hint: '☁️ Nube' },
+        { word: 'CH\'ASKA', hint: '🌟 Estrella' },
+        { word: 'WASI', hint: '🏠 Casa' },
+        { word: 'IGLISIA', hint: '⛪ Iglesia' },
+        { word: 'PACHI', hint: '🙏 Gracias' },
+        { word: 'TINKUNAKAMA', hint: 'Hasta luego' },
+        { word: 'IMILLA', hint: 'Chica' },
+        { word: 'LLUQALLA', hint: 'Chico' },
+        { word: 'CH\'ITI', hint: 'Chilpayo / Chanchito' },
+        { word: 'SIPAS', hint: 'Jovencita' },
+        { word: 'WAYNA', hint: 'Joven' },
+        { word: 'JAMPIQ', hint: '👩‍⚕️ Enfermera' },
+        { word: 'YACHACHIQ', hint: '👨‍🏫 Profesor' },
+        { word: 'YACHAKUQ', hint: '🧑‍🎓 Estudiante' }
+    ];
+
+    // Variables Globales
+    let players = [];
+    let currentPlayerIndex = 0;
+    let totalQuestions = 10;
+    let currentQuestionIndex = 0;
+    let gameQuestions = [];
+    let gameStartTime = null;
+
+    let currentWord = '';
+    let currentHint = '';
+    let guessedLetters = [];
+    let wrongAttempts = 0;
+    const maxWrongAttempts = 6;
+
+    // Configuración Inicial Automática
+    document.addEventListener('DOMContentLoaded', () => {
+        let commentContent = '';
+        const nodeIterator = document.createNodeIterator(document, NodeFilter.SHOW_COMMENT, null, false);
+        let currentNode;
+        while (currentNode = nodeIterator.nextNode()) {
+            commentContent += currentNode.nodeValue + '\n';
+        }
+
+        const nameMatches = commentContent.match(/-\s*([^\r\n]+)/g);
+        let initialNames = [];
+        if (nameMatches) {
+            initialNames = nameMatches.map(m => m.replace(/^-\s*/, '').trim());
+        }
+
+        const questionMatch = commentContent.match(/CANTIDAD_PREGUNTAS\s*=\s*(\d+)/);
+        let initialQuestions = 10;
+        if (questionMatch) {
+            initialQuestions = parseInt(questionMatch[1], 10);
+        }
+
+        document.getElementById('input-participants').value = initialNames.length > 0 
+            ? initialNames.join('\n') 
+            : 'Jugador 1\nJugador 2';
+        document.getElementById('input-questions').value = Math.min(Math.max(1, initialQuestions), 30);
+
+        buildVirtualKeyboard();
+        document.addEventListener('keydown', handlePhysicalKeyPress);
+    });
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const rawParticipants = document.getElementById('input-participants').value.trim();
+        const rawQuestions = parseInt(document.getElementById('input-questions').value, 10);
+
+        const parsedNames = rawParticipants.split('\n')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
+
+        if (parsedNames.length === 0) {
+            alert('Ingresa al menos un participante.');
+            return;
+        }
+
+        totalQuestions = Math.min(Math.max(1, rawQuestions || 10), 30);
+        
+        players = parsedNames.map(name => ({
+            name: name,
+            score: 0,
+            attempts: 0
+        }));
+
+        gameQuestions = [];
+        while (gameQuestions.length < totalQuestions) {
+            let pool = shuffle([...familyDatabase]);
+            for (let item of pool) {
+                if (gameQuestions.length < totalQuestions) {
+                    gameQuestions.push(item);
+                }
+            }
+        }
+
+        currentPlayerIndex = 0;
+        currentQuestionIndex = 0;
+        gameStartTime = new Date();
+
+        document.getElementById('hud-date').textContent = gameStartTime.toLocaleDateString();
+        document.getElementById('hud-starttime').textContent = gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        updateTurnUI();
+        loadWord();
+        showScreen('screen-game');
+    }
+
+    function updateTurnUI() {
+        const currentPlayer = players[currentPlayerIndex];
+        document.getElementById('current-player-name').textContent = currentPlayer.name;
+
+        const scoresBar = document.getElementById('scores-bar');
+        scoresBar.innerHTML = '';
+        players.forEach((p, idx) => {
+            const chip = document.createElement('div');
+            chip.classList.add('player-chip');
+            if (idx === currentPlayerIndex) chip.classList.add('active');
+            chip.textContent = `${p.name}: ${p.score} pts (${p.attempts} int)`;
+            scoresBar.appendChild(chip);
+        });
+
+        document.getElementById('hud-progress').textContent = `${currentQuestionIndex + 1}/${totalQuestions}`;
+    }
+
+    function buildVirtualKeyboard() {
+        const keyboard = document.getElementById('keyboard');
+        keyboard.innerHTML = '';
+        
+        // Incluye las letras y los caracteres especiales del Quechua
+        const keyLayout = ["A", "B", "C", "D", "E", "G", "H", "I", "J", "K", "L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "W", "Y", "'"];
+
+        keyLayout.forEach(char => {
+            const btn = document.createElement('button');
+            btn.classList.add('key-btn');
+            btn.textContent = char;
+            btn.id = `key-${char === "'" ? 'apostrophe' : char}`;
+            btn.onclick = () => processLetter(char);
+            keyboard.appendChild(btn);
+        });
+    }
+
+    function loadWord() {
+        const item = gameQuestions[currentQuestionIndex];
+        currentWord = item.word.toUpperCase();
+        currentHint = item.hint;
+        guessedLetters = [];
+        wrongAttempts = 0;
+
+        document.getElementById('hint-text').textContent = `Traducción: ${currentHint}`;
+        
+        // Habilitar de nuevo todas las teclas
+        document.querySelectorAll('.key-btn').forEach(btn => btn.disabled = false);
+
+        drawHangman(wrongAttempts);
+        renderWordDisplay();
+    }
+
+    function renderWordDisplay() {
+        let display = '';
+        for (let char of currentWord) {
+            if (char === ' ') {
+                display += '   ';
+            } else if (guessedLetters.includes(char)) {
+                display += char + ' ';
+            } else {
+                display += '_ ';
+            }
+        }
+        document.getElementById('word-display').textContent = display;
+    }
+
+    function handlePhysicalKeyPress(e) {
+        if (!document.getElementById('screen-game').classList.contains('active')) return;
+
+        let letter = e.key.toUpperCase();
+        if (letter === "'" || letter === 'Ñ' || (letter >= 'A' && letter <= 'Z' && letter.length === 1)) {
+            processLetter(letter);
+        }
+    }
+
+    function processLetter(letter) {
+        if (guessedLetters.includes(letter)) return;
+
+        guessedLetters.push(letter);
+        const keyId = letter === "'" ? 'key-apostrophe' : `key-${letter}`;
+        const btn = document.getElementById(keyId);
+        if (btn) btn.disabled = true;
+
+        players[currentPlayerIndex].attempts++;
+
+        if (currentWord.includes(letter)) {
+            renderWordDisplay();
+            checkWin();
+        } else {
+            wrongAttempts++;
+            drawHangman(wrongAttempts);
+            if (wrongAttempts >= maxWrongAttempts) {
+                setTimeout(() => handleRoundEnd(false), 300);
+            }
+        }
+        updateTurnUI();
+    }
+
+    function checkWin() {
+        let won = true;
+        for (let char of currentWord) {
+            if (char !== ' ' && !guessedLetters.includes(char)) {
+                won = false;
+                break;
+            }
+        }
+        if (won) {
+            players[currentPlayerIndex].score++;
+            setTimeout(() => handleRoundEnd(true), 300);
+        }
+    }
+
+    function handleRoundEnd(isWin) {
+        if (isWin) {
+            alert(`¡Allin! (¡Muy bien!) Adivinaste: ${currentWord}`);
+        } else {
+            alert(`¡Ahorcado! La palabra era: ${currentWord}`);
+        }
+
+        currentQuestionIndex++;
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+
+        if (currentQuestionIndex < totalQuestions) {
+            updateTurnUI();
+            loadWord();
+        } else {
+            endGame();
+        }
+    }
+
+    // Dibujar en el Canvas el Ahorcado
+    function drawHangman(step) {
+        const canvas = document.getElementById('hangmanCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = '#2C3E50';
+        ctx.lineWidth = 3;
+
+        if (step === 0) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Dibujar estructura básica (horca)
+            ctx.beginPath();
+            ctx.moveTo(20, 180); ctx.lineTo(100, 180); // Base
+            ctx.moveTo(60, 180); ctx.lineTo(60, 20);   // Poste vertical
+            ctx.lineTo(140, 20);                        // Poste horizontal
+            ctx.lineTo(140, 40);                        // Cuerda
+            ctx.stroke();
+            return;
+        }
+
+        ctx.beginPath();
+        switch(step) {
+            case 1: // Cabeza
+                ctx.arc(140, 55, 15, 0, Math.PI * 2);
+                break;
+            case 2: // Cuerpo
+                ctx.moveTo(140, 70); ctx.lineTo(140, 120);
+                break;
+            case 3: // Brazo Izquierdo
+                ctx.moveTo(140, 80); ctx.lineTo(115, 100);
+                break;
+            case 4: // Brazo Derecho
+                ctx.moveTo(140, 80); ctx.lineTo(165, 100);
+                break;
+            case 5: // Pierna Izquierda
+                ctx.moveTo(140, 120); ctx.lineTo(120, 155);
+                break;
+            case 6: // Pierna Derecha
+                ctx.moveTo(140, 120); ctx.lineTo(160, 155);
+                break;
+        }
+        ctx.stroke();
+    }
+
+    function endGame() {
+        const gameEndTime = new Date();
+        const durationSec = Math.round((gameEndTime - gameStartTime) / 1000);
+
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = '';
+
+        const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
+        sortedPlayers.forEach(p => {
+            const percentage = p.attempts > 0 
+                ? Math.round((p.score / totalQuestions) * 100) 
+                : 0;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${p.name}</strong></td>
+                <td>${p.score}</td>
+                <td>${p.attempts}</td>
+                <td><strong>${percentage}%</strong></td>
+                <td>${gameStartTime.toLocaleDateString()}</td>
+                <td>${gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                <td>${gameEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                <td>${durationSec} seg</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        showScreen('screen-results');
+    }
+
+    function resetToConfig() {
+        showScreen('screen-config');
+    }
+</script>
+</body>
+</html>
+
+

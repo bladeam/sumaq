@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Verbs - English/Spanish Audio Trainer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: #131a2a;
+            --bg-card-hover: #1a243a;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #8b5cf6;
+            --accent-emerald: #10b981;
+            --accent-pink: #ec4899;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+            --glass-bg: rgba(19, 26, 42, 0.75);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 60px;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.12) 0%, transparent 45%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* HEADER */
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 30px;
+            color: var(--accent-cyan);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 20%, var(--accent-cyan) 60%, var(--accent-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* CONTROL BAR & PLAYER */
+        .player-bar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-ctrl {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.8rem 1.4rem;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.25s ease;
+        }
+
+        .btn-ctrl:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border: none;
+            color: #fff;
+            box-shadow: 0 4px 18px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(59, 130, 246, 0.6);
+        }
+
+        .btn-danger {
+            background: rgba(236, 72, 153, 0.15);
+            border-color: rgba(236, 72, 153, 0.3);
+            color: var(--accent-pink);
+        }
+
+        .btn-danger:hover {
+            background: var(--accent-pink);
+            color: #fff;
+        }
+
+        /* ACTIVE DISPLAY */
+        .now-playing {
+            background: rgba(9, 13, 22, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            transition: all 0.3s;
+        }
+
+        .status-dot.active {
+            background: var(--accent-emerald);
+            box-shadow: 0 0 12px var(--accent-emerald);
+            animation: pulse-dot 1.2s infinite alternate;
+        }
+
+        @keyframes pulse-dot {
+            from { transform: scale(0.9); opacity: 0.7; }
+            to { transform: scale(1.3); opacity: 1; }
+        }
+
+        .playing-text {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .playing-text strong {
+            color: var(--accent-cyan);
+            font-size: 1.05rem;
+        }
+
+        /* SEARCH & FILTER BAR */
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-box input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 0.85rem 1rem 0.85rem 2.8rem;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .filter-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.85rem 1.2rem;
+            border-radius: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            color: var(--text-main);
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        /* VERBS GRID */
+        .verbs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .verb-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .verb-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .verb-card.active-playing {
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.08);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+        }
+
+        .verb-card.active-playing::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: var(--accent-cyan);
+        }
+
+        .verb-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .verb-english {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .verb-phonetic {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-pink);
+            background: rgba(236, 72, 153, 0.1);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .verb-spanish {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .verb-past {
+            font-size: 0.8rem;
+            color: var(--accent-purple);
+            margin-top: 2px;
+        }
+
+        .btn-play-single {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--accent-cyan);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-play-single:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-dark);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+
+        /* SETTINGS DRAWER */
+        .voice-settings {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .setting-item {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .setting-item label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.6rem 0.9rem;
+            border-radius: 10px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="badge-tag"><i class="fa-solid fa-graduation-cap"></i> Bilingual Audio Studio</span>
+        <h1>Verbos en Inglés con Audio Dual</h1>
+        <p>Escucha el verbo en inglés seguido de su traducción al español automáticamente.</p>
+    </header>
+
+    <!-- STICKY PLAYER & CONTROLS -->
+    <div class="player-bar">
+        <div class="player-controls">
+            <div class="btn-group">
+                <button class="btn-ctrl btn-primary" id="btnPlayAll" onclick="startAutoPlay()">
+                    <i class="fa-solid fa-play"></i> Reproducir Lista
+                </button>
+                <button class="btn-ctrl" id="btnPause" onclick="togglePauseResume()" disabled>
+                    <i class="fa-solid fa-pause"></i> Pausar
+                </button>
+                <button class="btn-ctrl btn-danger" id="btnStop" onclick="stopPlayback()" disabled>
+                    <i class="fa-solid fa-stop"></i> Detener
+                </button>
+            </div>
+
+            <div class="now-playing">
+                <div class="status-dot" id="statusDot"></div>
+                <div class="playing-text" id="statusText">
+                    Listo para reproducir. Haz clic en <strong>Reproducir Lista</strong> o en un verbo.
+                </div>
+            </div>
+        </div>
+
+        <!-- VOICE CONFIGURATION -->
+        <div class="voice-settings">
+            <div class="setting-item">
+                <label><i class="fa-solid fa-headset"></i> Voz Inglés (EN)</label>
+                <select id="voiceEngSelect"></select>
+            </div>
+            <div class="setting-item">
+                <label><i class="fa-solid fa-language"></i> Voz Español (ES)</label>
+                <select id="voiceSpaSelect"></select>
+            </div>
+            <div class="setting-item" style="max-width: 180px;">
+                <label><i class="fa-solid fa-gauge"></i> Velocidad</label>
+                <select id="rateSelect">
+                    <option value="0.75">Lenta (0.75x)</option>
+                    <option value="0.9" selected>Normal (0.9x)</option>
+                    <option value="1.1">Rápida (1.1x)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH & FILTERS -->
+    <div class="filter-bar">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Buscar verbo en inglés o español..." oninput="filterVerbs()">
+        </div>
+        <button class="filter-btn active" onclick="setFilter('all', this)">Todos (<span id="countAll">0</span>)</button>
+        <button class="filter-btn" onclick="setFilter('irregular', this)">Irregulares</button>
+        <button class="filter-btn" onclick="setFilter('regular', this)">Regulares</button>
+    </div>
+
+    <!-- VERBS GRID CONTAINER -->
+    <div class="verbs-grid" id="verbsGrid">
+        <!-- Rendered via JS from HTML Database -->
+    </div>
+</div>
+
+<script>
+    // DATABASE IN HTML / JS
+    const verbDatabase = [
+        { en: "Be", past: "Was/Were", es: "Ser o Estar", ipa: "/biː/", type: "irregular" },
+        { en: "Have", past: "Had", es: "Tener o Haber", ipa: "/hæv/", type: "irregular" },
+        { en: "Do", past: "Did", es: "Hacer", ipa: "/duː/", type: "irregular" },
+        { en: "Say", past: "Said", es: "Decir", ipa: "/seɪ/", type: "irregular" },
+        { en: "Go", past: "Went", es: "Ir", ipa: "/ɡoʊ/", type: "irregular" },
+        { en: "Get", past: "Got", es: "Obtener / Conseguir", ipa: "/ɡet/", type: "irregular" },
+        { en: "Make", past: "Made", es: "Fabricar / Hacer", ipa: "/meɪk/", type: "irregular" },
+        { en: "Know", past: "Knew", es: "Saber o Conocer", ipa: "/noʊ/", type: "irregular" },
+        { en: "Think", past: "Thought", es: "Pensar", ipa: "/θɪŋk/", type: "irregular" },
+        { en: "Take", past: "Took", es: "Tomar o Llevar", ipa: "/teɪk/", type: "irregular" },
+        { en: "See", past: "Saw", es: "Ver", ipa: "/siː/", type: "irregular" },
+        { en: "Come", past: "Came", es: "Venir", ipa: "/kʌm/", type: "irregular" },
+        { en: "Want", past: "Wanted", es: "Querer / Desear", ipa: "/wɑːnt/", type: "regular" },
+        { en: "Look", past: "Looked", es: "Mirar", ipa: "/lʊk/", type: "regular" },
+        { en: "Use", past: "Used", es: "Usar / Utilizar", ipa: "/juːz/", type: "regular" },
+        { en: "Find", past: "Found", es: "Encontrar", ipa: "/faɪnd/", type: "irregular" },
+        { en: "Give", past: "Gave", es: "Dar", ipa: "/ɡɪv/", type: "irregular" },
+        { en: "Tell", past: "Told", es: "Contar / Decir", ipa: "/tel/", type: "irregular" },
+        { en: "Work", past: "Worked", es: "Trabajar", ipa: "/wɜːrk/", type: "regular" },
+        { en: "Call", past: "Called", es: "Llamar", ipa: "/kɑːl/", type: "regular" },
+        { en: "Try", past: "Tried", es: "Intentar / Probar", ipa: "/traɪ/", type: "regular" },
+        { en: "Ask", past: "Asked", es: "Preguntar", ipa: "/æsk/", type: "regular" },
+        { en: "Need", past: "Needed", es: "Necesitar", ipa: "/niːd/", type: "regular" },
+        { en: "Feel", past: "Felt", es: "Sentir", ipa: "/fiːl/", type: "irregular" },
+        { en: "Become", past: "Became", es: "Llegar a ser / Convertirse", ipa: "/bɪˈkʌm/", type: "irregular" },
+        { en: "Leave", past: "Left", es: "Salir / Dejar", ipa: "/liːv/", type: "irregular" },
+        { en: "Put", past: "Put", es: "Poner / Colocar", ipa: "/pʊt/", type: "irregular" },
+        { en: "Mean", past: "Meant", es: "Significar / Querer decir", ipa: "/miːn/", type: "irregular" },
+        { en: "Keep", past: "Kept", es: "Mantener / Guardar", ipa: "/kiːp/", type: "irregular" },
+        { en: "Let", past: "Let", es: "Permitir / Dejar", ipa: "/let/", type: "irregular" }
+    ];
+
+    // SPEECH SYNTHESIS ENGINE & STATE
+    const synth = window.speechSynthesis;
+    let engVoices = [];
+    let spaVoices = [];
+    
+    let isPlayingSequence = false;
+    let isPaused = false;
+    let currentPlaylist = [];
+    let currentIndex = 0;
+    let activeFilter = 'all';
+
+    // UI ELEMENTS
+    const verbsGrid = document.getElementById('verbsGrid');
+    const voiceEngSelect = document.getElementById('voiceEngSelect');
+    const voiceSpaSelect = document.getElementById('voiceSpaSelect');
+    const btnPlayAll = document.getElementById('btnPlayAll');
+    const btnPause = document.getElementById('btnPause');
+    const btnStop = document.getElementById('btnStop');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+
+    // INITIALIZATION
+    function initVoices() {
+        const allVoices = synth.getVoices();
+        engVoices = allVoices.filter(v => v.lang.startsWith('en'));
+        spaVoices = allVoices.filter(v => v.lang.startsWith('es'));
+
+        voiceEngSelect.innerHTML = '';
+        engVoices.forEach((v, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = `${v.name} (${v.lang})`;
+            if (v.name.includes('Natural') || v.name.includes('Google') || v.default) opt.selected = true;
+            voiceEngSelect.appendChild(opt);
+        });
+
+        voiceSpaSelect.innerHTML = '';
+        spaVoices.forEach((v, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = `${v.name} (${v.lang})`;
+            if (v.name.includes('Natural') || v.name.includes('Google') || v.default) opt.selected = true;
+            voiceSpaSelect.appendChild(opt);
+        });
+    }
+
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = initVoices;
+    }
+    initVoices();
+
+    // RENDER VERBS
+    function renderVerbs(verbs) {
+        verbsGrid.innerHTML = '';
+        document.getElementById('countAll').textContent = verbDatabase.length;
+
+        verbs.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'verb-card';
+            card.id = `verb-card-${item.en.toLowerCase()}`;
+            card.innerHTML = `
+                <div class="verb-details">
+                    <div class="verb-english">
+                        ${item.en} 
+                        <span class="verb-phonetic">${item.ipa}</span>
+                    </div>
+                    <div class="verb-spanish">${item.es}</div>
+                    <div class="verb-past"><i class="fa-solid fa-clock-rotate-left"></i> Pasado: ${item.past}</div>
+                </div>
+                <button class="btn-play-single" title="Escuchar este verbo" onclick="playSingleVerb('${item.en}', '${item.es}')">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+            `;
+            verbsGrid.appendChild(card);
+        });
+    }
+
+    // FILTERING
+    function filterVerbs() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = verbDatabase.filter(item => {
+            const matchesQuery = item.en.toLowerCase().includes(query) || item.es.toLowerCase().includes(query);
+            const matchesType = activeFilter === 'all' || item.type === activeFilter;
+            return matchesQuery && matchesType;
+        });
+        renderVerbs(filtered);
+    }
+
+    function setFilter(type, btn) {
+        activeFilter = type;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filterVerbs();
+    }
+
+    // DUAL AUDIO PLAYER ENGINE
+    function playBilingualPair(englishText, spanishText, onComplete) {
+        if (!synth) return;
+        synth.cancel(); // Clear queue
+
+        const rate = parseFloat(document.getElementById('rateSelect').value);
+        
+        // Utterance 1: ENGLISH
+        const utterEng = new SpeechSynthesisUtterance(englishText);
+        if (engVoices[voiceEngSelect.value]) {
+            utterEng.voice = engVoices[voiceEngSelect.value];
+        } else {
+            utterEng.lang = 'en-US';
+        }
+        utterEng.rate = rate;
+
+        // Utterance 2: SPANISH
+        const utterSpa = new SpeechSynthesisUtterance(spanishText);
+        if (spaVoices[voiceSpaSelect.value]) {
+            utterSpa.voice = spaVoices[voiceSpaSelect.value];
+        } else {
+            utterSpa.lang = 'es-ES';
+        }
+        utterSpa.rate = rate;
+
+        // Visual Highlight
+        highlightCard(englishText);
+        updateStatus(true, `Reproduciendo: <strong>${englishText}</strong> ➔ <em>"${spanishText}"</em>`);
+
+        // Chain events
+        utterEng.onend = () => {
+            if (!isPlayingSequence && !synth.speaking) return;
+            // Short delay between EN and ES
+            setTimeout(() => {
+                synth.speak(utterSpa);
+            }, 300);
+        };
+
+        utterSpa.onend = () => {
+            if (onComplete) {
+                setTimeout(onComplete, 600); // Pause before next verb in sequence
+            } else {
+                updateStatus(false, "Listo para reproducir.");
+                clearHighlights();
+            }
+        };
+
+        synth.speak(utterEng);
+    }
+
+    // PLAY SINGLE VERB
+    function playSingleVerb(en, es) {
+        stopPlayback();
+        playBilingualPair(en, es, null);
+    }
+
+    // AUTOMATIC SEQUENCE PLAYBACK
+    function startAutoPlay() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        currentPlaylist = verbDatabase.filter(item => {
+            const matchesQuery = item.en.toLowerCase().includes(query) || item.es.toLowerCase().includes(query);
+            const matchesType = activeFilter === 'all' || item.type === activeFilter;
+            return matchesQuery && matchesType;
+        });
+
+        if (currentPlaylist.length === 0) return;
+
+        isPlayingSequence = true;
+        isPaused = false;
+        currentIndex = 0;
+
+        btnPlayAll.disabled = true;
+        btnPause.disabled = false;
+        btnStop.disabled = false;
+        btnPause.innerHTML = '<i class="fa-solid fa-pause"></i> Pausar';
+
+        playNextInSequence();
+    }
+
+    function playNextInSequence() {
+        if (!isPlayingSequence || currentIndex >= currentPlaylist.length) {
+            stopPlayback();
+            updateStatus(false, "¡Lista de verbos completada con éxito!");
+            return;
+        }
+
+        const item = currentPlaylist[currentIndex];
+        playBilingualPair(item.en, item.es, () => {
+            currentIndex++;
+            playNextInSequence();
+        });
+    }
+
+    // PAUSE & RESUME CONTROLS (USING JS API)
+    function togglePauseResume() {
+        if (!isPlayingSequence) return;
+
+        if (isPaused) {
+            // RESUME
+            synth.resume();
+            isPaused = false;
+            btnPause.innerHTML = '<i class="fa-solid fa-pause"></i> Pausar';
+            statusDot.classList.add('active');
+            updateStatus(true, `Reanudado: <strong>${currentPlaylist[currentIndex].en}</strong>`);
+        } else {
+            // PAUSE
+            synth.pause();
+            isPaused = true;
+            btnPause.innerHTML = '<i class="fa-solid fa-play"></i> Continuar';
+            statusDot.classList.remove('active');
+            updateStatus(false, `En Pausa: <strong>${currentPlaylist[currentIndex].en}</strong>`);
+        }
+    }
+
+    function stopPlayback() {
+        isPlayingSequence = false;
+        isPaused = false;
+        synth.cancel();
+
+        btnPlayAll.disabled = false;
+        btnPause.disabled = true;
+        btnStop.disabled = true;
+        btnPause.innerHTML = '<i class="fa-solid fa-pause"></i> Pausar';
+
+        statusDot.classList.remove('active');
+        updateStatus(false, "Reproducción detenida.");
+        clearHighlights();
+    }
+
+    // HIGHLIGHT UTILS
+    function highlightCard(enWord) {
+        clearHighlights();
+        const card = document.getElementById(`verb-card-${enWord.toLowerCase()}`);
+        if (card) {
+            card.classList.add('active-playing');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    function clearHighlights() {
+        document.querySelectorAll('.verb-card').forEach(c => c.classList.remove('active-playing'));
+    }
+
+    function updateStatus(active, htmlText) {
+        if (active) {
+            statusDot.classList.add('active');
+        } else {
+            statusDot.classList.remove('active');
+        }
+        statusText.innerHTML = htmlText;
+    }
+
+    // INITIAL RENDER
+    renderVerbs(verbDatabase);
+</script>
+
+</body>
+</html>

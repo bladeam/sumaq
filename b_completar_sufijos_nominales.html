@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completar Sufijos Nominales</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f8ff;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #4a90e2;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .config-section {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .config-section h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #357abd;
+        }
+        
+        .game-section {
+            display: none;
+            text-align: center;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .quechua-sentence {
+            font-size: 24px;
+            margin: 30px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            min-height: 60px;
+        }
+        
+        .suffix-blank {
+            display: inline-block;
+            width: 80px;
+            border-bottom: 2px dashed #4a90e2;
+            margin: 0 5px;
+            text-align: center;
+        }
+        
+        .translation {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        
+        .suffix-options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .suffix-option {
+            padding: 10px 20px;
+            background-color: #e8f4f8;
+            border: 2px solid #4a90e2;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+        
+        .suffix-option:hover {
+            background-color: #d4e8f8;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 35px;
+        }
+        
+        .correct {
+            color: #2ecc71;
+        }
+        
+        .incorrect {
+            color: #e74c3c;
+        }
+        
+        .results {
+            display: none;
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .results h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .meta-info {
+            background-color: #e8f4f8;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .history-item.correct {
+            background-color: #e8f8f0;
+        }
+        
+        .history-item.incorrect {
+            background-color: #fde8e8;
+        }
+        
+        .author {
+            text-align: center;
+            margin-top: 30px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Primer bloque: Título -->
+        <header>
+            <h1>Completar Sufijos Nominales</h1>
+            <p>Selecciona el sufijo correcto para completar la oración en quechua</p>
+        </header>
+        
+        <!-- Segundo bloque: Configuración inicial -->
+        <section class="config-section">
+            <h2>Configuración del Juego</h2>
+            <div class="form-group">
+                <label for="students">Lista de Estudiantes (un nombre por fila):</label>
+                <textarea id="students" rows="5" placeholder="Juan&#10;María&#10;Pedro"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="questionsPerStudent">Número de Preguntas por Estudiante:</label>
+                <input type="number" id="questionsPerStudent" min="1" value="5">
+            </div>
+            <button id="startGame">Comenzar Juego</button>
+        </section>
+        
+        <!-- Tercer bloque: Área de juego -->
+        <section class="game-section" id="gameSection">
+            <div class="game-info">
+                <div>Estudiante: <strong id="currentPlayer">-</strong></div>
+                <div>Pregunta: <span id="questionNumber">0</span>/<span id="totalQuestions">0</span></div>
+                <div>Aciertos: <span id="correctCount">0</span> | Errores: <span id="incorrectCount">0</span></div>
+            </div>
+            
+            <div class="quechua-sentence" id="quechuaSentence"></div>
+            <div class="translation" id="translation"></div>
+            
+            <div class="suffix-options" id="suffixOptions">
+                <!-- Los botones de opciones se generarán dinámicamente -->
+            </div>
+            
+            <div class="message" id="message"></div>
+            
+            <div class="controls">
+                <button id="nextQuestion">Siguiente oración</button>
+            </div>
+        </section>
+        
+        <!-- Cuarto bloque: Resultados -->
+        <section class="results" id="resultsSection">
+            <h2>Resultados Finales</h2>
+            
+            <div class="meta-info">
+                <p><strong>Fecha:</strong> <span id="resDate"></span></p>
+                <p><strong>Hora Inicio:</strong> <span id="resStart"></span></p>
+                <p><strong>Hora Fin:</strong> <span id="resEnd"></span></p>
+            </div>
+
+            <h3>Desempeño por Estudiante</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Aciertos</th>
+                        <th>Errores</th>
+                        <th>Preguntas Atendidas</th>
+                        <th>Nota (%)</th>
+                    </tr>
+                </thead>
+                <tbody id="studentStatsBody">
+                </tbody>
+            </table>
+
+            <h3>Historial Detallado</h3>
+            <div id="gameHistory"></div>
+            
+            <button id="restartGame" style="margin-top: 20px;">Nuevo Juego</button>
+        </section>
+        
+        <!-- Información del autor -->
+        <div class="author">
+            Autor: "M.Sc. Bladimir Arias Mejia" 2025
+        </div>
+    </div>
+
+    <script>
+        // Base de datos de palabras y sufijos
+        const wordData = `misipi = en el gato
+misiman = al gato
+misijina = como un gato
+misipaq = para el gato
+misimanta = del gato
+misiwan = con el gato
+misikama = hasta el gato
+misirayku = por el gato
+warmipi = en la mujer
+warmiman = a la mujer
+warmijina = como una mujer
+warmipaq = para la mujer
+warmimanta = de la mujer
+warmiwan = con la mujer
+warmikama = hasta la mujer
+warmirayku = por la mujer
+allqupi = en el perro
+allquman = al perro
+allqujina = como un perro
+allqupaq = para el perro
+allqumanta = del perro
+allquwan = con el perro
+allqukama = hasta el perro
+allqurayku = por el perro
+runtupi = en el huevo
+runtuman = al huevo
+runtujina = como un huevo
+runtupaq = para el huevo
+runtumanta = del huevo
+runtuwan = con el huevo
+runtukama = hasta el huevo
+runturayku = por el huevo
+sik'imirapi = en la hormíga
+sik'imiraman = a la hormíga
+sik'imirajina = como la hormíga
+sik'imirapaq = para la hormíga
+sik'imiramanta = de la hormíga
+sik'imirawan = con la hormíga
+sik'imirakama = hasta la hormíga
+sik'imirarayku = por la hormíga
+atuqpi = en el zorro
+atuqman = al zorro
+atuqjina = como un zorro
+atuqpaq = para el zorro
+atuqmanta = del zorro
+atuqwan = con el zorro
+atuqkama = hasta el zorro
+atuqrayku = por el zorro
+wallpapi = en la gallina
+wallpaman = a la gallina
+wallpajina = como una gallina
+wallpapaq = para la gallina
+wallpamanta = de la gallina
+wallpawan = con la gallina
+wallpakama = hasta la gallina
+wallparayku = por la gallina
+chakipi = en el pie
+chakiman = al pie
+chakijina = como un pie
+chakipaq = para el pie
+chakimanta = del pie
+chakiwan = con el pie
+chakikama = hasta el pie
+chakirayku = por el pie
+makipi = en la mano
+makiman = a la mano
+makijina = como una mano
+makipaq = para la mano
+makimanta = de la mano
+makiwan = con la mano
+makikama = hasta la mano
+makirayku = por la mano
+kataripi = en Katari (nombre propio o lugar)
+katariman = a Katari
+katarijina = como Katari
+kataripaq = para Katari
+katarimanta = de Katari
+katariwan = con Katari
+katarikama = hasta Katari
+katarirayku = por Katari
+lachiwanapi = en la abeja
+lachiwanaman = a la abeja
+lachiwanajina = como la abeja
+lachiwanapaq = para la abeja
+lachiwanamanta = de la abeja
+lachiwanawan = con la abeja
+lachiwanakama = hasta la abeja
+lachiwanarayku = por la abeja
+punkupi = en la puerta
+punkuman = a la puerta
+punkujina = como una puerta
+punkupaq = para la puerta
+punkumanta = de la puerta
+punkuwan = con la puerta
+punkukama = hasta la puerta
+punkurayku = por la puerta
+mankapi = en la olla
+mankaman = a la olla
+mankajina = como una olla
+mankapaq = para la olla
+mankamanta = de la olla
+mankawan = con la olla
+mankakama = hasta la olla
+mankarayku = por la olla
+intipi = en el sol
+intiman = al sol
+intijina = como el sol
+intipaq = para el sol
+intimanta = del sol
+intiwan = con el sol
+intikama = hasta el sol
+intirayku = por el sol
+killapi = en la luna
+killaman = a la luna
+killajina = como la luna
+killapaq = para la luna
+killamanta = de la luna
+killawan = con la luna
+killakama = hasta la luna
+killarayku = por la luna
+qharipi = en el hombre
+qhariman = al hombre
+qharijina = como un hombre
+qharipaq = para el hombre
+qharimanta = del hombre
+qhariwan = con el hombre
+qharikama = hasta el hombre
+qharirayku = por el hombre
+ñawipi = en el ojo
+ñawiman = al ojo
+ñawijina = como un ojo
+ñawipaq = para el ojo
+ñawimanta = del ojo
+ñawiwan = con el ojo
+ñawikama = hasta el ojo
+ñawirayku = por el ojo
+ninripi = en la oreja
+ninriman = a la oreja
+ninrijina = como una oreja
+ninripaq = para la oreja
+ninrimanta = de la oreja
+ninriwan = con la oreja
+ninrikama = hasta la oreja
+ninrirayku = por la oreja
+sinqapi = en la nariz
+sinqaman = a la nariz
+sinqajina = como una nariz
+sinqapaq = para la nariz
+sinqamanta = de la nariz
+sinqawan = con la nariz
+sinqakama = hasta la nariz
+sinqarayku = por la nariz
+kirupi = en el diente
+kiruman = al diente
+kirujina = como un diente
+kirupaq = para el diente
+kirumanta = del diente
+kiruwan = con el diente
+kirukama = hasta el diente
+kirurayku = por el diente
+t'antapi = en el pan
+t'antaman = al pan
+t'antajina = como el pan
+t'antapaq = para el pan
+t'antamanta = del pan
+t'antawan = con el pan
+t'antakama = hasta el pan
+t'antarayku = por el pan
+wawapi = en el bebé
+wawaman = al bebé
+wawajina = como un bebé
+wawapaq = para el bebé
+wawamanta = del bebé
+wawawan = con el bebé
+wawakama = hasta el bebé
+wawarayku = por el bebé
+papapi = en la papa
+papaman = a la papa
+papajina = como una papa
+papapaq = para la papa
+papamanta = de la papa
+papawan = con la papa
+papakama = hasta la papa
+paparayku = por la papa
+Juk'uchapi = en el ratón
+Juk'uchaman = al ratón
+Juk'uchajina = como un ratón
+Juk'uchapaq = para el ratón
+Juk'uchamanta = del ratón
+Juk'uchawan = con el ratón
+Juk'uchakama = hasta el ratón
+Juk'ucharayku = por el ratón
+khuchipi = en el cerdo
+khuchiman = al cerdo
+khuchijina = como un cerdo
+khuchipaq = para el cerdo
+khuchimanta = del cerdo
+khuchiwan = con el cerdo
+khuchikama = hasta el cerdo
+khuchirayku = por el cerdo
+chillwipi = en el pollito
+chillwiman = al pollito
+chillwijina = como el pollito
+chillwipaq = para el pollito
+chillwimanta = del pollito
+chillwiwan = con el pollito
+chillwikama = hasta el pollito
+chillwirayku = por el pollito
+jamp'atupi = en el sapo
+jamp'atuman = al sapo
+jamp'atujina = como un sapo
+jamp'atupaq = para el sapo
+jamp'atumanta = del sapo
+jamp'atuwan = con el sapo
+jamp'atukama = hasta el sapo
+jamp'aturayku = por el sapo
+chawllapi = en el pescado
+chawllaman = al pescado
+chawllajina = como un pescado
+chawllapaq = para el pescado
+chawllamanta = del pescado
+chawllawan = con el pescado
+chawllakama = hasta el pescado
+chawllarayku = por el pescado
+wakapi = en la vaca
+wakaman = a la vaca
+wakajina = como una vaca
+wakapaq = para la vaca
+wakamanta = de la vaca
+wakawan = con la vaca
+wakakama = hasta la vaca
+wakarayku = por la vaca
+uwijapi = en la oveja
+uwijaman = a la oveja
+uwijajina = como una oveja
+uwijapaq = para la oveja
+uwijamanta = de la oveja
+uwijawan = con la oveja
+uwijakama = hasta la oveja
+uwijarayku = por la oveja
+pilipi = en el pato
+piliman = al pato
+pilijina = como el pato
+pilipaq = para el pato
+pilimanta = del pato
+piliwan = con el pato
+pilikama = hasta el pato
+pilirayku = por el pato
+llamapi = en la llama
+llamaman = a la llama
+llamajina = como una llama
+llamapaq = para la llama
+llamamanta = de la llama
+llamawan = con la llama
+llamakama = hasta la llama
+llamarayku = por la llama
+kunturpi = en el cóndor
+kunturman = al cóndor
+kunturjina = como un cóndor
+kunturpaq = para el cóndor
+kunturmanta = del cóndor
+kunturwan = con el cóndor
+kunturkama = hasta el cóndor
+kunturrayku = por el cóndor
+jukumaripi = en el oso
+jukumariman = al oso
+jukumarijina = como un oso
+jukumaripaq = para el oso
+jukumarimanta = del oso
+jukumariwan = con el oso
+jukumarikama = hasta el oso
+jukumarirayku = por el oso
+charapapi = en la tortuga
+charapaman = a la tortuga
+charapajina = como una tortuga
+charapapaq = para la tortuga
+charapamanta = de la tortuga
+charapawan = con la tortuga
+charapakama = hasta la tortuga
+charaparayku = por la tortuga
+k'usillupi = en el mono
+k'usilluman = al mono
+k'usillujina = como un mono
+k'usillupaq = para el mono
+k'usillumanta = del mono
+k'usilluwan = con el mono
+k me k'usillukama = hasta el mono
+k'usillurayku = por el mono
+kirkinchupi = en el armadillo
+kirkinchuman = al armadillo
+kirkinchujina = como un armadillo
+kirkinchupaq = para el armadillo
+kirkinchumanta = del armadillo
+kirkinchuwan = con el armadillo
+kirkinchukama = hasta el armadillo
+kirkinchurayku = por el armadillo
+p'isqupi = en el pájaro
+p'isquman = al pájaro
+p'isqujina = como un pájaro
+p'isqupaq = para el pájaro
+p'isqumanta = del pájaro
+p'isquwan = con el pájaro
+p'isqukama = hasta el pájaro
+p'isqurayku = por el pájaro
+urpipi = en la paloma
+urpiman = a la paloma
+urpijina = como una paloma
+urpipaq = para la paloma
+urpimanta = de la paloma
+urpiwan = con la paloma
+urpikama = hasta la paloma
+urpirayku = por la paloma
+ararankhapi = en la lagartija
+ararankhaman = a la lagartija
+ararankhajina = como la lagartija
+ararankhapaq = para la lagartija
+ararankhamanta = de la lagartija
+ararankhawan = con la lagartija
+ararankhakama = hasta la lagartija
+ararankharayku = por la lagartija
+ch'uspipi = en la mosca
+ch'uspiman = a la mosca
+ch'uspijina = como una mosca
+ch'uspipaq = para la mosca
+ch'uspimanta = de la mosca
+ch'uspiwan = con la mosca
+ch'uspikama = hasta la mosca
+ch'uspirayku = por la mosca
+wayrurupi = en la araña
+wayruruman = a la araña
+wayrurujina = como la araña
+wayrurupaq = para la araña
+wayrurumanta = de la araña
+wayruruwan = con la araña
+wayrurukama = hasta la araña
+wayrururayku = por la araña
+pikipi = en la pulga
+pikiman = a la pulga
+pikijina = como una pulga
+pikipaq = para la pulga
+pikimanta = de la pulga
+pikiwan = con la pulga
+pikikama = hasta la pulga
+pikirayku = por la pulga
+ñuqtupi = en el cerebro
+ñuqtuman = al cerebro
+ñuqtujina = como un cerebro
+ñuqtupaq = para el cerebro
+ñuqtumanta = del cerebro
+ñuqtuwan = con el cerebro
+ñuqtukama = hasta el cerebro
+ñuqturayku = por el cerebro
+tullupi = en el hueso
+tulluman = al hueso
+tullujina = como un hueso
+tullupaq = para el hueso
+tullumanta = del hueso
+tulluwan = con el hueso
+tullukama = hasta el hueso
+tullurayku = por el hueso
+khurupi = en el gusano
+khuruman = al gusano
+khurujina = como un gusano
+khurupaq = para el gusano
+khurumanta = del gusano
+khuruwan = con el gusano
+khurukama = hasta el gusano
+khururayku = por el gusano
+ch'urupi = en el caracol
+ch'uruman = al caracol
+ch'urujina = como un caracol
+ch'urupaq = para el caracol
+ch'urumanta = del caracol
+ch'uruwan = con el caracol
+ch'urukama = hasta el caracol
+ch'ururayku = por el caracol
+kawallupi = en el caballo
+kawalluman = al caballo
+kawallujina = como un caballo
+kawallupaq = para el caballo
+kawallumanta = del caballo
+kawalluwan = con el caballo
+kawallukama = hasta el caballo
+kawallurayku = por el caballo
+karwapi = en la cabra
+karwaman = a la cabra
+karwajina = como la cabra
+karwapaq = para la cabra
+karwamanta = de la cabra
+karwawan = con la cabra
+karwakama = hasta la cabra
+karwarayku = por la cabra
+sach'api = en el árbol
+sach'aman = al árbol
+sach'ajina = como un árbol
+sach'apaq = para el árbol
+sach'amanta = del árbol
+sach'awan = con el árbol
+sach'akama = hasta el árbol
+sach'arayku = por el árbol
+mansanapi = en la manzana
+mansanaman = a la manzana
+mansanajina = como una manzana
+mansanapaq = para la manzana
+mansanamanta = de la manzana
+mansanawan = con la manzana
+mansanakama = hasta la manzana
+mansanarayku = por la manzana
+platanupi = en el plátano
+platanuman = al plátano
+platanujina = como un plátano
+platanupaq = para el plátano
+platanumanta = del plátano
+platanuwan = con el plátano
+platanukama = hasta el plátano
+platanurayku = por el plátano
+sarapi = en el maíz
+saraman = al maíz
+sarajina = como el maíz
+sarapaq = para el maíz
+saramanta = del maíz
+sarawan = con el maíz
+sarakama = hasta el maíz
+sararayku = por el maíz
+sanawryapi = en la zanahoria
+sanawryaman = a la zanahoria
+sanawryajina = como la zanahoria
+sanawryapaq = para la zanahoria
+sanawryamanta = de la zanahoria
+sanawryawan = con la zanahoria
+sanawryakama = hasta la zanahoria
+sanawryarayku = por la zanahoria
+kumputarurapi = en la computadora
+kumputaruraman = a la computadora
+kumputarurajina = como una computadora
+kumputarurapaq = para la computadora
+kumputaruramanta = de la computadora
+kumputarurawan = con la computadora
+kumputarurakama = hasta la computadora
+kumputarurarayku = por la computadora
+inti watanapi = en el reloj
+inti watanaman = al reloj
+inti watanajina = como un reloj
+inti watanapaq = para el reloj
+inti watanamanta = del reloj
+inti watanawan = con el reloj
+inti watanakama = hasta el reloj
+inti watanarayku = por el reloj
+tiyanapi = en la silla
+tiyanaman = a la silla
+tiyanajina = como una silla
+tiyanapaq = para la silla
+tiyanamanta = de la silla
+tiyanawan = con la silla
+tiyanakama = hasta la silla
+tiyanarayku = por la silla
+puñunapi = en la cama
+puñunaman = a la cama
+puñunajina = como la cama
+puñunapaq = para la cama
+puñunamanta = de la cama
+puñunawan = con la cama
+puñunakama = hasta la cama
+puñunarayku = por la cama
+awtupi = en el auto
+awtuman = al auto
+awtujina = como un auto
+awtupaq = para el auto
+awtumanta = del auto
+awtuwan = con el auto
+awtukama = hasta el auto
+awturayku = por el auto
+abiyonpi = en el avión
+abiyonman = al avión
+abiyonjina = como un avión
+abiyonpaq = para el avión
+abiyonmanta = del avión
+abiyonwan = con el avión
+abiyonkama = hasta el avión
+abiyonrayku = por el avión
+wiksilitapi = en la bicicleta
+wiksilitaman = a la bicicleta
+wiksilitajina = como una bicicleta
+wiksilitapaq = para la bicicleta
+wiksilitamanta = de la bicicleta
+wiksilitawan = con la bicicleta
+wiksilitakama = hasta la bicicleta
+wiksilitarayku = por la bicicleta
+phuyupi = en la nube
+phuyuman = a la nube
+phuyujina = como una nube
+phuyupaq = para la nube
+phuyumanta = de la nube
+phuyuwan = con la nube
+phuyukama = hasta la nube
+phuyurayku = por la nube
+ch'askapi = en la estrella
+ch'askaman = a la estrella
+ch'askajina = como una estrella
+ch'askapaq = para la estrella
+ch'askamanta = de la estrella
+ch'askawan = con la estrella
+ch'askakama = hasta la estrella
+ch'askarayku = por la estrella
+wasipi = en la casa
+wasiman = a la casa
+wasijina = como una casa
+wasipaq = para la casa
+wasimanta = de la casa
+wasiwan = con la casa
+wasikama = hasta la casa
+wasirayku = por la casa
+iglisiapi = en la iglesia
+iglisiaman = a la iglesia
+iglisiajina = como una iglesia
+iglisiapaq = para la iglesia
+iglisiamanta = de la iglesia
+iglisiawan = con la iglesia
+iglisiakama = hasta la iglesia
+iglisiarayku = por la iglesia`;
+
+        // Variables del juego
+        let players = [];
+        let currentPlayerIndex = 0;
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
+        let incorrectAnswers = 0;
+        let gameHistory = [];
+        let playerStats = {};
+        let totalQuestions = 0;
+        let isAnswerSelected = false;
+
+        // Variables de Tiempo
+        let startTimeObj = null;
+        let dateStr = "";
+        let startTimeStr = "";
+
+        // Sufijos válidos
+        const validSuffixes = ["pi", "man", "jina", "paq", "manta", "wan", "kama", "rayku"];
+
+        // Elementos del DOM
+        const configSection = document.querySelector('.config-section');
+        const gameSection = document.getElementById('gameSection');
+        const resultsSection = document.getElementById('resultsSection');
+        const startGameBtn = document.getElementById('startGame');
+        const nextQuestionBtn = document.getElementById('nextQuestion');
+        const restartGameBtn = document.getElementById('restartGame');
+        const currentPlayerSpan = document.getElementById('currentPlayer');
+        const questionNumberSpan = document.getElementById('questionNumber');
+        const totalQuestionsSpan = document.getElementById('totalQuestions');
+        const correctCountSpan = document.getElementById('correctCount');
+        const incorrectCountSpan = document.getElementById('incorrectCount');
+        const quechuaSentenceDiv = document.getElementById('quechuaSentence');
+        const translationDiv = document.getElementById('translation');
+        const suffixOptionsDiv = document.getElementById('suffixOptions');
+        const messageDiv = document.getElementById('message');
+        const gameHistoryDiv = document.getElementById('gameHistory');
+        const studentStatsBody = document.getElementById('studentStatsBody');
+
+        // Procesar datos de palabras
+        function processWordData() {
+            const lines = wordData.split('\n');
+            const processedData = [];
+            
+            for (const line of lines) {
+                const parts = line.split(' = ');
+                if (parts.length === 2) {
+                    const quechuaWord = parts[0].trim();
+                    const translation = parts[1].trim();
+                    
+                    for (const suffix of validSuffixes) {
+                        if (quechuaWord.endsWith(suffix)) {
+                            const root = quechuaWord.slice(0, -suffix.length);
+                            processedData.push({
+                                root: root,
+                                suffix: suffix,
+                                translation: translation,
+                                fullWord: quechuaWord
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            return processedData;
+        }
+
+        // Inicializar el juego
+        function initializeGame() {
+            const studentsInput = document.getElementById('students').value;
+            const questionsPerStudent = parseInt(document.getElementById('questionsPerStudent').value) || 5;
+            
+            if (studentsInput.trim() !== '') {
+                // Separación por saltos de línea (\n)
+                players = studentsInput.split('\n').map(name => name.trim()).filter(name => name !== '');
+            } else {
+                players = ['Estudiante 1'];
+            }
+            
+            totalQuestions = players.length * questionsPerStudent;
+
+            // Inicializar métricas por jugador
+            playerStats = {};
+            players.forEach(p => {
+                playerStats[p] = { aciertos: 0, errores: 0, total: 0 };
+            });
+
+            // Registrar Marcas de Tiempo
+            startTimeObj = new Date();
+            dateStr = startTimeObj.toLocaleDateString();
+            startTimeStr = startTimeObj.toLocaleTimeString();
+
+            const allQuestions = processWordData();
+            questions = getRandomQuestions(allQuestions, totalQuestions);
+            
+            currentPlayerIndex = 0;
+            currentQuestionIndex = 0;
+            correctAnswers = 0;
+            incorrectAnswers = 0;
+            gameHistory = [];
+            isAnswerSelected = false;
+            
+            configSection.style.display = 'none';
+            gameSection.style.display = 'block';
+            resultsSection.style.display = 'none';
+            
+            updateGameInfo();
+            displayQuestion();
+        }
+
+        function getRandomQuestions(allQuestions, count) {
+            const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, Math.min(count, shuffled.length));
+        }
+
+        function updateGameInfo() {
+            currentPlayerSpan.textContent = players[currentPlayerIndex];
+            questionNumberSpan.textContent = currentQuestionIndex + 1;
+            totalQuestionsSpan.textContent = questions.length;
+            correctCountSpan.textContent = correctAnswers;
+            incorrectCountSpan.textContent = incorrectAnswers;
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                endGame();
+                return;
+            }
+            
+            const question = questions[currentQuestionIndex];
+            const shuffledSuffixes = [...validSuffixes].sort(() => 0.5 - Math.random());
+            
+            quechuaSentenceDiv.innerHTML = `${question.root}<span class="suffix-blank" id="suffixBlank">_____</span>`;
+            translationDiv.textContent = question.translation;
+            
+            suffixOptionsDiv.innerHTML = '';
+            
+            shuffledSuffixes.forEach(suffix => {
+                const button = document.createElement('div');
+                button.className = 'suffix-option';
+                button.textContent = suffix;
+                button.addEventListener('click', () => selectSuffix(suffix, question.suffix));
+                suffixOptionsDiv.appendChild(button);
+            });
+            
+            messageDiv.textContent = '';
+            messageDiv.className = 'message';
+            
+            nextQuestionBtn.disabled = true;
+            isAnswerSelected = false;
+        }
+
+        function selectSuffix(selectedSuffix, correctSuffix) {
+            if (isAnswerSelected) return;
+            
+            isAnswerSelected = true;
+            
+            const suffixBlank = document.getElementById('suffixBlank');
+            suffixBlank.textContent = selectedSuffix;
+            suffixBlank.style.fontWeight = 'bold';
+            
+            const optionButtons = suffixOptionsDiv.querySelectorAll('.suffix-option');
+            optionButtons.forEach(button => {
+                button.style.pointerEvents = 'none';
+            });
+            
+            const currentPlayer = players[currentPlayerIndex];
+            playerStats[currentPlayer].total++;
+
+            setTimeout(() => {
+                const isCorrect = selectedSuffix === correctSuffix;
+                
+                if (isCorrect) {
+                    messageDiv.textContent = 'ALLIN!';
+                    messageDiv.className = 'message correct';
+                    correctAnswers++;
+                    playerStats[currentPlayer].aciertos++;
+                } else {
+                    messageDiv.textContent = `MANA ALLINCHU (Respuesta correcta: ${correctSuffix})`;
+                    messageDiv.className = 'message incorrect';
+                    incorrectAnswers++;
+                    playerStats[currentPlayer].errores++;
+                }
+                
+                gameHistory.push({
+                    player: currentPlayer,
+                    question: questions[currentQuestionIndex],
+                    selectedSuffix: selectedSuffix,
+                    isCorrect: isCorrect
+                });
+                
+                updateGameInfo();
+                nextQuestionBtn.disabled = false;
+            }, 500);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                // Intercalar turno al siguiente jugador
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+                updateGameInfo();
+                displayQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            const endTimeObj = new Date();
+            const endTimeStr = endTimeObj.toLocaleTimeString();
+
+            gameSection.style.display = 'none';
+            resultsSection.style.display = 'block';
+            
+            // Renderizar Tiempos
+            document.getElementById('resDate').textContent = dateStr;
+            document.getElementById('resStart').textContent = startTimeStr;
+            document.getElementById('resEnd').textContent = endTimeStr;
+
+            // Renderizar Tabla por Estudiantes
+            studentStatsBody.innerHTML = '';
+            players.forEach(p => {
+                const stats = playerStats[p];
+                const percentage = stats.total > 0 ? ((stats.aciertos / stats.total) * 100).toFixed(1) : 0;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${p}</strong></td>
+                    <td>${stats.aciertos}</td>
+                    <td>${stats.errores}</td>
+                    <td>${stats.total}</td>
+                    <td><strong>${percentage}%</strong></td>
+                `;
+                studentStatsBody.appendChild(tr);
+            });
+
+            // Renderizar Historial
+            let historyHTML = '';
+            gameHistory.forEach((item, index) => {
+                const statusClass = item.isCorrect ? 'correct' : 'incorrect';
+                const statusText = item.isCorrect ? 'ALLIN!' : 'MANA ALLINCHU';
+                
+                historyHTML += `
+                    <div class="history-item ${statusClass}">
+                        <p><strong>Pregunta ${index + 1}:</strong> ${item.player}</p>
+                        <p>Oración: ${item.question.root}${item.selectedSuffix} (${item.question.translation})</p>
+                        <p>Sufijo correcto: <strong>${item.question.suffix}</strong></p>
+                        <p>Resultado: <strong>${statusText}</strong></p>
+                    </div>
+                `;
+            });
+            
+            gameHistoryDiv.innerHTML = historyHTML;
+        }
+
+        function restartGame() {
+            configSection.style.display = 'block';
+            gameSection.style.display = 'none';
+            resultsSection.style.display = 'none';
+        }
+
+        // Event Listeners
+        startGameBtn.addEventListener('click', initializeGame);
+        nextQuestionBtn.addEventListener('click', nextQuestion);
+        restartGameBtn.addEventListener('click', restartGame);
+    </script>
+</body>
+</html>

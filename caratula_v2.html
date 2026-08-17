@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Carátulas Académicas - ULAT</title>
+    <!-- Librería html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #0b2545;
+            --accent-color: #134074;
+            --bg-color: #eef4f8;
+            --panel-bg: #ffffff;
+            --text-color: #1d2d44;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            gap: 30px;
+            padding: 25px;
+            min-height: 100vh;
+        }
+
+        /* --- PANEL DE CONTROL (IZQUIERDA) --- */
+        .controls-panel {
+            background: var(--panel-bg);
+            width: 380px;
+            flex-shrink: 0;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            height: calc(100vh - 50px);
+            position: sticky;
+            top: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls-panel h2 {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #4a5568;
+        }
+
+        .form-group input, 
+        .form-group textarea, 
+        .form-group select {
+            padding: 9px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus, 
+        .form-group textarea:focus, 
+        .form-group select:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(19, 64, 116, 0.15);
+        }
+
+        .btn-pdf {
+            background-color: #2b6cb0;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: auto;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(43, 108, 176, 0.3);
+        }
+
+        .btn-pdf:hover {
+            background-color: #2c5282;
+        }
+
+        .btn-pdf:active {
+            transform: scale(0.98);
+        }
+
+        /* --- VISTA PREVIA (TAMAÑO CARTA EXACTO) --- */
+        .preview-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-x: auto;
+        }
+
+        .page-letter {
+            width: 215.9mm;
+            height: 279mm;
+            background: white;
+            padding: 18mm 20mm 15mm 20mm;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* Encabezado */
+        .header-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 2.5px solid var(--primary-color);
+            padding-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        /* Contenedor del Logo con tamaño duplicado (270px) */
+        .logo-container {
+            width: 270px;
+            height: 270px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+        }
+
+        .logo-container svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .header-text {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .header-text h1 {
+            font-size: 1.55rem;
+            text-transform: uppercase;
+            color: var(--primary-color);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .header-text h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+
+        .header-text h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2b6cb0;
+        }
+
+        /* Título Central del Trabajo */
+        .title-section {
+            text-align: center;
+            margin: auto 0;
+            padding: 15px 10px;
+        }
+
+        .doc-title {
+            font-size: 2.3rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            line-height: 1.3;
+            word-wrap: break-word;
+        }
+
+        /* Sección Datos (Materia, Docente, Alumno, Fecha) */
+        .info-section {
+            margin-bottom: 20px;
+            padding-left: 25px;
+            flex-shrink: 0;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            padding: 7px 0;
+            vertical-align: top;
+            font-size: 1.05rem;
+            line-height: 1.4;
+        }
+
+        .info-table td.label {
+            font-weight: 700;
+            width: 32%;
+            color: var(--primary-color);
+        }
+
+        .info-table td.value {
+            color: #2d3748;
+        }
+
+        /* Pie de Página */
+        .footer-section {
+            text-align: center;
+            border-top: 1.5px solid #cbd5e0;
+            padding-top: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #4a5568;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 1024px) {
+            body {
+                flex-direction: column;
+                align-items: center;
+            }
+            .controls-panel {
+                width: 100%;
+                max-width: 215.9mm;
+                height: auto;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PANEL DE CONTROL (IZQUIERDA) -->
+    <div class="controls-panel">
+        <h2>Configurar Carátula</h2>
+
+        <div class="form-group">
+            <label for="inputUni">Universidad:</label>
+            <input type="text" id="inputUni" value="Universidad Latinoamericana" oninput="updatePreview()">
+        </div>
+
+        <div class="form-group">
+            <label for="inputFacultad">Facultad:</label>
+            <input type="text" id="inputFacultad" value="Facultad de Ciencias y Tecnología" oninput="updatePreview()">
+        </div>
+
+        <div class="form-group">
+            <label for="inputCarrera">Carrera:</label>
+            <input type="text" id="inputCarrera" value="Ingeniería Civil" oninput="updatePreview()">
+        </div>
+
+        <div class="form-group">
+            <label for="inputTitulo">Título del Trabajo:</label>
+            <input type="text" id="inputTitulo" value="Trabajo Práctico 1" oninput="updatePreview()">
+        </div>
+
+        <div class="form-group">
+            <label for="inputMateria">Materia:</label>
+            <input type="text" id="inputMateria" value="Estructuras" oninput="updatePreview()">
+        </div>
+
+        <div class="form-group">
+            <label for="inputDocente">Docente:</label>
+            <input type="text" id="inputDocente" value="Ing." oninput="updatePreview()">
+        </div>
+
+        <div class="form-group">
+            <label for="selectTipoEstudiante">Modalidad de Presentación:</label>
+            <select id="selectTipoEstudiante" onchange="toggleStudentMode()">
+                <option value="individual">Estudiante (Individual)</option>
+                <option value="grupal">Integrantes del Grupo (Grupal)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="labelEstudiantes" for="inputEstudiantes">Estudiante(s):</label>
+            <textarea id="inputEstudiantes" rows="3" oninput="updatePreview()">Arias Mejia Bladimir</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="inputFecha">Fecha:</label>
+            <input type="text" id="inputFecha" value="22 de julio de 2026" oninput="updatePreview()">
+        </div>
+
+        <button class="btn-pdf" onclick="downloadPDF()">Descargar en PDF</button>
+    </div>
+
+    <!-- VISTA PREVIA (DERECHA - HOJA CARTA) -->
+    <div class="preview-container">
+        <div class="page-letter" id="coverPage">
+            
+            <!-- Encabezado con Logo SVG Duplicado de Tamaño -->
+            <div class="header-section">
+                <div class="logo-container">
+                    <svg viewBox="-10 -10 220 220" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="globeGrad" cx="45%" cy="35%" r="60%">
+                                <stop offset="0%" stop-color="#93c5fd" />
+                                <stop offset="50%" stop-color="#2563eb" />
+                                <stop offset="100%" stop-color="#0a192f" />
+                            </radialGradient>
+                            
+                            <path id="arcUpper" d="M 22,100 A 78,78 0 1,1 178,100" />
+                            <path id="arcLower" d="M 32,148 A 75,75 0 0,0 168,148" />
+                        </defs>
+
+                        <!-- Borde Azul Exterior -->
+                        <circle cx="100" cy="100" r="96" fill="#002b66" />
+                        
+                        <!-- Anillo Amarillo -->
+                        <circle cx="100" cy="100" r="91" fill="#ffe100" />
+                        <circle cx="100" cy="100" r="62" fill="#002b66" />
+
+                        <!-- Esfera Central -->
+                        <circle cx="100" cy="100" r="59" fill="url(#globeGrad)" />
+
+                        <!-- Siluetas de las Américas -->
+                        <path d="M 75,52 Q 82,45 92,48 T 112,50 T 120,62 Q 115,70 102,68 T 92,60 T 80,62 Z" fill="#ffffff" opacity="0.85" />
+                        <path d="M 100,78 Q 112,80 115,92 T 110,115 T 100,132 T 95,115 T 92,95 Z" fill="#ffffff" opacity="0.85" />
+
+                        <!-- Texto Arqueado Superior -->
+                        <text font-size="14.5" font-weight="900" fill="#002b66" font-family="'Arial Black', Arial, sans-serif">
+                            <textPath href="#arcUpper" startOffset="50%" text-anchor="middle">
+                                UNIVERSIDAD LATINOAMERICANA
+                            </textPath>
+                        </text>
+
+                        <!-- Estrellas Laterales -->
+                        <polygon points="18,103 20,108 25,108 21,111 22,116 18,113 14,116 15,111 11,108 16,108" fill="#002b66" />
+                        <polygon points="182,103 184,108 189,108 185,111 186,116 182,113 178,116 179,111 175,108 180,108" fill="#002b66" />
+
+                        <!-- Listón Inferior -->
+                        <path d="M 42,154 Q 100,182 158,154 L 166,186 Q 100,206 34,186 Z" fill="#002b66" />
+                        
+                        <!-- Texto Inferior "BOLIVIA" -->
+                        <text font-size="16" font-weight="900" fill="#ffe100" font-family="'Arial Black', Arial, sans-serif" letter-spacing="2">
+                            <textPath href="#arcLower" startOffset="50%" text-anchor="middle">
+                                BOLIVIA
+                            </textPath>
+                        </text>
+
+                        <!-- Texto Central "ULAT" -->
+                        <text x="100" y="112" font-size="38" font-weight="900" fill="#e63946" stroke="#ffffff" stroke-width="2" font-family="'Impact', 'Arial Black', sans-serif" text-anchor="middle">
+                            "ULAT"
+                        </text>
+                    </svg>
+                </div>
+                <div class="header-text">
+                    <h1 id="viewUni">Universidad Latinoamericana</h1>
+                    <h2 id="viewFacultad">Facultad de Ciencias y Tecnología</h2>
+                    <h3 id="viewCarrera">Ingeniería Civil</h3>
+                </div>
+            </div>
+
+            <!-- Título del Trabajo -->
+            <div class="title-section">
+                <div class="doc-title" id="viewTitulo">Trabajo Práctico 1</div>
+            </div>
+
+            <!-- Datos Generales -->
+            <div class="info-section">
+                <table class="info-table">
+                    <tr>
+                        <td class="label">Materia:</td>
+                        <td class="value" id="viewMateria">Estructuras</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Docente:</td>
+                        <td class="value" id="viewDocente">Ing.</td>
+                    </tr>
+                    <tr>
+                        <td class="label" id="viewStudentLabel">Estudiante:</td>
+                        <td class="value" id="viewEstudiantes">Arias Mejia Bladimir</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Fecha:</td>
+                        <td class="value" id="viewFecha">22 de julio de 2026</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Pie de Página -->
+            <div class="footer-section">
+                Cochabamba - Bolivia
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT DE EXPORTACIÓN A PDF (1 PÁGINA RIGUROSA) -->
+    <script>
+        function updatePreview() {
+            document.getElementById('viewUni').innerText = document.getElementById('inputUni').value || 'Universidad Latinoamericana';
+            document.getElementById('viewFacultad').innerText = document.getElementById('inputFacultad').value || 'Facultad de Ciencias y Tecnología';
+            document.getElementById('viewCarrera').innerText = document.getElementById('inputCarrera').value || 'Ingeniería Civil';
+            document.getElementById('viewTitulo').innerText = document.getElementById('inputTitulo').value || 'Trabajo Práctico 1';
+            document.getElementById('viewMateria').innerText = document.getElementById('inputMateria').value || 'Estructuras';
+            document.getElementById('viewDocente').innerText = document.getElementById('inputDocente').value || 'Ing.';
+            
+            const estudiantesText = document.getElementById('inputEstudiantes').value;
+            document.getElementById('viewEstudiantes').innerHTML = estudiantesText.replace(/\n/g, '<br>');
+            
+            document.getElementById('viewFecha').innerText = document.getElementById('inputFecha').value || '22 de julio de 2026';
+        }
+
+        function toggleStudentMode() {
+            const mode = document.getElementById('selectTipoEstudiante').value;
+            const labelForm = document.getElementById('labelEstudiantes');
+            const viewLabel = document.getElementById('viewStudentLabel');
+
+            if (mode === 'grupal') {
+                labelForm.innerText = 'Integrantes del Grupo:';
+                viewLabel.innerText = 'Integrantes del Grupo:';
+            } else {
+                labelForm.innerText = 'Estudiante:';
+                viewLabel.innerText = 'Estudiante:';
+            }
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('coverPage');
+            
+            const opt = {
+                margin:       0,
+                filename:     'caratula_universidad_latinoamericana.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true,
+                    scrollY: 0,
+                    scrollX: 0
+                },
+                jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' },
+                pagebreak:    { mode: 'none' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+
+        toggleStudentMode();
+    </script>
+</body>
+</html>

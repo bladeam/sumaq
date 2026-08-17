@@ -1,0 +1,611 @@
+<!--
+===================================================================
+ CONFIGURACIÓN INICIAL DEL JUEGO
+===================================================================
+PARTICIPANTES:
+- Juan Pérez
+- María Quispe
+- Carlos Condori
+
+CANTIDAD_PREGUNTAS = 8
+===================================================================
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Árbol Genealógico Interactivo en Quechua</title>
+    <style>
+        :root {
+            --primary-color: #2ECC71;
+            --secondary-color: #8E44AD;
+            --accent-color: #F1C40F;
+            --bg-color: #F4F6F7;
+            --card-bg: #FFFFFF;
+            --text-color: #2C3E50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Formulario de Configuración */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        textarea, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #BDC3C7;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus, input[type="number"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background: #27AE60;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Panel HUD superior */
+        .hud {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            background: #E8F8F5;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            gap: 10px;
+        }
+
+        .turn-banner {
+            text-align: center;
+            background: var(--secondary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .scores-bar {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+        }
+
+        .player-chip {
+            background: #ECF0F1;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            border: 2px solid transparent;
+        }
+
+        .player-chip.active {
+            border-color: var(--secondary-color);
+            background: #E8DAEF;
+            font-weight: bold;
+        }
+
+        /* Árbol Genealógico Visual */
+        .tree-container {
+            background: #F9EBEA;
+            border: 3px dashed #E6B0AA;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .tree-level {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .node {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 12px;
+            border: 2px solid #BDC3C7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 100px;
+            transition: all 0.3s;
+        }
+
+        .node.highlight {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 15px rgba(142, 68, 173, 0.5);
+            transform: scale(1.08);
+            background: #F4ECF7;
+        }
+
+        .node-avatar {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        .node-label {
+            font-size: 0.85rem;
+            color: #7F8C8D;
+            font-weight: bold;
+        }
+
+        /* Pregunta y Opciones */
+        .question-box {
+            background: #FFF9E6;
+            border: 2px solid var(--accent-color);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .question-title {
+            font-size: 1.4rem;
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #3498DB;
+            color: #3498DB;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #3498DB;
+            color: white;
+        }
+
+        /* Tabla de Resultados */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F8F9FA;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PANTALLA 1: CONFIGURACIÓN -->
+    <div id="screen-config" class="screen active">
+        <h1>🌳 Árbol Genealógico Quechua</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 25px;">Preguntas de Parentesco en Quechua (Awatay, Mama, Wawqi...)</p>
+
+        <div class="form-group">
+            <label for="input-participants">Participantes (un nombre por fila):</label>
+            <textarea id="input-participants" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="input-questions">Número de preguntas (Máximo 30):</label>
+            <input type="number" id="input-questions" min="1" max="30" value="8">
+        </div>
+
+        <button class="btn" onclick="startGame()">¡Comenzar Juego!</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+    </div>
+
+    <!-- PANTALLA 2: JUEGO -->
+    <div id="screen-game" class="screen">
+        <div class="hud">
+            <div>Pregunta: <span id="hud-progress">0/0</span></div>
+            <div>Fecha: <span id="hud-date"></span></div>
+            <div>Hora Inicio: <span id="hud-starttime"></span></div>
+        </div>
+
+        <div id="turn-banner" class="turn-banner">
+            Turno de: <span id="current-player-name">--</span>
+        </div>
+
+        <div id="scores-bar" class="scores-bar">
+            <!-- Chips de puntaje dinámicos -->
+        </div>
+
+        <!-- Árbol Genealógico Interactivo -->
+        <div class="tree-container">
+            <!-- Nivel 1: Abuelos -->
+            <div class="tree-level">
+                <div class="node" id="node-jatun-tata">
+                    <span class="node-avatar">👴</span>
+                    <span class="node-label">Abuelo</span>
+                </div>
+                <div class="node" id="node-jatun-mama">
+                    <span class="node-avatar">👵</span>
+                    <span class="node-label">Abuela</span>
+                </div>
+            </div>
+
+            <!-- Nivel 2: Padres -->
+            <div class="tree-level">
+                <div class="node" id="node-tata">
+                    <span class="node-avatar">👨</span>
+                    <span class="node-label">Padre</span>
+                </div>
+                <div class="node" id="node-mama">
+                    <span class="node-avatar">👩</span>
+                    <span class="node-label">Madre</span>
+                </div>
+            </div>
+
+            <!-- Nivel 3: Hijos -->
+            <div class="tree-level">
+                <div class="node" id="node-wawqi">
+                    <span class="node-avatar">👦</span>
+                    <span class="node-label">Hermano</span>
+                </div>
+                <div class="node" id="node-pana">
+                    <span class="node-avatar">👧</span>
+                    <span class="node-label">Hermana</span>
+                </div>
+                <div class="node" id="node-wawa">
+                    <span class="node-avatar">👶</span>
+                    <span class="node-label">Bebé / Hijo</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Caja de Pregunta -->
+        <div class="question-box">
+            <div class="question-title" id="question-text">¿Pitaq pay?</div>
+            <div class="options-grid" id="options-container">
+                <!-- Botones desplegados dinámicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 3: RESULTADOS -->
+    <div id="screen-results" class="screen">
+        <h1>📊 Historial y Resultados Finales</h1>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Aciertos</th>
+                        <th>Preguntas Atendidas</th>
+                        <th>Porcentaje (%)</th>
+                        <th>Fecha</th>
+                        <th>Hora Inicio</th>
+                        <th>Hora Fin</th>
+                        <th>Tiempo Total</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body">
+                    <!-- Filas dinámicas -->
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn" onclick="resetToConfig()">Volver a Jugar</button>
+    </div>
+</div>
+
+<script>
+    // Estructura de Datos en formato JSON / Array de Objetos para el Árbol Genealógico
+    const familyTreeDatabase = [
+        { key: 'jatun-tata', spanish: 'Abuelo', quechuaOptions: ['Jatun Tata', 'Jatun Mama', 'Tata', 'Wawqi'], correct: 'Jatun Tata' },
+        { key: 'jatun-mama', spanish: 'Abuela', quechuaOptions: ['Jatun Mama / Awicha', 'Mama', 'Pana', 'Ipa'], correct: 'Jatun Mama / Awicha' },
+        { key: 'tata', spanish: 'Padre', quechuaOptions: ['Tata', 'Jatun Tata', 'Wawqi', 'Kaka'], correct: 'Tata' },
+        { key: 'mama', spanish: 'Madre', quechuaOptions: ['Mama', 'Jatun Mama', 'Pana', 'Ipa'], correct: 'Mama' },
+        { key: 'wawqi', spanish: 'Hermano (de varón)', quechuaOptions: ['Wawqi', 'Tura', 'Pana', 'Churi'], correct: 'Wawqi' },
+        { key: 'pana', spanish: 'Hermana (de varón)', quechuaOptions: ['Pana', 'Ñaña', 'Mama', 'Ususi'], correct: 'Pana' },
+        { key: 'wawa', spanish: 'Bebé / Hijo(a) (de mujer)', quechuaOptions: ['Wawa', 'Churi', 'Jatun Tata', 'Tura'], correct: 'Wawa' }
+    ];
+
+    // Variables de Estado
+    let players = [];
+    let currentPlayerIndex = 0;
+    let totalQuestions = 8;
+    let currentQuestionCount = 0;
+    let gameQuestions = [];
+    let gameStartTime = null;
+
+    // Cargar configuración desde comentarios del HTML automáticamente
+    document.addEventListener('DOMContentLoaded', () => {
+        let commentContent = '';
+        const nodeIterator = document.createNodeIterator(document, NodeFilter.SHOW_COMMENT, null, false);
+        let currentNode;
+        while (currentNode = nodeIterator.nextNode()) {
+            commentContent += currentNode.nodeValue + '\n';
+        }
+
+        const nameMatches = commentContent.match(/-\s*([^\r\n]+)/g);
+        let initialNames = [];
+        if (nameMatches) {
+            initialNames = nameMatches.map(m => m.replace(/^-\s*/, '').trim());
+        }
+
+        const questionMatch = commentContent.match(/CANTIDAD_PREGUNTAS\s*=\s*(\d+)/);
+        let initialQuestions = 8;
+        if (questionMatch) {
+            initialQuestions = parseInt(questionMatch[1], 10);
+        }
+
+        document.getElementById('input-participants').value = initialNames.length > 0 
+            ? initialNames.join('\n') 
+            : 'Jugador 1\nJugador 2';
+        document.getElementById('input-questions').value = Math.min(Math.max(1, initialQuestions), 30);
+    });
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const rawParticipants = document.getElementById('input-participants').value.trim();
+        const rawQuestions = parseInt(document.getElementById('input-questions').value, 10);
+
+        const parsedNames = rawParticipants.split('\n')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
+
+        if (parsedNames.length === 0) {
+            alert('Por favor, ingresa al menos un participante.');
+            return;
+        }
+
+        totalQuestions = Math.min(Math.max(1, rawQuestions || 8), 30);
+        
+        players = parsedNames.map(name => ({
+            name: name,
+            score: 0,
+            questionsAnswered: 0
+        }));
+
+        // Generar lista de preguntas combinando elementos del árbol
+        gameQuestions = [];
+        while (gameQuestions.length < totalQuestions) {
+            let pool = shuffle([...familyTreeDatabase]);
+            for (let item of pool) {
+                if (gameQuestions.length < totalQuestions) {
+                    gameQuestions.push(item);
+                }
+            }
+        }
+
+        currentPlayerIndex = 0;
+        currentQuestionCount = 0;
+        gameStartTime = new Date();
+
+        document.getElementById('hud-date').textContent = gameStartTime.toLocaleDateString();
+        document.getElementById('hud-starttime').textContent = gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        updateTurnUI();
+        loadNextQuestion();
+        showScreen('screen-game');
+    }
+
+    function updateTurnUI() {
+        const currentPlayer = players[currentPlayerIndex];
+        document.getElementById('current-player-name').textContent = currentPlayer.name;
+
+        const scoresBar = document.getElementById('scores-bar');
+        scoresBar.innerHTML = '';
+        players.forEach((p, idx) => {
+            const chip = document.createElement('div');
+            chip.classList.add('player-chip');
+            if (idx === currentPlayerIndex) chip.classList.add('active');
+            chip.textContent = `${p.name}: ${p.score} pts`;
+            scoresBar.appendChild(chip);
+        });
+
+        document.getElementById('hud-progress').textContent = `${currentQuestionCount + 1}/${totalQuestions}`;
+    }
+
+    function loadNextQuestion() {
+        if (currentQuestionCount >= totalQuestions) {
+            endGame();
+            return;
+        }
+
+        const qData = gameQuestions[currentQuestionCount];
+
+        // Resaltar el nodo correspondiente en el Árbol Genealógico
+        document.querySelectorAll('.node').forEach(n => n.classList.remove('highlight'));
+        const activeNode = document.getElementById(`node-${qData.key}`);
+        if (activeNode) {
+            activeNode.classList.add('highlight');
+        }
+
+        // Configurar texto de la pregunta
+        document.getElementById('question-text').textContent = `¿Pitaq pay? (¿Quién es él/ella en el árbol?) - [${qData.spanish}]`;
+
+        // Renderizar opciones de respuesta desplegables/botones
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        let shuffledOptions = shuffle([...qData.quechuaOptions]);
+
+        shuffledOptions.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.classList.add('option-btn');
+            btn.textContent = opt;
+            btn.onclick = () => handleAnswer(opt, qData.correct);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function handleAnswer(selectedOption, correctOption) {
+        const currentPlayer = players[currentPlayerIndex];
+        currentPlayer.questionsAnswered++;
+
+        if (selectedOption === correctOption) {
+            currentPlayer.score++;
+            alert(`¡Allin! (¡Correcto!). Es ${correctOption}`);
+        } else {
+            alert(`Pantay (Incorrecto). La respuesta correcta era: ${correctOption}`);
+        }
+
+        currentQuestionCount++;
+        
+        // Pasar al siguiente participante intercalando turnos
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+
+        if (currentQuestionCount < totalQuestions) {
+            updateTurnUI();
+            loadNextQuestion();
+        } else {
+            endGame();
+        }
+    }
+
+    function endGame() {
+        const gameEndTime = new Date();
+        const durationSec = Math.round((gameEndTime - gameStartTime) / 1000);
+
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = '';
+
+        const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
+        sortedPlayers.forEach(p => {
+            const percentage = p.questionsAnswered > 0 
+                ? Math.round((p.score / p.questionsAnswered) * 100) 
+                : 0;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${p.name}</strong></td>
+                <td>${p.score}</td>
+                <td>${p.questionsAnswered}</td>
+                <td><strong>${percentage}%</strong></td>
+                <td>${gameStartTime.toLocaleDateString()}</td>
+                <td>${gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                <td>${gameEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                <td>${durationSec} seg</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        showScreen('screen-results');
+    }
+
+    function resetToConfig() {
+        showScreen('screen-config');
+    }
+</script>
+</body>
+</html>
+
+

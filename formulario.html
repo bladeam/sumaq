@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Quechua</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #8e44ad;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .menu-button {
+            padding: 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
+        
+        .close-button:hover {
+            color: #333;
+        }
+        
+        .modal-header {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        
+        .modal-body {
+            padding: 10px 0;
+        }
+        
+        .word-list {
+            list-style-type: none;
+            columns: 2;
+            column-gap: 20px;
+        }
+        
+        .word-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            break-inside: avoid;
+        }
+        
+        .suffix-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        .suffix-table th, .suffix-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        
+        .suffix-table th {
+            background-color: #f2f2f2;
+        }
+        
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+            
+            .word-list {
+                columns: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Formulario de Quechua</h1>
+            <p>Explora verbos, sustantivos y sufijos del idioma Quechua</p>
+        </header>
+        
+        <div class="menu-grid">
+            <button class="menu-button" onclick="showContent('verbos')">Verbos (Quechua - Español)</button>
+            <button class="menu-button" onclick="showContent('sufijos-posesivos')">Sufijos Posesivos</button>
+            <button class="menu-button" onclick="showContent('sufijos-presente-simple')">Sufijos del Presente Simple</button>
+            <button class="menu-button" onclick="showContent('sufijos-presente-continuo')">Sufijos del Presente Continuo</button>
+            <button class="menu-button" onclick="showContent('sufijos-pasado-perfecto')">Sufijos del Pasado Perfecto</button>
+            <button class="menu-button" onclick="showContent('sufijos-pasado-imperfecto')">Sufijos del Pasado Imperfecto</button>
+            <button class="menu-button" onclick="showContent('sufijos-futuro-simple')">Sufijos del Futuro Simple</button>
+            <button class="menu-button" onclick="showContent('sufijos-futuro-continuo')">Sufijos del Futuro Continuo</button>
+            <button class="menu-button" onclick="showContent('sustantivos')">Sustantivos (Quechua - Español)</button>
+        </div>
+    </div>
+    
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <div class="modal-header">
+                <h2 id="modal-title">Título</h2>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Función para mostrar el contenido según la opción seleccionada
+        function showContent(tipo) {
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            
+            // Configurar título y contenido según el tipo
+            switch(tipo) {
+                case 'verbos':
+                    modalTitle.textContent = 'Verbos (Quechua - Español)';
+                    modalBody.innerHTML = getVerbosContent();
+                    break;
+                case 'sufijos-posesivos':
+                    modalTitle.textContent = 'Sufijos Posesivos';
+                    modalBody.innerHTML = getSufijosPosesivosContent();
+                    break;
+                case 'sufijos-presente-simple':
+                    modalTitle.textContent = 'Sufijos del Presente Simple';
+                    modalBody.innerHTML = getSufijosPresenteSimpleContent();
+                    break;
+                case 'sufijos-presente-continuo':
+                    modalTitle.textContent = 'Sufijos del Presente Continuo';
+                    modalBody.innerHTML = getSufijosPresenteContinuoContent();
+                    break;
+                case 'sufijos-pasado-perfecto':
+                    modalTitle.textContent = 'Sufijos del Pasado Perfecto';
+                    modalBody.innerHTML = getSufijosPasadoPerfectoContent();
+                    break;
+                case 'sufijos-pasado-imperfecto':
+                    modalTitle.textContent = 'Sufijos del Pasado Imperfecto';
+                    modalBody.innerHTML = getSufijosPasadoImperfectoContent();
+                    break;
+                case 'sufijos-futuro-simple':
+                    modalTitle.textContent = 'Sufijos del Futuro Simple';
+                    modalBody.innerHTML = getSufijosFuturoSimpleContent();
+                    break;
+                case 'sufijos-futuro-continuo':
+                    modalTitle.textContent = 'Sufijos del Futuro Continuo';
+                    modalBody.innerHTML = getSufijosFuturoContinuoContent();
+                    break;
+                case 'sustantivos':
+                    modalTitle.textContent = 'Sustantivos (Quechua - Español)';
+                    modalBody.innerHTML = getSustantivosContent();
+                    break;
+            }
+            
+            // Mostrar el modal
+            modal.style.display = 'block';
+        }
+        
+        // Función para cerrar el modal
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
+        }
+        
+        // Cerrar el modal si se hace clic fuera del contenido
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+        
+        // Funciones que generan el contenido para cada modal
+        function getVerbosContent() {
+            return `
+                <ul class="word-list">
+                    <li><strong>akay</strong>: defecar</li>
+                    <li><strong>akllay</strong>: escoger</li>
+                    <li><strong>aklluy</strong>: tartamudear</li>
+                    <li><strong>allay</strong>: cavar</li>
+                    <li><strong>amiy</strong>: empalagar, hastiar</li>
+                    <li><strong>apay</strong>: llevar</li>
+                    <li><strong>aquy</strong>: recoger arena</li>
+                    <li><strong>aqhay</strong>: elaborar chicha</li>
+                    <li><strong>arawiy</strong>: componer versos</li>
+                    <li><strong>armay</strong>: bañar</li>
+                    <li><strong>arqhiy</strong>: respirar con dificultad</li>
+                    <li><strong>asiy</strong>: reír</li>
+                    <li><strong>asnay</strong>: heder, despedir mal olor</li>
+                    <li><strong>astay</strong>: transportar</li>
+                    <li><strong>atiy</strong>: poder</li>
+                    <li><strong>away</strong>: tejer</li>
+                    <li><strong>awqay</strong>: guerrear</li>
+                    <li><strong>ayñay</strong>: ladrar</li>
+                    <li><strong>ayqiy</strong>: huir</li>
+                    <li><strong>aysay</strong>: jalar</li>
+                    <li><strong>aytiy</strong>: enjuagar</li>
+                    <li><strong>aywiy</strong>: pulupar</li>
+                    <li><strong>chakay</strong>: cruzar</li>
+                    <li><strong>challpuy</strong>: humedecer</li>
+                    <li><strong>chaqmay</strong>: recolectar productos no recogidos</li>
+                    <li><strong>chaqnay</strong>: cargar</li>
+                    <li><strong>chaqruy</strong>: mezclar</li>
+                    <li><strong>chayay</strong>: llegar</li>
+                    <li><strong>chimpay</strong>: acercarse</li>
+                    <li><strong>chinkay</strong>: perderse</li>
+                    <li><strong>chiqniy</strong>: odiar</li>
+                    <li><strong>chiriy</strong>: hacer frío</li>
+                    <li><strong>chukuy</strong>: acuclillarse</li>
+                    <li><strong>chulluy</strong>: remojar</li>
+                    <li><strong>chuqay</strong>: arrojar piedras</li>
+                    <li><strong>churay</strong>: poner</li>
+                    <li><strong>ch'allay</strong>: brindar</li>
+                    <li><strong>ch'allpay</strong>: salpicar</li>
+                    <li><strong>ch'anqay</strong>: arrojar</li>
+                    <li><strong>ch'aqchuy</strong>: rociar</li>
+                    <li><strong>ch'aqway</strong>: hacer bulla</li>
+                    <li><strong>ch'arkiy</strong>: hacer tasajo</li>
+                    <li><strong>ch'atay</strong>: cerrar con candado</li>
+                    <li><strong>ch'away</strong>: ordeñar</li>
+                    <li><strong>ch'ipay</strong>: embalar</li>
+                    <li><strong>ch'iqtay</strong>: rajar leña</li>
+                    <li><strong>ch'irmiy</strong>: parpadear</li>
+                    <li><strong>ch'irway</strong>: escurrir la ropa</li>
+                    <li><strong>ch'umay</strong>: exprimir</li>
+                    <li><strong>ch'unqay</strong>: chupar</li>
+                    <li><strong>ch'uskiy</strong>: desollar</li>
+                    <li><strong>ch'utiy</strong>: hacer carambola</li>
+                    <li><strong>chhapuy</strong>: mezclar agua con harina</li>
+                    <li><strong>chhasay</strong>: peer</li>
+                    <li><strong>chhukuy</strong>: acunar</li>
+                    <li><strong>chhuruy</strong>: picotear</li>
+                    <li><strong>chhusuy</strong>: desinflarse</li>
+                    <li><strong>chhutuy</strong>: picotear</li>
+                    <li><strong>ichhuy</strong>: segar</li>
+                    <li><strong>illay</strong>: brillar</li>
+                    <li><strong>inqhay</strong>: atizar</li>
+                    <li><strong>iñiy</strong>: creer, tener fe</li>
+                    <li><strong>ismuy</strong>: podrirse</li>
+                    <li><strong>jak'uy</strong>: moler harina</li>
+                    <li><strong>jallmay</strong>: aporcar</li>
+                    <li><strong>jampiy</strong>: curar</li>
+                    <li><strong>jamuy</strong>: venir</li>
+                    <li><strong>jank'ay</strong>: tostar maíz</li>
+                    <li><strong>janllay</strong>: abrir la boca</li>
+                    <li><strong>jap'ay</strong>: eruptar</li>
+                    <li><strong>jap'iy</strong>: agarrar</li>
+                    <li><strong>jarka'ay</strong>: atajar</li>
+                    <li><strong>jasp'iy</strong>: arañar</li>
+                    <li><strong>jatariy</strong>: levantarse</li>
+                    <li><strong>jawiy</strong>: untar</li>
+                    <li><strong>jayt'ay</strong>: patear</li>
+                    <li><strong>jayway</strong>: alcanzar</li>
+                    <li><strong>jich'ay</strong>: derramar, verter</li>
+                    <li><strong>jillpuy</strong>: sangrar</li>
+                    <li><strong>jisp'ay</strong>: orinar</li>
+                    <li><strong>jumpiy</strong>: sudar</li>
+                    <li><strong>junt'ay</strong>: llenar, cumplir una obligación</li>
+                    <li><strong>juqhariy</strong>: levantar</li>
+                    <li><strong>jurqhuy</strong>: sacar afuera</li>
+                    <li><strong>jutku'y</strong>: agujerear</li>
+                    <li><strong>kachay</strong>: enviar</li>
+                    <li><strong>kallchay</strong>: segar</li>
+                    <li><strong>kallpay</strong>: hacer fuerza</li>
+                    <li><strong>kanay</strong>: hacer fogata</li>
+                    <li><strong>kankay</strong>: asar</li>
+                    <li><strong>kawsay</strong>: vivir</li>
+                    <li><strong>kay</strong>: ser</li>
+                    <li><strong>kaynay</strong>: descansar</li>
+                    <li><strong>kichay</strong>: abrir</li>
+                    <li><strong>killay</strong>: alumbrar la luna</li>
+                    <li><strong>kuchuy</strong>: cortar</li>
+                    <li><strong>kuntuy</strong>: perfumar</li>
+                    <li><strong>kutay</strong>: moler</li>
+                    <li><strong>kutichiy</strong>: responder</li>
+                    <li><strong>kutiy</strong>: volver</li>
+                    <li><strong>kuyuy</strong>: moverse</li>
+                    <li><strong>k'ajay</strong>: hacer calor</li>
+                    <li><strong>k'amiy</strong>: reprender</li>
+                    <li><strong>k'anchay</strong>: alumbrar</li>
+                    <li><strong>k'antiy</strong>: torcer en rueca hilo de dos o más ramales</li>
+                    <li><strong>k'aray</strong>: doler fuerte</li>
+                    <li><strong>k'arkuy</strong>: avinagrarse</li>
+                    <li><strong>k'askay</strong>: adherir</li>
+                    <li><strong>k'illpiy</strong>: marcar el ganado</li>
+                    <li><strong>k'iriy</strong>: herir</li>
+                    <li><strong>k'iruy</strong>: fajar</li>
+                    <li><strong>k'ichkiy</strong>: apretujar</li>
+                    <li><strong>k'isñiy</strong>: encajar</li>
+                    <li><strong>k'umpuy</strong>: tapar</li>
+                    <li><strong>k'utuy</strong>: cortar</li>
+                    <li><strong>khakay</strong>: encajar</li>
+                    <li><strong>khallay</strong>: abrir brecha</li>
+                    <li><strong>khamuy</strong>: masticar</li>
+                    <li><strong>khaniy</strong>: morder</li>
+                    <li><strong>khapay</strong>: dar zancadas</li>
+                    <li><strong>khituy</strong>: frotar</li>
+                    <li><strong>khiwiy</strong>: envolver</li>
+                    <li><strong>khuchuy</strong>: cortar</li>
+                    <li><strong>khuskiy</strong>: examinar</li>
+                    <li><strong>khuyay</strong>: compadecer, amar</li>
+                    <li><strong>khuyuy</strong>: silbar</li>
+                    <li><strong>laqray</strong>: rajarse</li>
+                    <li><strong>lat'ay</strong>: caminar de 4 pies</li>
+                    <li><strong>lawray</strong>: arder</li>
+                    <li><strong>llakiy</strong>: entristecerse</li>
+                    <li><strong>llamikuy</strong>: probar</li>
+                    <li><strong>llamk'ay</strong>: trabajar</li>
+                    <li><strong>llamt'ay</strong>: rajar leña</li>
+                    <li><strong>llamkhay</strong>: palpar</li>
+                    <li><strong>llaqhiy</strong>: deshojar</li>
+                    <li><strong>llaqllay</strong>: labrar la madera</li>
+                    <li><strong>llaqway</strong>: lamer</li>
+                    <li><strong>llawsay</strong>: babear</li>
+                    <li><strong>llik'iy</strong>: desgarrar</li>
+                    <li><strong>llimp'iy</strong>: pintar</li>
+                    <li><strong>lliqhuy</strong>: mirar de soslayo</li>
+                    <li><strong>lluchk'ay</strong>: resbalarse</li>
+                    <li><strong>lluch'uy</strong>: despellejar</li>
+                    <li><strong>lluk'iy</strong>: traer debajo del brazo</li>
+                    <li><strong>llump'ay</strong>: limpiar</li>
+                    <li><strong>llumk'iy</strong>: pulir, lustrar</li>
+                    <li><strong>llunk'uy</strong>: adular</li>
+                    <li><strong>lluq'ay</strong>: trepar</li>
+                    <li><strong>lluqchiy</strong>: palpar</li>
+                    <li><strong>lluqsiy</strong>: salir afuera</li>
+                    <li><strong>llut'ay</strong>: embadurnar</li>
+                    <li><strong>machay</strong>: emborracharse</li>
+                    <li><strong>mach'ay</strong>: adherir</li>
+                    <li><strong>malliy</strong>: gustar, catar</li>
+                    <li><strong>mallkiy</strong>: plantar</li>
+                    <li><strong>manchay</strong>: tener miedo</li>
+                    <li><strong>manuy</strong>: prestar, fiar</li>
+                    <li><strong>mañay</strong>: pedir prestado</li>
+                    <li><strong>maqay</strong>: pegar</li>
+                    <li><strong>maqch'iy</strong>: enjuagar</li>
+                    <li><strong>marq'ay</strong>: llevar en brazos</li>
+                    <li><strong>mask'ay</strong>: buscar</li>
+                    <li><strong>mast'ay</strong>: tender, extender</li>
+                    <li><strong>mat'iy</strong>: apretar</li>
+                    <li><strong>mayllay</strong>: lavar</li>
+                    <li><strong>mayt'uy</strong>: envolver</li>
+                    <li><strong>michiy</strong>: pastar el ganado</li>
+                    <li><strong>mikhuy</strong>: comer</li>
+                    <li><strong>millpuy</strong>: tragar</li>
+                    <li><strong>miray</strong>: aumentarse</li>
+                    <li><strong>misk'ay</strong>: tropezar</li>
+                    <li><strong>mismiy</strong>: filtrar</li>
+                    <li><strong>muchuy</strong>: padecer, sufrir</li>
+                    <li><strong>much'ay</strong>: besar</li>
+                    <li><strong>munay</strong>: querer</li>
+                    <li><strong>muskhiy</strong>: oler</li>
+                    <li><strong>musphay</strong>: estar en error</li>
+                    <li><strong>musquy</strong>: soñar</li>
+                    <li><strong>musyay</strong>: sentir</li>
+                    <li><strong>muyuy</strong>: dar vueltas</li>
+                    <li><strong>nanay</strong>: doler</li>
+                    <li><strong>napay</strong>: saludar</li>
+                    <li><strong>ñak'ay</strong>: degollar</li>
+                    <li><strong>ñaqch'ay</strong>: peinar</li>
+                    <li><strong>ñat'uy</strong>: aplastar</li>
+                    <li><strong>ñit'iy</strong>: apretar</li>
+                    <li><strong>ñiy</strong>: decir</li>
+                    <li><strong>ñukñay</strong>: engañar</li>
+                    <li><strong>ñuñuy</strong>: lactar</li>
+                    <li><strong>ñut'uy</strong>: machacar</li>
+                    <li><strong>ñawiriy</strong>: leer</li>
+                    <li><strong>pakay</strong>: esconder</li>
+                    <li><strong>pallay</strong>: recoger del suelo</li>
+                    <li><strong>pantay</strong>: equivocarse</li>
+                    <li><strong>paray</strong>: llover</li>
+                    <li><strong>pichay</strong>: barrer</li>
+                    <li><strong>pikchuy</strong>: masticar coca</li>
+                    <li><strong>piqtuy</strong>: mezclar</li>
+                    <li><strong>pirqay</strong>: construir paredes</li>
+                    <li><strong>pirway</strong>: construir depósitos</li>
+                    <li><strong>pituy</strong>: comer el maíz tostado y pulverizado</li>
+                    <li><strong>puchuy</strong>: sobrar</li>
+                    <li><strong>pukllay</strong>: jugar</li>
+                    <li><strong>punkiy</strong>: hinchar</li>
+                    <li><strong>puñuy</strong>: dormir</li>
+                    <li><strong>puquy</strong>: madurar</li>
+                    <li><strong>puriy</strong>: caminar</li>
+                    <li><strong>pusay</strong>: conducir</li>
+                    <li><strong>p'akiy</strong>: romper en pedazos</li>
+                    <li><strong>p'ampay</strong>: enterrar</li>
+                    <li><strong>p'aspay</strong>: secarse o agrietarse la piel</li>
+                    <li><strong>p'atay</strong>: morder</li>
+                    <li><strong>p'inqay</strong>: avergonzarse</li>
+                    <li><strong>p'itay</strong>: tejer</li>
+                    <li><strong>p'itiy</strong>: arrancar</li>
+                    <li><strong>p'utuy</strong>: germinar</li>
+                    <li><strong>phaskay</strong>: soltar</li>
+                    <li><strong>phanchiy</strong>: echar brotes</li>
+                    <li><strong>phaqchay</strong>: caer el agua en cascada</li>
+                    <li><strong>pharpay</strong>: batir las alas</li>
+                    <li><strong>phatay</strong>: reventar</li>
+                    <li><strong>phaway</strong>: volar</li>
+                    <li><strong>phinkiy</strong>: saltar sobre un pie</li>
+                    <li><strong>phiriy</strong>: preparar el phiri</li>
+                    <li><strong>phuchkay</strong>: hilar</li>
+                    <li><strong>phukuy</strong>: soplar</li>
+                    <li><strong>phullpuy</strong>: hervir</li>
+                    <li><strong>phurmuy</strong>: rebosar</li>
+                    <li><strong>phutiy</strong>: estar triste</li>
+                    <li><strong>phuyuy</strong>: anublarse</li>
+                    <li><strong>qallariy</strong>: comenzar</li>
+                    <li><strong>qaray</strong>: alimentar</li>
+                    <li><strong>qasay</strong>: helar</li>
+                    <li><strong>qawiy</strong>: asolear la oca</li>
+                    <li><strong>qayllay</strong>: acercarse</li>
+                    <li><strong>qaywiy</strong>: agitar, mover un líquido</li>
+                    <li><strong>qillqay</strong>: escribir</li>
+                    <li><strong>qunqay</strong>: olvidar</li>
+                    <li><strong>qurmay</strong>: rodar</li>
+                    <li><strong>qutuy</strong>: apilar, amontonar</li>
+                    <li><strong>quy</strong>: dar</li>
+                    <li><strong>q'apay</strong>: heder</li>
+                    <li><strong>q'apiy</strong>: apretar la mano</li>
+                    <li><strong>q'aqchay</strong>: dar de latigazos</li>
+                    <li><strong>q'asay</strong>: desportillar</li>
+                    <li><strong>q'ichay</strong>: evacuar diarrea</li>
+                    <li><strong>q'imiy</strong>: apoyar</li>
+                    <li><strong>q'impiy</strong>: enrollar</li>
+                    <li><strong>q'ipiy</strong>: cargar</li>
+                    <li><strong>q'usniy</strong>: humear</li>
+                    <li><strong>qhachqay</strong>: roer</li>
+                    <li><strong>qhalliy</strong>: echar un líquido</li>
+                    <li><strong>qhapariy</strong>: gritar</li>
+                    <li><strong>qhaquy</strong>: frotar</li>
+                    <li><strong>qharquy</strong>: desterrar</li>
+                    <li><strong>qhatay</strong>: cubrir</li>
+                    <li><strong>qhatiy</strong>: seguir</li>
+                    <li><strong>qhatuy</strong>: vender</li>
+                    <li><strong>qhaway</strong>: ver</li>
+                    <li><strong>qhichuy</strong>: quitar</li>
+                    <li><strong>qhipay</strong>: quedarse</li>
+                    <li><strong>qhispiy</strong>: salvarse</li>
+                    <li><strong>qhuray</strong>: desherbar</li>
+                    <li><strong>qhurquy</strong>: roncar</li>
+                    <li><strong>qhutuy</strong>: sorber los mocos</li>
+                    <li><strong>rak'iy</strong>: dividir</li>
+                    <li><strong>rantiy</strong>: comprar</li>
+                    <li><strong>rikch'ariy</strong>: despertar</li>
+                    <li><strong>rikuy</strong>: ver</li>
+                    <li><strong>rimay</strong>: hablar</li>
+                    <li><strong>riqsiy</strong>: conocer</li>
+                    <li><strong>rit'iy</strong>: nevar</li>
+                    <li><strong>riy</strong>: ir</li>
+                    <li><strong>ruthuy</strong>: cortar cabellos</li>
+                    <li><strong>ruway</strong>: hacer</li>
+                    <li><strong>samay</strong>: respirar, descansar</li>
+                    <li><strong>saqiy</strong>: dejar</li>
+                    <li><strong>saqmay</strong>: pegar con los puños</li>
+                    <li><strong>saqsay</strong>: hartarse</li>
+                    <li><strong>saruy</strong>: pisar</li>
+                    <li><strong>sat'iy</strong>: abarrotar</li>
+                    <li><strong>saway</strong>: enlazar, casar</li>
+                    <li><strong>sayay</strong>: ponerse de pie</li>
+                    <li><strong>sayk'uy</strong>: cansarse</li>
+                    <li><strong>sik'iy</strong>: arrancar</li>
+                    <li><strong>silluy</strong>: arañar</li>
+                    <li><strong>simp'ay</strong>: trenzar</li>
+                    <li><strong>sinruy</strong>: enfilar</li>
+                    <li><strong>sipiy</strong>: asfixiar</li>
+                    <li><strong>sip'uy</strong>: fruncir</li>
+                    <li><strong>siq'iy</strong>: dibujar</li>
+                    <li><strong>siqsiy</strong>: escocer</li>
+                    <li><strong>siray</strong>: coser</li>
+                    <li><strong>siriy</strong>: recostarse</li>
+                    <li><strong>suchuy</strong>: recorrer</li>
+                    <li><strong>sunt'iy</strong>: revolcarse</li>
+                    <li><strong>supiy</strong>: peer</li>
+                    <li><strong>suruy</strong>: chorrear</li>
+                    <li><strong>sut'uy</strong>: gotear</li>
+                    <li><strong>suway</strong>: robar</li>
+                    <li><strong>suyay</strong>: esperar</li>
+                    <li><strong>suysuy</strong>: cernir</li>
+                    <li><strong>takay</strong>: golpear</li>
+                    <li><strong>takiy</strong>: cantar</li>
+                    <li><strong>tanqay</strong>: empujar</li>
+                    <li><strong>tapuy</strong>: preguntar</li>
+                    <li><strong>tariy</strong>: encontrar</li>
+                    <li><strong>tarpuy</strong>: sembrar</li>
+                    <li><strong>tawqay</strong>: amontonar</li>
+                    <li><strong>tikay</strong>: hacer adobes</li>
+                    <li><strong>tikray</strong>: colocar al revés</li>
+                    <li><strong>tinkuy</strong>: encontrarse</li>
+                    <li><strong>tipiy</strong>: cosechar maíz</li>
+                    <li><strong>tiyay</strong>: sentarse</li>
+                    <li><strong>tukuy</strong>: terminar</li>
+                    <li><strong>tunkiy</strong>: dudar</li>
+                    <li><strong>tumpay</strong>: acusar</li>
+                    <li><strong>tupuy</strong>: medir, pesar</li>
+                    <li><strong>tuqtuy</strong>: cloquear</li>
+                    <li><strong>tusuy</strong>: bailar</li>
+                    <li><strong>tuytuy</strong>: flotar</li>
+                    <li><strong>t'akay</strong>: derramar</li>
+                    <li><strong>t'aqay</strong>: separar</li>
+                    <li><strong>t'aqllay</strong>: palmear</li>
+                    <li><strong>t'aqsay</strong>: lavar</li>
+                    <li><strong>t'ikay</strong>: florecer</li>
+                    <li><strong>t'impuy</strong>: hervir</li>
+                    <li><strong>t'inkiy</strong>: unir, aparear</li>
+                    <li><strong>t'ipay</strong>: prender con el prendedor</li>
+                    <li><strong>t'ipiy</strong>: arrancar (hilo)</li>
+                    <li><strong>t'iqiy</strong>: embutir</li>
+                    <li><strong>t'iray</strong>: arrancar</li>
+                    <li><strong>t'iqway</strong>: descascarar</li>
+                    <li><strong>t'uqpiy</strong>: hurgar, remover el fuego</li>
+                    <li><strong>t'uqsiy</strong>: pinchar</li>
+                    <li><strong>t'uqyay</strong>: reventar</li>
+                    <li><strong>thamay</strong>: caminar sin rumbo</li>
+                    <li><strong>thantay</strong>: envejecer, raer la ropa usándola</li>
+                    <li><strong>thañiy</strong>: cesar, amainar</li>
+                    <li><strong>thasnuy</strong>: apagar</li>
+                    <li><strong>thatay</strong>: beber en demasía</li>
+                    <li><strong>thatkiy</strong>: andar</li>
+                    <li><strong>thawtiy</strong>: disparatar</li>
+                    <li><strong>thunkuy</strong>: saltar en un pie</li>
+                    <li><strong>thuñiy</strong>: derribar</li>
+                    <li><strong>thuqay</strong>: escupir</li>
+                    <li><strong>thutay</strong>: apolillarse</li>
+                    <li><strong>unquy</strong>: enfermarse</li>
+                    <li><strong>upyay</strong>: beber</li>
+                    <li><strong>upiy</strong>: beber a sorbos</li>
+                    <li><strong>uqllay</strong>: empollar, calentar con el cuerpo</li>
+                    <li><strong>urmay</strong>: caerse</li>
+                    <li><strong>usuy</strong>: desperdiciarse</li>
+                    <li><strong>utqhay</strong>: apresurarse</li>
+                    <li><strong>uyway</strong>: criar</li>
+                    <li><strong>wachay</strong>: parir</li>
+                    <li><strong>wach'iy</strong>: picar los insectos</li>
+                    <li><strong>wamp'uy</strong>: navegar</li>
+                    <li><strong>wanay</strong>: escarmentar</li>
+                    <li><strong>wantuy</strong>: conducir en litera</li>
+                    <li><strong>wanuy</strong>: abonar</li>
+                    <li><strong>wañuy</strong>: morir</li>
+                    <li><strong>waqay</strong>: llorar</li>
+                    <li><strong>waqtay</strong>: golpear</li>
+                    <li><strong>waqyay</strong>: llamar</li>
+                    <li><strong>warkhuy</strong>: colgar</li>
+                    <li><strong>watay</strong>: amarrar</li>
+                    <li><strong>watuy</strong>: adivinar</li>
+                    <li><strong>wayk'uy</strong>: cocinar</li>
+                    <li><strong>waylluy</strong>: amar, acariciar</li>
+                    <li><strong>wayt'ay</strong>: nadar</li>
+                    <li><strong>wichq'ay</strong>: cerrar</li>
+                    <li><strong>wikch'uy</strong>: echar lejos</li>
+                    <li><strong>willay</strong>: avisar</li>
+                    <li><strong>winay</strong>: llenar</li>
+                    <li><strong>wiñay</strong>: crecer</li>
+                    <li><strong>wisiy</strong>: sacar agua con un jarro</li>
+                    <li><strong>yachachiy</strong>: enseñar</li>
+                    <li><strong>yachakuy</strong>: aprender</li>
+                    <li><strong>yachay</strong>: saber</li>
+                    <li><strong>yapay</strong>: añadir</li>
+                    <li><strong>yarqay</strong>: tener hambre</li>
+                    <li><strong>yaykuy</strong>: entrar</li>
+                    <li><strong>yupay</strong>: contar</li>
+                    <li><strong>yuyay</strong>: pensar, recordar</li>
+                </ul>
+            `;
+        }
+        
+        function getSufijosPosesivosContent() {
+            return `
+                <table class="suffix-table">
+                    <tr>
+                        <th>Persona</th>
+                        <th>Sufijo</th>
+                    </tr>
+                    <tr>
+                        <td>Ñuqa</td>
+                        <td>-y</td>
+                    </tr>
+                    <tr>
+                        <td>Qam</td>
+                        <td>-yki</td>
+                    </tr>
+                    <tr>
+                        <td>Pay</td>
+                        <td>-n</td>
+                    </tr>
+                    <tr>
+                        <td>Ñuqanchik</td>
+                        <td>-nchik</td>
+                    </tr>
+                    <tr>
+                        <td>Ñuqayku</td>
+                        <td>-yku</td>
+                    </tr>
+                    <tr>
+                        <td>Qamkuna</td>
+                        <td>-ykichik</td>
+                    </tr>
+                    <tr>
+                        <td>Paykuna</td>
+                        <td>-nku</td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function getSufijosPresenteSimpleContent() {
+            return `
+                <table class="suffix-table">
+                    <tr>
+                        <th>Persona</th>
+                        <th>Sufijo</th>
+                    </tr>
+                    <tr>
+                        <td>Primera persona singular</td>
+                        <td>-ni</td>
+                    </tr>
+                    <tr>
+                        <td>Segunda persona singular</td>
+                        <td>-nki</td>
+                    </tr>
+                    <tr>
+                        <td>Tercera persona singular</td>
+                        <td>-n</td>
+                    </tr>
+                    <tr>
+                        <td>Primera persona plural (inclusivo)</td>
+                        <td>-nchik</td>
+                    </tr>
+                    <tr>
+                        <td>Primera persona plural (exclusivo)</td>
+                        <td>-yku</td>
+                    </tr>
+                    <tr>
+                        <td>Segunda persona plural</td>
+                        <td>-nkichik</td>
+                    </tr>
+                    <tr>
+                        <td>Tercera persona plural</td>
+                        <td>-nku</td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function getSufijosPresenteContinuoContent() {
+            return `
+                <table class="suffix-table">
+                    <tr>
+                        <th>Persona</th>
+                        <th>Sufijo</th>
+                        
+                    </tr>
+                    <tr>
+                        <td>Ñuqa</td>
+                        
+                        <td>-chka-ni</td>
+                    </tr>
+                    <tr>
+                        <td>Qam</td>
+                        
+                        <td>-chka-nki</td>
+                    </tr>
+                    <tr>
+                        <td>Pay</td>
+                        
+                        <td>-chka-n</td>
+                    </tr>
+                    <tr>
+                        <td>Ñuqanchik</td>
+                        
+                        <td>-chka-nchik</td>
+                    </tr>
+                    <tr>
+                        <td>Ñuqayku</td>
+                        
+                        <td>-chka-yku</td>
+                    </tr>
+                    <tr>
+                        <td>Qamkuna</td>
+                       
+                        <td>-chka-nkichik</td>
+                    </tr>
+                    <tr>
+                        <td>Paykuna</td>
+                        
+                        <td>-chka-nku</td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function getSufijosPasadoPerfectoContent() {
+            return `
+                <table class="suffix-table">
+                    <tr>
+                        <th>Persona</th>
+                        <th>Sufijo</th>
+                        
+                    </tr>
+                    <tr>
+                        <td>Ñuqa</td>
+                        
+                        <td>-rqa-ni</td>
+                    </tr>
+                    <tr>
+                        <td>Qam</td>
+                        
+                        <td>-rqa-nki</td>
+                    </tr>
+                    <tr>
+                        <td>Pay</td>
+                        
+                        <td>-rqa</td>
+                    </tr>
+                    <tr>
+                        <td>Ñuqanchik</td>
+                        
+                        <td>-rqa-nchik</td>
+                    </tr>
+                    <tr>
+                        <td>Ñuqayku</td>
+                       
+                        <td>-rqa-yku</td>
+                    </tr>
+                    <tr>
+                        <td>Qamkuna</td>
+                        
+                        <td>-rqa-nkichik</td>
+                    </tr>
+                    <tr>
+                        <td>Paykuna</td>
+                        
+                        <td>-rqa-nku</td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function getSufijosPasadoImperfectoContent() {
+            return `
+                <table class="suffix-table">
+                    <tr>
+                        <th>Persona</th>
+                        <th>Sufijo</th>
+                        
+                    </tr>
+                    <tr>
+                        <td>Ñuqa</td>
+                        
+                        <td>-sqa-ni</td>
+                    </tr>
+                    <tr>
+                        <td>Qam</td>
+                        
+                        <td>-sqa-nki</td>
+                    </tr>
+                    <tr>
+                        <td>Pay</td>
+                        
+                        <td>-sqa</td>
+                    </tr>
+                    <tr>
+                        <td>Ñuqanchik</td>
+                        
+                        <td>-sqa-nchik</td>
+                    </tr>
+                    <tr>
+                        <td>Ñuqayku</td>
+                        
+                        <td>-sqa-yku</td>
+                    </tr>
+                    <tr>
+                        <td>Qamkuna</td>
+                        
+                        <td>-sqa-nkichik</td>
+                    </tr>
+                    <tr>
+                        <td>Paykuna</td>
+                        
+                        <td>-sqa-nku</td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function getSufijosFuturoSimpleContent() {
+            return `
+                <table class="suffix-table">
+                    <tr>
+                        <th>Persona</th>
+                        <th>Sufijo</th>
+                    </tr>
+                    <tr>
+                        <td>Primera persona singular</td>
+                        <td>saq</td>
+                    </tr>
+                    <tr>
+                        <td>Segunda persona singular</td>
+                        <td>nki</td>
+                    </tr>
+                    <tr>
+                        <td>Tercera persona singular</td>
+                        <td>nqa</td>
+                    </tr>
+                    <tr>
+                        <td>Primera persona plural (inclusivo)</td>
+                        <td>sun o sunchik</td>
+                    </tr>
+                    <tr>
+                        <td>Primera persona plural (exclusivo)</td>
+                        <td>sayku o sayqu</td>
+                    </tr>
+                    <tr>
+                        <td>Segunda persona plural</td>
+                        <td>nkichik</td>
+                    </tr>
+                    <tr>
+                        <td>Tercera persona plural</td>
+                        <td>nqanku</td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function getSufijosFuturoContinuoContent() {
+            return `
+                <table class="suffix-table">
+                    <tr>
+                        <th>Persona</th>
+                        <th>Sufijo</th>
+                        
+                    </tr>
+                    <tr>
+                        <td>Ñuqa</td>
+                        
+                        <td>-chka-saq</td>
+                    </tr>
+                    <tr>
+                        <td>Qam</td>
+                        
+                        <td>-chka-nki</td>
+                    </tr>
+                    <tr>
+                        <td>Pay</td>
+                        
+                        <td>-chka-nqa</td>
+                    </tr>
+                    <tr>
+                        <td>Ñuqanchik</td>
+                        
+                        <td>-chka-sunchik</td>
+                    </tr>
+                    <tr>
+                        <td>Ñuqayku</td>
+                        
+                        <td>-chka-sayku</td>
+                    </tr>
+                    <tr>
+                        <td>Qamkuna</td>
+                        
+                        <td>-chka-nkichik</td>
+                    </tr>
+                    <tr>
+                        <td>Paykuna</td>
+                        
+                        <td>-chka-nqanku</td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function getSustantivosContent() {
+            return `
+                <ul class="word-list">
+                    <li><strong>misi</strong>: 🐈 gato</li>
+                    <li><strong>warmi</strong>: 👩 mujer</li>
+                    <li><strong>allqu</strong>: 🐶 perro</li>
+                    <li><strong>runtu</strong>: 🥚 huevo</li>
+                    <li><strong>sik'imira</strong>: 🐜 hormiga</li>
+                    <li><strong>atuq</strong>: 🦊 zorro</li>
+                    <li><strong>wallpa</strong>: 🐔 gallina</li>
+                    <li><strong>chaki</strong>: 🦶 pie</li>
+                    <li><strong>maki</strong>: ✋ mano</li>
+                    <li><strong>katari</strong>: 🐍 serpiente</li>
+                    <li><strong>lachiwana</strong>: 🐝 abeja</li>
+                    <li><strong>punku</strong>: 🚪 puerta</li>
+                    <li><strong>manka</strong>: 🍲 olla</li>
+                    <li><strong>inti</strong>: ☀️ sol</li>
+                    <li><strong>killa</strong>: 🌕 luna</li>
+                    <li><strong>qhari</strong>: 👨 hombre</li>
+                    <li><strong>ñawi</strong>: 👀 ojo</li>
+                    <li><strong>ninri</strong>: 👂 oreja</li>
+                    <li><strong>sinqa</strong>: 👃 nariz</li>
+                    <li><strong>kiru</strong>: 🦷 diente</li>
+                    <li><strong>t'anta</strong>: 🍞 pan</li>
+                    <li><strong>wawa</strong>: 👶 bebé</li>
+                    <li><strong>papa</strong>: 🥔 patata</li>
+                    <li><strong>juk'ucha</strong>: 🐭 ratón</li>
+                    <li><strong>khuchi</strong>: 🐖 cerdo</li>
+                    <li><strong>yuthu</strong>: perdiz</li>
+                    <li><strong>chillwi</strong>: 🐤 pollito</li>
+                    <li><strong>jamp'atu</strong>: sapo</li>
+                    <li><strong>chawlla</strong>: 🐟 pez</li>
+                    <li><strong>waka</strong>: 🐄 vaca</li>
+                    <li><strong>uwija</strong>: 🐑 oveja</li>
+                    <li><strong>pili</strong>: 🦆 pato</li>
+                    <li><strong>llama</strong>: 🦙 llama</li>
+                    <li><strong>kuntur</strong>: 🦅 cóndor</li>
+                    <li><strong>jukumari</strong>: 🐻 oso</li>
+                    <li><strong>charapa</strong>: 🐢 tortuga</li>
+                    <li><strong>k'usillu</strong>: 🐒 mono</li>
+                    <li><strong>kirkinchu</strong>: erizo</li>
+                    <li><strong>p'isqu</strong>: 🐦 pájaro</li>
+                    <li><strong>urpi</strong>: 🕊️ paloma</li>
+                    <li><strong>ararankha</strong>: lagartija</li>
+                    <li><strong>ch'uspi</strong>: flies</li>
+                    <li><strong>wayruru</strong>: 🕸️ araña</li>
+                    <li><strong>piki</strong>: 🦠 pulga</li>
+                    <li><strong>ñuqtu</strong>: cerebro</li>
+                    <li><strong>tullu</strong>: hueso</li>
+                    <li><strong>angula</strong>: 🐰 conejo</li>
+                    <li><strong>khuru</strong>: gusano</li>
+                    <li><strong>ch'uru</strong>: 🐌 caracol</li>
+                    <li><strong>kawallu</strong>: 🐴 caballo</li>
+                    <li><strong>karwa</strong>: 🐐 cabra</li>
+                    <li><strong>sach'a</strong>: 🌳 árbol</li>
+                    <li><strong>mansana</strong>: 🍎 manzana</li>
+                    <li><strong>platanu</strong>: 🍌 plátano</li>
+                    <li><strong>awaranku</strong>: 🍍 piña</li>
+                    <li><strong>sara</strong>: 🌽 maíz</li>
+                    <li><strong>sanawrya</strong>: 🥕 zanahoria</li>
+                    <li><strong>kumputarura</strong>: 💻 portátil</li>
+                    <li><strong>inti watana</strong>: ⌚ reloj</li>
+                    <li><strong>tiyana</strong>: 🪑 silla</li>
+                    <li><strong>puñuna</strong>: 🛏️ cama</li>
+                    <li><strong>awtu</strong>: 🚗 coche</li>
+                    <li><strong>abiyon</strong>: ✈️ avión</li>
+                    <li><strong>wiksilita</strong>: 🚲 bicicleta</li>
+                    <li><strong>phuyu</strong>: ☁️ nube</li>
+                    <li><strong>ch'aska</strong>: 🌟 estrella</li>
+                    <li><strong>wasi</strong>: 🏠 casa</li>
+                    <li><strong>iglisia</strong>: ⛪ iglesia</li>
+                    <li><strong>tata</strong>: 👨‍👧 padre</li>
+                    <li><strong>mama</strong>: 👩‍👧‍👦 mama</li>
+                    <li><strong>pachi</strong>: 🙏 gracias</li>
+                    <li><strong>tinkunakama</strong>: hasta luego</li>
+                    <li><strong>imilla</strong>: chica</li>
+                    <li><strong>lluqalla</strong>: chico</li>
+                    <li><strong>ch'iti</strong>: chanco</li>
+                    <li><strong>sipas</strong>: jovencita</li>
+                    <li><strong>wayna</strong>: joven</li>
+                    <li><strong>jampiq</strong>: 👩‍⚕️ enfermera</li>
+                    <li><strong>yachachiq</strong>: 👨‍🏫 profesor</li>
+                    <li><strong>yachakuq</strong>: 🧑‍🎓 estudiante</li>
+                </ul>
+            `;
+        }
+    </script>
+</body>
+</html>

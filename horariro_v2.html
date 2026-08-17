@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestor Avanzado de Horarios</title>
+  <style>
+    :root {
+      --bg-primary: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --border-color: #cbd5e1;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-primary); color: var(--text-main); margin: 0; padding: 20px; }
+
+    .container { max-width: 1300px; margin: 0 auto; }
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    h1 { margin: 0; font-size: 1.8rem; font-weight: 700; }
+
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    
+    button {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+    button:hover { background-color: var(--accent-hover); opacity: 0.95; }
+    button.btn-danger { background-color: var(--danger); }
+    button.btn-danger:hover { background-color: #dc2626; }
+    button.btn-secondary { background-color: #64748b; }
+    button.btn-secondary:hover { background-color: #475569; }
+    button.btn-success { background-color: #10b981; }
+    button.btn-success:hover { background-color: #059669; }
+
+    .table-container {
+      background: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border: 1px solid var(--border-color);
+      text-align: center;
+      padding: 0;
+    }
+
+    th {
+      background-color: #e2e8f0;
+      color: #334155;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      padding: 10px 4px;
+      letter-spacing: 0.05em;
+    }
+
+    th.time-col, td.time-col {
+      width: 110px;
+      font-weight: bold;
+      background-color: #f1f5f9;
+      font-size: 0.8rem;
+      padding: 8px 4px;
+    }
+
+    td.slot {
+      height: 80px;
+      vertical-align: top;
+      position: relative;
+      background-color: #fff;
+    }
+
+    /* Contenedor flexible para manejo de cruces en la misma celda */
+    .slot-container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      gap: 2px;
+      padding: 2px;
+    }
+
+    .class-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-radius: 4px;
+      padding: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: transform 0.1s, box-shadow 0.1s;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    .class-card:hover {
+      transform: scale(1.02);
+      z-index: 5;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    }
+
+    .class-card .subject { font-weight: 700; word-break: break-word; }
+    .class-card .room { font-size: 0.75rem; opacity: 0.9; }
+    .class-card .time-range {
+      font-size: 0.7rem;
+      background: rgba(0,0,0,0.1);
+      padding: 1px 4px;
+      border-radius: 3px;
+      margin-top: 3px;
+    }
+
+    .add-btn-cell {
+      width: 100%;
+      height: 100%;
+      min-height: 76px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .add-btn-cell:hover { background-color: #f8fafc; color: var(--accent); }
+
+    /* Estilos del Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    .modal h2 { margin-top: 0; font-size: 1.25rem; color: #0f172a; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; margin-bottom: 4px; font-size: 0.85rem; font-weight: 600; color: #475569; }
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .form-row { display: flex; gap: 10px; }
+    .form-row .form-group { flex: 1; }
+
+    .color-options { display: flex; gap: 8px; margin-top: 6px; }
+    .color-picker {
+      width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid transparent;
+    }
+    .color-picker.selected { border-color: #000; transform: scale(1.1); }
+    .modal-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Mi Horario Universitario</h1>
+    <div class="btn-group">
+      <button class="btn-success" onclick="openModalForNew()">+ Nueva Clase Intermedia</button>
+      <button class="btn-secondary" onclick="exportData()">Exportar</button>
+      <button class="btn-secondary" onclick="importData()">Importar</button>
+      <button class="btn-danger" onclick="clearSchedule()">Limpiar Todo</button>
+    </div>
+  </header>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th class="time-col">HORA</th>
+          <th>LUNES</th>
+          <th>MARTES</th>
+          <th>MIÉRCOLES</th>
+          <th>JUEVES</th>
+          <th>VIERNES</th>
+          <th>SÁBADO</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Formulario -->
+<div class="modal" id="classModal">
+  <div class="modal-content">
+    <h2 id="modalTitle">Agregar Clase</h2>
+    
+    <div class="form-group">
+      <label for="inputSubject">Materia / Sigla</label>
+      <input type="text" id="inputSubject" placeholder="Ej. BD1, LOG MAT">
+    </div>
+
+    <div class="form-group">
+      <label for="inputRoom">Aula / Grupo</label>
+      <input type="text" id="inputRoom" placeholder="Ej. 202 B, A1S">
+    </div>
+
+    <div class="form-group">
+      <label for="selectDay">Día</label>
+      <select id="selectDay">
+        <option value="0">LUNES</option>
+        <option value="1">MARTES</option>
+        <option value="2">MIÉRCOLES</option>
+        <option value="3">JUEVES</option>
+        <option value="4">VIERNES</option>
+        <option value="5">SÁBADO</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="inputStart">Hora Inicio</label>
+        <input type="time" id="inputStart">
+      </div>
+      <div class="form-group">
+        <label for="inputEnd">Hora Fin</label>
+        <input type="time" id="inputEnd">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Color de Etiqueta</label>
+      <div class="color-options">
+        <div class="color-picker selected" style="background: #e2e8f0;" data-color="#e2e8f0"></div>
+        <div class="color-picker" style="background: #fef08a;" data-color="#fef08a"></div>
+        <div class="color-picker" style="background: #bbf7d0;" data-color="#bbf7d0"></div>
+        <div class="color-picker" style="background: #bfdbfe;" data-color="#bfdbfe"></div>
+        <div class="color-picker" style="background: #ddd6fe;" data-color="#ddd6fe"></div>
+        <div class="color-picker" style="background: #fbcfe8;" data-color="#fbcfe8"></div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-danger" id="btnDelete" onclick="deleteCurrentClass()">Eliminar</button>
+      <div>
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button onclick="saveClass()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Bloques estándar conservados
+  const fixedSlots = [
+    { start: "08:00", end: "09:30", label: "8:00-9:30" },
+    { start: "09:45", end: "11:15", label: "9:45-11:15" },
+    { start: "11:30", end: "13:00", label: "11:30-13:00" },
+    { start: "15:15", end: "16:45", label: "15:15-16:45" },
+    { start: "17:00", end: "18:30", label: "17:00-18:30" },
+    { start: "18:45", end: "20:15", label: "18:45-20:15" },
+    { start: "20:30", end: "22:00", label: "20:30-22:00" }
+  ];
+
+  const days = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"];
+
+  // Lista de clases almacenadas
+  let classes = JSON.parse(localStorage.getItem('classList')) || getInitialClasses();
+  let editingId = null;
+  let selectedColor = "#e2e8f0";
+
+  function timeToMin(t) {
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  function getInitialClasses() {
+    return [
+      { id: '1', day: 0, start: '08:00', end: '09:30', subject: 'A1S', room: '', color: '#e2e8f0' },
+      { id: '2', day: 1, start: '08:00', end: '09:30', subject: 'IDI2', room: 'ENF 302', color: '#e2e8f0' },
+      { id: '3', day: 2, start: '08:00', end: '09:30', subject: 'IDI2', room: 'MED 701 B', color: '#e2e8f0' },
+      { id: '4', day: 3, start: '08:00', end: '09:30', subject: 'LOG MAT', room: '', color: '#e2e8f0' },
+      { id: '5', day: 4, start: '08:00', end: '09:30', subject: 'A1S', room: '', color: '#e2e8f0' },
+
+      { id: '6', day: 0, start: '09:45', end: '11:15', subject: 'A2S', room: '', color: '#bfdbfe' },
+      { id: '7', day: 1, start: '09:45', end: '11:15', subject: 'IDI2', room: 'OPT 601', color: '#e2e8f0' },
+      { id: '8', day: 2, start: '09:45', end: '11:15', subject: 'IDI1', room: 'MED 502 A', color: '#e2e8f0' },
+      { id: '9', day: 3, start: '09:45', end: '11:15', subject: 'BD1', room: '202 B', color: '#fbcfe8' },
+      { id: '10', day: 4, start: '09:45', end: '11:15', subject: 'A2S', room: '', color: '#bfdbfe' },
+      { id: '11', day: 5, start: '09:45', end: '11:15', subject: 'IDI1', room: 'PUN 501', color: '#e2e8f0' },
+
+      { id: '12', day: 0, start: '11:30', end: '13:00', subject: 'IO2', room: '', color: '#bbf7d0' },
+      { id: '13', day: 2, start: '11:30', end: '13:00', subject: 'BD1', room: '202 B', color: '#fbcfe8' },
+      { id: '14', day: 4, start: '11:30', end: '13:00', subject: 'IO2', room: '', color: '#bbf7d0' },
+      { id: '15', day: 5, start: '11:30', end: '13:00', subject: 'IDI2', room: 'PUN 302', color: '#e2e8f0' },
+
+      { id: '16', day: 0, start: '15:15', end: '16:45', subject: 'met', room: '', color: '#cbd5e1' },
+      { id: '17', day: 1, start: '15:15', end: '16:45', subject: 'NUM 201', room: '', color: '#ddd6fe' },
+      { id: '18', day: 2, start: '15:15', end: '16:45', subject: 'eco', room: '', color: '#cbd5e1' },
+      { id: '19', day: 3, start: '15:15', end: '16:45', subject: 'met', room: '', color: '#cbd5e1' },
+      { id: '20', day: 4, start: '15:15', end: '16:45', subject: 'eco', room: '', color: '#cbd5e1' },
+
+      { id: '21', day: 0, start: '17:00', end: '18:30', subject: 'iso', room: '', color: '#cbd5e1' },
+      { id: '22', day: 1, start: '17:00', end: '18:30', subject: 'PRO 301', room: '', color: '#fef08a' },
+      { id: '23', day: 3, start: '17:00', end: '18:30', subject: 'NUM 201', room: '', color: '#ddd6fe' },
+      { id: '24', day: 4, start: '17:00', end: '18:30', subject: 'iso', room: '', color: '#cbd5e1' },
+
+      { id: '25', day: 0, start: '18:45', end: '20:15', subject: 'materi', room: '', color: '#cbd5e1' },
+      { id: '26', day: 3, start: '18:45', end: '20:15', subject: 'PRO 301', room: '', color: '#fef08a' }
+    ];
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+
+    fixedSlots.forEach((slot) => {
+      const tr = document.createElement('tr');
+      
+      const tdTime = document.createElement('td');
+      tdTime.className = 'time-col';
+      tdTime.textContent = slot.label;
+      tr.appendChild(tdTime);
+
+      const slotStart = timeToMin(slot.start);
+      const slotEnd = timeToMin(slot.end);
+
+      days.forEach((_, dayIndex) => {
+        const td = document.createElement('td');
+        td.className = 'slot';
+
+        // Buscar materias que intersecten con este bloque de tiempo
+        const matches = classes.filter(c => {
+          if (c.day !== dayIndex) return false;
+          const cStart = timeToMin(c.start);
+          const cEnd = timeToMin(c.end);
+          return Math.max(slotStart, cStart) < Math.min(slotEnd, cEnd);
+        });
+
+        const container = document.createElement('div');
+        container.className = 'slot-container';
+
+        if (matches.length > 0) {
+          matches.forEach(c => {
+            const card = document.createElement('div');
+            card.className = 'class-card';
+            card.style.backgroundColor = c.color || '#e2e8f0';
+            
+            // Si la clase no coincide exactamente con las horas base, mostramos su rango
+            const isCustom = (c.start !== slot.start || c.end !== slot.end);
+            
+            card.innerHTML = `
+              <span class="subject">${c.subject}</span>
+              ${c.room ? `<span class="room">${c.room}</span>` : ''}
+              ${isCustom ? `<span class="time-range">${c.start}-${c.end}</span>` : ''}
+            `;
+            
+            card.onclick = (e) => {
+              e.stopPropagation();
+              openModalForEdit(c.id);
+            };
+            container.appendChild(card);
+          });
+        } else {
+          // Botón para agregar rápidamente en esta celda
+          const btn = document.createElement('button');
+          btn.className = 'add-btn-cell';
+          btn.textContent = '+';
+          btn.onclick = () => openModalForNew(dayIndex, slot.start, slot.end);
+          container.appendChild(btn);
+        }
+
+        td.appendChild(container);
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Operaciones Modal
+  function openModalForNew(day = 0, start = "08:00", end = "09:30") {
+    editingId = null;
+    document.getElementById('modalTitle').textContent = 'Agregar Clase';
+    document.getElementById('inputSubject').value = '';
+    document.getElementById('inputRoom').value = '';
+    document.getElementById('selectDay').value = day;
+    document.getElementById('inputStart').value = start;
+    document.getElementById('inputEnd').value = end;
+    setColor('#e2e8f0');
+
+    document.getElementById('btnDelete').style.display = 'none';
+    document.getElementById('classModal').style.display = 'flex';
+  }
+
+  function openModalForEdit(id) {
+    editingId = id;
+    const item = classes.find(c => c.id === id);
+    if (!item) return;
+
+    document.getElementById('modalTitle').textContent = 'Editar Clase';
+    document.getElementById('inputSubject').value = item.subject;
+    document.getElementById('inputRoom').value = item.room || '';
+    document.getElementById('selectDay').value = item.day;
+    document.getElementById('inputStart').value = item.start;
+    document.getElementById('inputEnd').value = item.end;
+    setColor(item.color || '#e2e8f0');
+
+    document.getElementById('btnDelete').style.display = 'block';
+    document.getElementById('classModal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('classModal').style.display = 'none';
+  }
+
+  function setColor(color) {
+    selectedColor = color;
+    document.querySelectorAll('.color-picker').forEach(el => {
+      el.classList.toggle('selected', el.dataset.color === color);
+    });
+  }
+
+  document.querySelectorAll('.color-picker').forEach(el => {
+    el.onclick = (e) => setColor(e.target.dataset.color);
+  });
+
+  function saveClass() {
+    const subject = document.getElementById('inputSubject').value.trim();
+    const room = document.getElementById('inputRoom').value.trim();
+    const day = parseInt(document.getElementById('selectDay').value);
+    const start = document.getElementById('inputStart').value;
+    const end = document.getElementById('inputEnd').value;
+
+    if (!subject || !start || !end) {
+      alert('Por favor completa la materia y el rango de horario.');
+      return;
+    }
+
+    if (timeToMin(start) >= timeToMin(end)) {
+      alert('La hora de inicio debe ser anterior a la hora de fin.');
+      return;
+    }
+
+    if (editingId) {
+      const index = classes.findIndex(c => c.id === editingId);
+      if (index !== -1) {
+        classes[index] = { id: editingId, day, start, end, subject, room, color: selectedColor };
+      }
+    } else {
+      classes.push({
+        id: Date.now().toString(),
+        day, start, end, subject, room, color: selectedColor
+      });
+    }
+
+    saveAndRefresh();
+    closeModal();
+  }
+
+  function deleteCurrentClass() {
+    if (editingId) {
+      classes = classes.filter(c => c.id !== editingId);
+      saveAndRefresh();
+      closeModal();
+    }
+  }
+
+  function saveAndRefresh() {
+    localStorage.setItem('classList', JSON.stringify(classes));
+    renderTable();
+  }
+
+  function clearSchedule() {
+    if (confirm("¿Deseas eliminar todas las clases del horario?")) {
+      classes = [];
+      saveAndRefresh();
+    }
+  }
+
+  function exportData() {
+    const blob = new Blob([JSON.stringify(classes, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'horario_avanzado.json';
+    a.click();
+  }
+
+  function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = e => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = event => {
+        try {
+          classes = JSON.parse(event.target.result);
+          saveAndRefresh();
+        } catch (err) {
+          alert('El archivo cargado no es un JSON válido.');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }
+
+  // Carga Inicial
+  renderTable();
+</script>
+</body>
+</html>

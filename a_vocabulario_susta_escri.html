@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yachay - Juego de Vocabulario Quechua - Español</title>
+
+    <!-- 
+    ====================================================================
+    LISTA DE PARTICIPANTES (Edita aquí o en la pantalla inicial)
+    ====================================================================
+    - Integrante 1: Juan Pérez
+    - Integrante 2: María López
+    - Integrante 3: Carlos Gómez
+    ====================================================================
+    -->
+
+    <style>
+        :root {
+            --primary-color: #A03C28;
+            --secondary-color: #D97724;
+            --bg-color: #FAF6F0;
+            --card-bg: #FFFFFF;
+            --text-color: #2D2321;
+            --correct-color: #2E7D32;
+            --incorrect-color: #C62828;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 520px;
+            padding: 24px;
+            text-align: center;
+            border-top: 6px solid var(--primary-color);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #5A4035;
+        }
+
+        textarea, input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #DDD;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            border-color: var(--secondary-color);
+        }
+
+        .score-board {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            background-color: #F3EBE1;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 18px;
+            color: #5A4035;
+            font-size: 0.85rem;
+            gap: 8px;
+        }
+
+        .turn-badge {
+            width: 100%;
+            background: var(--primary-color);
+            color: white;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #FFF9F2 0%, #FFF3E5 100%);
+            border: 2px solid #E8D5C4;
+            border-radius: var(--border-radius);
+            padding: 24px 15px;
+            margin-bottom: 18px;
+        }
+
+        .spanish-word {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-transform: capitalize;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #B85F18;
+        }
+
+        .btn-submit {
+            width: auto;
+            white-space: nowrap;
+        }
+
+        .feedback {
+            min-height: 24px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin-top: 8px;
+        }
+
+        .feedback.correct { color: var(--correct-color); }
+        .feedback.incorrect { color: var(--incorrect-color); }
+
+        /* Estilos del resumen e historial final */
+        .summary-box {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+
+        .results-table th, .results-table td {
+            border: 1px solid #E2E8F0;
+            padding: 8px 4px;
+            text-align: center;
+        }
+
+        .results-table th {
+            background-color: #F1F5F9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Yachay - Vocabulario Quechua</h1>
+    <div class="subtitle">Traduce la palabra en Español al Quechua</div>
+
+    <!-- PANTALLA DE CONFIGURACIÓN INICIAL -->
+    <div id="setup-screen">
+        <div class="form-group">
+            <label for="players-input">Participantes (un nombre por fila):</label>
+            <textarea id="players-input" rows="3" placeholder="Juan Pérez&#10;María López"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="questions-count">Número de preguntas (Máximo 85):</label>
+            <input type="number" id="questions-count" min="1" max="85" value="10">
+        </div>
+
+        <button onclick="configurarEIniciarJuego()">Comenzar Juego</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+    </div>
+
+    <!-- PANTALLA DE JUEGO -->
+    <div id="game-screen" style="display: none;">
+        <div id="turn-badge" class="turn-badge">Turno de: -</div>
+
+        <div class="score-board">
+            <span>Pregunta: <span id="current-index">1</span>/<span id="total-questions">10</span></span>
+            <span>Aciertos Totales: <span id="score">0</span></span>
+        </div>
+
+        <div class="card">
+            <div class="spanish-word" id="spanish-word">Sol</div>
+        </div>
+
+        <form id="quiz-form" onsubmit="validarRespuesta(event)">
+            <div class="input-group">
+                <input type="text" id="user-input" placeholder="Escribe en quechua..." autocomplete="off" required autofocus>
+                <button type="submit" class="btn-submit">Enviar</button>
+            </div>
+        </form>
+
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- PANTALLA DE RESULTADOS FINALES -->
+    <div id="results-screen" style="display: none;">
+        <h2>¡Juego Finalizado! 🎉</h2>
+        
+        <div class="summary-box" id="time-info"></div>
+
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Participante</th>
+                    <th>Preguntadas</th>
+                    <th>Aciertos</th>
+                    <th>% Precisión</th>
+                </tr>
+            </thead>
+            <tbody id="results-body"></tbody>
+        </table>
+
+        <button onclick="reiniciarJuego()" style="margin-top: 18px;">Volver a Jugar</button>
+    </div>
+</div>
+
+<script>
+    const vocabulario = [
+        { quechua: "Allinllachu", espanol: ["hola", "como estas", "¿como estas?"] },
+        { quechua: "Pachi", espanol: ["gracias"] },
+        { quechua: "Inti", espanol: ["sol"] },
+        { quechua: "Killa", espanol: ["luna"] },
+        { quechua: "Mayu", espanol: ["rio", "río"] },
+        { quechua: "Urqu", espanol: ["cerro", "montaña", "montana"] },
+        { quechua: "Wasi", espanol: ["casa"] },
+        { quechua: "Allqu", espanol: ["perro"] },
+        { quechua: "Misi", espanol: ["gato"] },
+        { quechua: "Yaku", espanol: ["agua"] },
+        { quechua: "T'anta", espanol: ["pan"] },
+        { quechua: "Muju", espanol: ["semilla"] },
+        { quechua: "Warmi", espanol: ["mujer"] },
+        { quechua: "Runtu", espanol: ["huevo"] },
+        { quechua: "Sik'imira", espanol: ["hormiga"] },
+        { quechua: "Atuq", espanol: ["zorro"] },
+        { quechua: "Wallpa", espanol: ["gallina"] },
+        { quechua: "Chaki", espanol: ["pie"] },
+        { quechua: "Maki", espanol: ["mano"] },
+        { quechua: "Katari", espanol: ["serpiente"] },
+        { quechua: "Lachiwana", espanol: ["abeja"] },
+        { quechua: "Punku", espanol: ["puerta"] },
+        { quechua: "Manka", espanol: ["olla"] },
+        { quechua: "Qhari", espanol: ["hombre"] },
+        { quechua: "Ñawi", espanol: ["ojo"] },
+        { quechua: "Ninri", espanol: ["oreja"] },
+        { quechua: "Sinqa", espanol: ["nariz"] },
+        { quechua: "Kiru", espanol: ["diente"] },
+        { quechua: "Wawa", espanol: ["bebe", "bebé"] },
+        { quechua: "Papa", espanol: ["patata", "papa"] },
+        { quechua: "Juk'ucha", espanol: ["raton", "ratón"] },
+        { quechua: "Khuchi", espanol: ["cerdo"] },
+        { quechua: "Yuthu", espanol: ["perdiz"] },
+        { quechua: "Chillwi", espanol: ["pollito"] },
+        { quechua: "Jamp'atu", espanol: ["sapo"] },
+        { quechua: "Chawlla", espanol: ["pez"] },
+        { quechua: "Waka", espanol: ["vaca"] },
+        { quechua: "Uwija", espanol: ["oveja"] },
+        { quechua: "Pili", espanol: ["pato"] },
+        { quechua: "Llama", espanol: ["llama"] },
+        { quechua: "Kuntur", espanol: ["condor", "cóndor"] },
+        { quechua: "Jukumari", espanol: ["oso"] },
+        { quechua: "Charapa", espanol: ["tortuga"] },
+        { quechua: "K'usillu", espanol: ["mono"] },
+        { quechua: "Kirkinchu", espanol: ["erizo"] },
+        { quechua: "P'isqu", espanol: ["pajaro", "pájaro"] },
+        { quechua: "Urpi", espanol: ["paloma"] },
+        { quechua: "Ararankha", espanol: ["lagartija"] },
+        { quechua: "Ch'uspi", espanol: ["mosca", "flies"] },
+        { quechua: "Wayruru", espanol: ["araña", "arana"] },
+        { quechua: "Piki", espanol: ["pulga"] },
+        { quechua: "Ñuqtu", espanol: ["cerebro"] },
+        { quechua: "Tullu", espanol: ["hueso"] },
+        { quechua: "Angula", espanol: ["conejo"] },
+        { quechua: "Khuru", espanol: ["gusano"] },
+        { quechua: "Ch'uru", espanol: ["caracol"] },
+        { quechua: "Kawallu", espanol: ["caballo"] },
+        { quechua: "Karwa", espanol: ["cabra"] },
+        { quechua: "Sach'a", espanol: ["arbol", "árbol"] },
+        { quechua: "Mansana", espanol: ["manzana"] },
+        { quechua: "Platanu", espanol: ["platano", "plátano"] },
+        { quechua: "Awaranku", espanol: ["piña", "pina"] },
+        { quechua: "Sara", espanol: ["maiz", "maíz"] },
+        { quechua: "Sanawrya", espanol: ["zanahoria"] },
+        { quechua: "Kumputarura", espanol: ["portatil", "portátil", "computadora"] },
+        { quechua: "Inti watana", espanol: ["reloj"] },
+        { quechua: "Tiyana", espanol: ["silla"] },
+        { quechua: "Puñuna", espanol: ["cama"] },
+        { quechua: "Awtu", espanol: ["coche", "auto"] },
+        { quechua: "Abiyon", espanol: ["avion", "avión"] },
+        { quechua: "Wiksilita", espanol: ["bicicleta"] },
+        { quechua: "Phuyu", espanol: ["nube"] },
+        { quechua: "Ch'aska", espanol: ["estrella"] },
+        { quechua: "Iglisia", espanol: ["iglesia"] },
+        { quechua: "Tata", espanol: ["padre"] },
+        { quechua: "Mama", espanol: ["mama", "mamá", "madre"] },
+        { quechua: "Tinkunakama", espanol: ["hasta luego"] },
+        { quechua: "Imilla", espanol: ["chica", "niña"] },
+        { quechua: "Lluqalla", espanol: ["chico", "niño"] },
+        { quechua: "Ch'iti", espanol: ["chanco", "niño"] },
+        { quechua: "Sipas", espanol: ["jovencita"] },
+        { quechua: "Wayna", espanol: ["joven"] },
+        { quechua: "Jampiq", espanol: ["enfermera", "enfermero", "medico", "médico"] },
+        { quechua: "Yachachiq", espanol: ["profesor", "profesora", "maestro"] },
+        { quechua: "Yachakuq", espanol: ["estudiante", "alumno"] }
+    ];
+
+    let palabrasMezcladas = [];
+    let indiceActual = 0;
+    let puntuacionTotal = 0;
+    let jugadores = [];
+    let jugadorActualIndex = 0;
+    let horaInicio = null;
+    let horaFin = null;
+
+    // Cargar nombres por defecto
+    document.getElementById("players-input").value = "Jugador 1\nJugador 2";
+
+    function mezclar(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function normalizarTexto(texto) {
+        return texto.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function configurarEIniciarJuego() {
+        const rawPlayers = document.getElementById("players-input").value.split("\n");
+        const nombresLimpios = rawPlayers.map(n => n.trim()).filter(n => n !== "");
+
+        if (nombresLimpios.length === 0) {
+            alert("Ingresa al menos un participante.");
+            return;
+        }
+
+        jugadores = nombresLimpios.map(nombre => ({
+            nombre: nombre,
+            preguntasRespondidas: 0,
+            aciertos: 0
+        }));
+
+        let maxQuestions = parseInt(document.getElementById("questions-count").value) || 10;
+        maxQuestions = Math.min(Math.max(1, maxQuestions), vocabulario.length);
+
+        palabrasMezcladas = mezclar([...vocabulario]).slice(0, maxQuestions);
+        
+        indiceActual = 0;
+        puntuacionTotal = 0;
+        jugadorActualIndex = 0;
+        horaInicio = new Date();
+
+        document.getElementById("setup-screen").style.display = "none";
+        document.getElementById("results-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "block";
+        document.getElementById("total-questions").innerText = palabrasMezcladas.length;
+        document.getElementById("score").innerText = 0;
+
+        mostrarPregunta();
+    }
+
+    function mostrarPregunta() {
+        if (indiceActual < palabrasMezcladas.length) {
+            const jugadorActual = jugadores[jugadorActualIndex];
+            document.getElementById("turn-badge").innerText = `Turno de: ${jugadorActual.nombre}`;
+            document.getElementById("current-index").innerText = indiceActual + 1;
+            
+            // Mostrar pregunta en Español
+            document.getElementById("spanish-word").innerText = palabrasMezcladas[indiceActual].espanol[0];
+            
+            document.getElementById("user-input").value = "";
+            document.getElementById("user-input").focus();
+            document.getElementById("feedback").innerText = "";
+            document.getElementById("feedback").className = "feedback";
+        } else {
+            finalizarJuego();
+        }
+    }
+
+    function validarRespuesta(e) {
+        e.preventDefault();
+        const input = document.getElementById("user-input").value;
+        const respuestaUsuario = normalizarTexto(input);
+        const respuestaCorrectaQuechua = normalizarTexto(palabrasMezcladas[indiceActual].quechua);
+
+        const feedbackEl = document.getElementById("feedback");
+        const jugadorActual = jugadores[jugadorActualIndex];
+
+        jugadorActual.preguntasRespondidas++;
+
+        if (respuestaUsuario === respuestaCorrectaQuechua) {
+            puntuacionTotal++;
+            jugadorActual.aciertos++;
+            document.getElementById("score").innerText = puntuacionTotal;
+            feedbackEl.innerText = "¡Allin! (¡Correcto!)";
+            feedbackEl.className = "feedback correct";
+        } else {
+            feedbackEl.innerText = `Mana allinchu. Respuesta correcta: ${palabrasMezcladas[indiceActual].quechua}`;
+            feedbackEl.className = "feedback incorrect";
+        }
+
+        indiceActual++;
+        // Intercalar turno
+        jugadorActualIndex = (jugadorActualIndex + 1) % jugadores.length;
+
+        setTimeout(mostrarPregunta, 1600);
+    }
+
+    function finalizarJuego() {
+        horaFin = new Date();
+        document.getElementById("game-screen").style.display = "none";
+        document.getElementById("results-screen").style.display = "block";
+
+        // Tiempo y fecha
+        const fechaStr = horaInicio.toLocaleDateString();
+        const inicioStr = horaInicio.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const finStr = horaFin.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        const segundosTotales = Math.floor((horaFin - horaInicio) / 1000);
+        const minutos = Math.floor(segundosTotales / 60);
+        const segundos = segundosTotales % 60;
+        const tiempoFormatted = `${minutos}m ${segundos}s`;
+
+        document.getElementById("time-info").innerHTML = `
+            <strong>Fecha:</strong> ${fechaStr}<br>
+            <strong>Hora inicio:</strong> ${inicioStr} | <strong>Hora fin:</strong> ${finStr}<br>
+            <strong>Tiempo total:</strong> ${tiempoFormatted}
+        `;
+
+        // Renderizar tabla de resultados por jugador
+        const tbody = document.getElementById("results-body");
+        tbody.innerHTML = "";
+
+        jugadores.forEach(j => {
+            const porcentaje = j.preguntasRespondidas > 0 
+                ? ((j.aciertos / j.preguntasRespondidas) * 100).toFixed(1) 
+                : 0;
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td><strong>${j.nombre}</strong></td>
+                <td>${j.preguntasRespondidas}</td>
+                <td>${j.aciertos}</td>
+                <td><strong>${porcentaje}%</strong></td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function reiniciarJuego() {
+        document.getElementById("results-screen").style.display = "none";
+        document.getElementById("setup-screen").style.display = "block";
+    }
+</script>
+
+</body>
+</html>

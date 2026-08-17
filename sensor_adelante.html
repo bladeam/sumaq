@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Movimiento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        #mensaje {
+            font-size: 18px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .exito {
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Reto de Movimiento</h2>
+    <p id="instruccion">Presiona el botón para iniciar el reto.</p>
+    
+    <button id="btnIniciar" onclick="iniciarJuego()">Iniciar Reto</button>
+
+    <div id="mensaje"></div>
+</div>
+
+<script>
+let juegoActivo = false;
+const UMBRAL_MOVIMIENTO = 12; // Sensibilidad de la aceleración
+
+function iniciarJuego() {
+    document.getElementById("instruccion").innerText = "¡Camina o mueve el celular hacia ADELANTE!";
+    document.getElementById("mensaje").innerText = "Esperando movimiento...";
+    document.getElementById("mensaje").className = "";
+    document.getElementById("btnIniciar").style.display = "none";
+    
+    // Solicitar permiso en dispositivos iOS si es necesario
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission()
+            .then(response => {
+                if (response === 'granted') {
+                    activarSensor();
+                } else {
+                    alert("Permiso denegado para acceder a los sensores.");
+                }
+            })
+            .catch(console.error);
+    } else {
+        // Para Android y navegadores estándar
+        activarSensor();
+    }
+}
+
+function activarSensor() {
+    juegoActivo = true;
+    window.addEventListener("devicemotion", detectarMovimiento);
+}
+
+function detectarMovimiento(event) {
+    if (!juegoActivo) return;
+
+    // Obtener la aceleración en el eje Z (adelante/atrás en la pantalla)
+    let aceleracionZ = event.acceleration.z || event.accelerationIncludingGravity.z;
+
+    // Detectar un empuje o paso hacia adelante
+    if (Math.abs(aceleracionZ) > UMBRAL_MOVIMIENTO) {
+        juegoActivo = false; // Detener la detección tras lograrlo
+        window.removeEventListener("devicemotion", detectarMovimiento);
+        
+        // Mostrar mensaje de éxito
+        let msg = document.getElementById("mensaje");
+        msg.innerText = "¡Correcto! Te has movido hacia adelante. 🎉";
+        msg.className = "exito";
+
+        // Mostrar botón de reinicio
+        let btn = document.getElementById("btnIniciar");
+        btn.innerText = "Jugar de nuevo";
+        btn.style.display = "inline-block";
+    }
+}
+</script>
+
+</body>
+</html>

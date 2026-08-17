@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Yachay Motion - Juego Quechua & Geoposicionamiento</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --success: #16a34a;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 12px;
+    }
+
+    .container {
+      background-color: var(--card);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 1.7rem;
+      color: #1e3a8a;
+      margin-bottom: 4px;
+    }
+
+    p.subtitle {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 18px;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    textarea, input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    textarea:focus, input:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+
+    button.btn-main {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 15px 20px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border-radius: 12px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    button.btn-main:active {
+      transform: scale(0.97);
+    }
+
+    /* Pantalla de juego */
+    .turn-badge {
+      display: inline-block;
+      background-color: #dbeafe;
+      color: #1e40af;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .progress {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 10px;
+    }
+
+    .word-box {
+      background-color: #f1f5f9;
+      border: 3px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 20px 10px;
+      margin: 10px 0;
+    }
+
+    .word-display {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #0f172a;
+      text-transform: lowercase;
+    }
+
+    .feedback {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--success);
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Controles Táctiles (Botones de dirección) */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+      user-select: none;
+    }
+
+    .ctrl-btn {
+      background-color: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 12px 6px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ctrl-btn:active {
+      background-color: #dbeafe;
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: scale(0.95);
+    }
+
+    .ctrl-btn span {
+      font-size: 1.2rem;
+      margin-bottom: 2px;
+    }
+
+    .guide-text {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 10px;
+    }
+
+    /* Tabla de Resultados e Historial */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+
+    .results-table th, .results-table td {
+      padding: 10px 6px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    .results-table th {
+      background-color: #f1f5f9;
+      color: #475569;
+    }
+
+    /* Panel de Detalle UTM */
+    .utm-card {
+      background-color: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: left;
+      margin-top: 15px;
+    }
+
+    .utm-card h3 {
+      font-size: 0.95rem;
+      color: #1e3a8a;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 4px;
+    }
+
+    .utm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 0.82rem;
+    }
+
+    .utm-item {
+      background: white;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .utm-item span {
+      display: block;
+      font-weight: bold;
+      color: #64748b;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+
+    .utm-item div {
+      color: #0f172a;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .full-width {
+      grid-column: span 2;
+    }
+
+    .map-link {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Configuración -->
+    <div id="setup-screen" class="screen active">
+      <h1>Yachay Motion</h1>
+      <p class="subtitle">Aprende direccionalidad en Quechua con movimiento o botones</p>
+
+      <div class="form-group">
+        <label for="participants">Participantes (un nombre por fila):</label>
+        <textarea id="participants" rows="3" placeholder="Juan&#10;María&#10;Carlos">Estudiante 1&#10;Estudiante 2</textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="num-questions">Número de preguntas (Máx. 30):</label>
+        <input type="number" id="num-questions" min="1" max="30" value="6">
+      </div>
+
+      <div class="form-group">
+        <label for="delay">Espera entre turnos (segundos):</label>
+        <input type="number" id="delay" min="1" max="10" value="2">
+      </div>
+
+      <button class="btn-main" id="start-btn">Iniciar Juego</button>
+    </div>
+
+    <!-- Pantalla de Juego -->
+    <div id="game-screen" class="screen">
+      <div class="turn-badge" id="current-player">Turno de: -</div>
+      <div class="progress" id="question-counter">Pregunta 0 de 0</div>
+      
+      <div class="word-box">
+        <div class="word-display" id="word-target">---</div>
+      </div>
+
+      <div class="feedback" id="feedback-msg"></div>
+
+      <!-- Panel de Botones Táctiles de Dirección -->
+      <div class="controls-grid">
+        <div></div>
+        <button class="ctrl-btn" onclick="triggerDirection('UP')">
+          <span>⬆️</span> Arriba
+        </button>
+        <div></div>
+
+        <button class="ctrl-btn" onclick="triggerDirection('LEFT')">
+          <span>⬅️</span> Izq
+        </button>
+        <button class="ctrl-btn" onclick="triggerDirection('FORWARD')">
+          <span>⬆️</span> Ade
+        </button>
+        <button class="ctrl-btn" onclick="triggerDirection('RIGHT')">
+          <span>➡️</span> Der
+        </button>
+
+        <button class="ctrl-btn" onclick="triggerDirection('BACKWARD')">
+          <span>⬇️</span> Atrás
+        </button>
+        <button class="ctrl-btn" onclick="triggerDirection('DOWN')">
+          <span>⬇️</span> Abajo
+        </button>
+        <div></div>
+      </div>
+
+      <p class="guide-text">Usa los botones en pantalla o inclina tu dispositivo</p>
+    </div>
+
+    <!-- Resultados e Historial -->
+    <div id="results-screen" class="screen">
+      <h1>Historial y Resultados</h1>
+      
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Participante</th>
+            <th>Aciertos</th>
+            <th>% Puntaje</th>
+          </tr>
+        </thead>
+        <tbody id="results-body"></tbody>
+      </table>
+
+      <!-- Panel Detallado UTM -->
+      <div class="utm-card">
+        <h3>Registro Geográfico y Metadatos</h3>
+        
+        <div class="utm-grid" id="metadata-grid">
+          <div class="utm-item">
+            <span>Fecha</span>
+            <div id="m-fecha">--/--/----</div>
+          </div>
+          <div class="utm-item">
+            <span>Tiempo de Juego</span>
+            <div id="m-tiempo">0s</div>
+          </div>
+          <div class="utm-item">
+            <span>Hora Inicio</span>
+            <div id="m-h-inicio">--:--</div>
+          </div>
+          <div class="utm-item">
+            <span>Hora Fin</span>
+            <div id="m-h-fin">--:--</div>
+          </div>
+
+          <div class="utm-item full-width" style="background-color: #eff6ff; border-color: #bfdbfe;">
+            <span>Zona UTM / Banda</span>
+            <div id="m-utm-zone" style="font-size: 1.1rem; color: #1e40af;">Calculando...</div>
+          </div>
+
+          <div class="utm-item">
+            <span>Este (X) - m</span>
+            <div id="m-utm-e">--</div>
+          </div>
+          <div class="utm-item">
+            <span>Norte (Y) - m</span>
+            <div id="m-utm-n">--</div>
+          </div>
+
+          <div class="utm-item">
+            <span>Hemisferio</span>
+            <div id="m-hemisferio">--</div>
+          </div>
+          <div class="utm-item">
+            <span>Precisión GPS</span>
+            <div id="m-precision">--</div>
+          </div>
+
+          <div class="utm-item full-width">
+            <span>Coordenadas Geográficas</span>
+            <div id="m-latlon" style="font-weight: normal; font-size: 0.78rem;">--</div>
+            <a id="m-map-link" class="map-link" href="#" target="_blank" style="display:none;">Ver en Google Maps 📍</a>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-main" onclick="location.reload()">Nuevo Juego</button>
+    </div>
+
+  </div>
+
+  <script>
+    // Base de datos de direcciones en Quechua
+    const database = [
+      { target: "pataman",    dir: "UP" },       // Arriba
+      { target: "uraman",     dir: "DOWN" },     // Abajo
+      { target: "lluq'iman",  dir: "LEFT" },     // Izquierda
+      { target: "pañaman",    dir: "RIGHT" },    // Derecha
+      { target: "ñawpaqman",  dir: "FORWARD" },  // Adelante
+      { target: "qhipaman",   dir: "BACKWARD" }  // Atrás
+    ];
+
+    // Variables de estado
+    let players = [];
+    let totalQuestions = 5;
+    let delayMs = 2000;
+    
+    let currentQ = 0;
+    let playerIdx = 0;
+    let currentTarget = null;
+    let isListening = false;
+
+    // Métricas
+    let scores = {};
+    let questionsPerPlayer = {};
+    let startTime, endTime;
+    let utmDetails = null;
+
+    // Sensores de orientación
+    let initialBeta = null;
+    let initialGamma = null;
+
+    // DOM
+    const setupScreen = document.getElementById('setup-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const resultsScreen = document.getElementById('results-screen');
+
+    document.getElementById('start-btn').addEventListener('click', async () => {
+      const rawNames = document.getElementById('participants').value.trim();
+      players = rawNames.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+
+      if (players.length === 0) {
+        alert("Ingresa al menos un nombre de participante.");
+        return;
+      }
+
+      totalQuestions = Math.min(30, Math.max(1, parseInt(document.getElementById('num-questions').value) || 5));
+      delayMs = (parseInt(document.getElementById('delay').value) || 2) * 1000;
+
+      players.forEach(p => {
+        scores[p] = 0;
+        questionsPerPlayer[p] = 0;
+      });
+
+      // Permisos de sensores para iOS
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          await DeviceOrientationEvent.requestPermission();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      fetchUTMData();
+
+      startTime = new Date();
+      setupScreen.classList.remove('active');
+      gameScreen.classList.add('active');
+
+      window.addEventListener('deviceorientation', handleOrientation, true);
+      nextTurn();
+    });
+
+    function nextTurn() {
+      if (currentQ >= totalQuestions) {
+        finishGame();
+        return;
+      }
+
+      document.getElementById('feedback-msg').innerText = "";
+      const player = players[playerIdx];
+      
+      document.getElementById('current-player').innerText = `Turno de: ${player}`;
+      document.getElementById('question-counter').innerText = `Pregunta ${currentQ + 1} de ${totalQuestions}`;
+
+      currentTarget = database[Math.floor(Math.random() * database.length)];
+      document.getElementById('word-target').innerText = currentTarget.target;
+
+      questionsPerPlayer[player]++;
+
+      initialBeta = null;
+      initialGamma = null;
+      setTimeout(() => {
+        isListening = true;
+      }, 400);
+    }
+
+    // Acción activada mediante clic en botón o mediante giroscopio
+    function triggerDirection(detectedDir) {
+      if (!isListening) return;
+
+      if (detectedDir === currentTarget.dir || adaptDirection(detectedDir, currentTarget.dir)) {
+        isListening = false;
+        
+        const player = players[playerIdx];
+        scores[player]++;
+
+        document.getElementById('feedback-msg').innerText = "ALLIN!";
+
+        currentQ++;
+        playerIdx = (playerIdx + 1) % players.length;
+
+        setTimeout(nextTurn, delayMs);
+      }
+    }
+
+    function handleOrientation(event) {
+      if (!isListening) return;
+
+      let beta = event.beta;
+      let gamma = event.gamma;
+
+      if (beta === null || gamma === null) return;
+
+      if (initialBeta === null) {
+        initialBeta = beta;
+        initialGamma = gamma;
+        return;
+      }
+
+      let diffBeta = beta - initialBeta;
+      let diffGamma = gamma - initialGamma;
+
+      let detectedDir = null;
+      const THRESHOLD = 22;
+
+      if (diffBeta < -THRESHOLD) detectedDir = "UP";
+      else if (diffBeta > THRESHOLD) detectedDir = "DOWN";
+      else if (diffGamma < -THRESHOLD) detectedDir = "LEFT";
+      else if (diffGamma > THRESHOLD) detectedDir = "RIGHT";
+
+      if (detectedDir) {
+        triggerDirection(detectedDir);
+      }
+    }
+
+    function adaptDirection(detected, target) {
+      if (target === "FORWARD" && detected === "DOWN") return true;
+      if (target === "BACKWARD" && detected === "UP") return true;
+      return false;
+    }
+
+    function finishGame() {
+      window.removeEventListener('deviceorientation', handleOrientation);
+      endTime = new Date();
+
+      gameScreen.classList.remove('active');
+      resultsScreen.classList.add('active');
+
+      const tbody = document.getElementById('results-body');
+      tbody.innerHTML = "";
+
+      players.forEach(p => {
+        const totalP = questionsPerPlayer[p] || 1;
+        const score = scores[p];
+        const pct = Math.round((score / totalP) * 100);
+
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${p}</strong></td>
+            <td>${score} / ${totalP}</td>
+            <td>${pct}%</td>
+          </tr>
+        `;
+      });
+
+      const duracionSec = Math.round((endTime - startTime) / 1000);
+      document.getElementById('m-fecha').innerText = startTime.toLocaleDateString();
+      document.getElementById('m-tiempo').innerText = `${duracionSec} segundos`;
+      document.getElementById('m-h-inicio').innerText = startTime.toLocaleTimeString();
+      document.getElementById('m-h-fin').innerText = endTime.toLocaleTimeString();
+
+      if (utmDetails) {
+        document.getElementById('m-utm-zone').innerText = `Zona ${utmDetails.zone}${utmDetails.band}`;
+        document.getElementById('m-utm-e').innerText = `${utmDetails.easting} m`;
+        document.getElementById('m-utm-n').innerText = `${utmDetails.northing} m`;
+        document.getElementById('m-hemisferio').innerText = utmDetails.hemisphere;
+        document.getElementById('m-precision').innerText = `±${utmDetails.accuracy} m`;
+        document.getElementById('m-latlon').innerText = `Lat: ${utmDetails.lat.toFixed(6)}°, Lon: ${utmDetails.lon.toFixed(6)}°`;
+        
+        const mapLink = document.getElementById('m-map-link');
+        mapLink.href = `https://www.google.com/maps?q=${utmDetails.lat},${utmDetails.lon}`;
+        mapLink.style.display = 'inline-block';
+      } else {
+        document.getElementById('m-utm-zone').innerText = "Sin GPS / Permiso denegado";
+      }
+    }
+
+    // Geodesia UTM WGS84
+    function fetchUTMData() {
+      if (!("geolocation" in navigator)) return;
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const accuracy = Math.round(pos.coords.accuracy);
+
+          utmDetails = convertLatLonToUTM(lat, lon);
+          utmDetails.lat = lat;
+          utmDetails.lon = lon;
+          utmDetails.accuracy = accuracy;
+        },
+        (err) => {
+          console.warn("No se obtuvo GPS:", err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+
+    function convertLatLonToUTM(lat, lon) {
+      const a = 6378137;
+      const eccSquared = 0.00669438;
+      const k0 = 0.9996;
+
+      const LatRad = lat * Math.PI / 180;
+      const LongRad = lon * Math.PI / 180;
+
+      let ZoneNumber = Math.floor((lon + 180) / 6) + 1;
+      if (lat >= 56.0 && lat < 64.0 && lon >= 3.0 && lon < 12.0) ZoneNumber = 32;
+
+      const LongOrigin = (ZoneNumber - 1) * 6 - 180 + 3;
+      const LongOriginRad = LongOrigin * Math.PI / 180;
+
+      const bandLetters = "CDEFGHJKLMNPQRSTUVWXX";
+      let bandIndex = Math.floor((lat + 80) / 8);
+      let band = bandLetters.charAt(bandIndex) || 'S';
+      if (lat < -80) band = 'C';
+      if (lat >= 84) band = 'X';
+
+      const hemisphere = lat >= 0 ? "Norte" : "Sur";
+      const eccPrimeSquared = (eccSquared) / (1 - eccSquared);
+
+      const N = a / Math.sqrt(1 - eccSquared * Math.sin(LatRad) * Math.sin(LatRad));
+      const T = Math.tan(LatRad) * Math.tan(LatRad);
+      const C = eccPrimeSquared * Math.cos(LatRad) * Math.cos(LatRad);
+      const A = Math.cos(LatRad) * (LongRad - LongOriginRad);
+
+      const M = a * ((1 - eccSquared / 4 - 3 * eccSquared * eccSquared / 64 - 5 * eccSquared * eccSquared * eccSquared / 256) * LatRad
+        - (3 * eccSquared / 8 + 3 * eccSquared * eccSquared / 32 + 45 * eccSquared * eccSquared * eccSquared / 1024) * Math.sin(2 * LatRad)
+        + (15 * eccSquared * eccSquared / 256 + 45 * eccSquared * eccSquared * eccSquared / 1024) * Math.sin(4 * LatRad)
+        - (35 * eccSquared * eccSquared * eccSquared / 3072) * Math.sin(6 * LatRad));
+
+      let UTMEasting = (k0 * N * (A + (1 - T + C) * A * A * A / 6
+        + (5 - 18 * T + T * T + 72 * C - 58 * eccPrimeSquared) * A * A * A * A * A / 120)
+        + 500000.0);
+
+      let UTMNorthing = (k0 * (M + N * Math.tan(LatRad) * (A * A / 2 + (5 - T + 9 * C + 4 * C * C) * A * A * A * A / 24
+        + (61 - 58 * T + T * T + 600 * C - 330 * eccPrimeSquared) * A * A * A * A * A * A / 720)));
+
+      if (lat < 0) UTMNorthing += 10000000.0;
+
+      return {
+        zone: `${ZoneNumber}`,
+        band: band,
+        easting: Math.round(UTMEasting),
+        northing: Math.round(UTMNorthing),
+        hemisphere: hemisphere
+      };
+    }
+  </script>
+</body>
+</html>

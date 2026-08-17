@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Movimiento en Quechua</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            padding: 24px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-pc {
+            background-color: #3498db;
+            margin-top: 0;
+            padding: 10px 5px;
+            font-size: 13px;
+        }
+        
+        .btn-pc:hover {
+            background-color: #2980b9;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .turn-info {
+            font-weight: bold;
+            color: #e67e22;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .word-card {
+            background: #f8f9fa;
+            border: 3px dashed #3498db;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .word-display {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .feedback {
+            font-size: 22px;
+            font-weight: bold;
+            height: 35px;
+            margin-top: 5px;
+        }
+
+        .feedback.allin {
+            color: #2ecc71;
+        }
+
+        .feedback.mana-allin {
+            color: #e74c3c;
+        }
+
+        /* DISEÑO DE CONTROLES REORGANIZADOS */
+        .pc-controls {
+            margin-top: 15px;
+            background: #eef2f7;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .controls-section-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #777;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .grid-directional {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            max-width: 260px;
+            margin: 0 auto 15px auto;
+        }
+
+        .grid-vertical {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            max-width: 260px;
+            margin: 0 auto;
+        }
+
+        .btn-vertical {
+            background-color: #8e44ad;
+        }
+
+        .btn-vertical:hover {
+            background-color: #732d91;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .meta-info {
+            text-align: left;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- PANTALLA 1: CONFIGURACIÓN E INICIO -->
+    <div id="screen-setup" class="screen active">
+        <h1>Yachay Maki</h1>
+        <p style="margin-bottom: 15px; font-size: 14px; color: #666;">Juego de direccionales en Quechua</p>
+        
+        <div class="form-group">
+            <label for="input-players">Participantes (Un nombre por línea):</label>
+            <textarea id="input-players" rows="4" placeholder="Juan&#10;Maria&#10;Carlos">Juan&#10;María</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="input-questions">Número total de preguntas (Máx 30):</label>
+            <input type="number" id="input-questions" min="1" max="30" value="10">
+        </div>
+
+        <div class="form-group">
+            <label for="input-delay">Pausa entre turnos (segundos):</label>
+            <input type="number" id="input-delay" min="1" max="5" value="2">
+        </div>
+
+        <button onclick="iniciarJuego()">¡Comenzar Juego!</button>
+    </div>
+
+    <!-- PANTALLA 2: DESARROLLO DEL JUEGO -->
+    <div id="screen-game" class="screen">
+        <div id="turn-info" class="turn-info">Turno de: -</div>
+        <p>Pregunta <span id="current-q">1</span> de <span id="total-q">10</span></p>
+
+        <div class="word-card">
+            <div id="word-display" class="word-display">---</div>
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+
+        <!-- Controles reestructurados -->
+        <div class="pc-controls">
+            <div class="controls-section-title">Plano Horizontal</div>
+            <div class="grid-directional">
+                <div></div>
+                <button class="btn-pc" onclick="procesarRespuesta('adelante')">▲ Adelante</button>
+                <div></div>
+                <button class="btn-pc" onclick="procesarRespuesta('izquierda')">◄ Izq.</button>
+                <button class="btn-pc" onclick="procesarRespuesta('atras')">▼ Atrás</button>
+                <button class="btn-pc" onclick="procesarRespuesta('derecha')">► Der.</button>
+            </div>
+
+            <div class="controls-section-title">Eje Vertical</div>
+            <div class="grid-vertical">
+                <button class="btn-pc btn-vertical" onclick="procesarRespuesta('arriba')">▲ Arriba</button>
+                <button class="btn-pc btn-vertical" onclick="procesarRespuesta('abajo')">▼ Abajo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 3: HISTORIAL Y RESULTADOS -->
+    <div id="screen-results" class="screen">
+        <h2>Resultados Finales</h2>
+        
+        <div class="meta-info">
+            <p><strong>Fecha:</strong> <span id="res-date"></span></p>
+            <p><strong>Hora inicio:</strong> <span id="res-start"></span></p>
+            <p><strong>Hora fin:</strong> <span id="res-end"></span></p>
+            <p><strong>Tiempo total:</strong> <span id="res-duration"></span></p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Participante</th>
+                    <th>Aciertos / Intentos</th>
+                    <th>Puntaje (%)</th>
+                </tr>
+            </thead>
+            <tbody id="results-body">
+            </tbody>
+        </table>
+
+        <button onclick="reiniciarJuego()" style="margin-top: 20px;">Jugar de nuevo</button>
+    </div>
+
+</div>
+
+<script>
+/* ==========================================================================
+   1. BASE DE DATOS Y CONFIGURACIÓN GLOBAL
+   ========================================================================== */
+const BASE_DATOS = [
+    { base: "ñawpaq", direccion: "adelante" },
+    { base: "qhipa", direccion: "atras" },
+    { base: "pata", direccion: "arriba" },
+    { base: "ura", direccion: "abajo" },
+    { base: "lluq'i", direccion: "izquierda" },
+    { base: "paña", direccion: "derecha" }
+];
+
+let participantes = [];
+let totalPreguntas = 10;
+let tiempoEspera = 2000;
+
+let preguntaActual = 0;
+let indiceTurno = 0;
+let datosPreguntaActual = null;
+let aceptandoRespuestas = false;
+
+// Variables de tiempo y métricas
+let timestampInicioObj, fechaInicio, horaInicio, horaFin;
+let estadisticas = {};
+
+const UMBRAL_ACELERACION = 12;
+
+/* ==========================================================================
+   2. LÓGICA DE INICIO Y FLUJO
+   ========================================================================== */
+function iniciarJuego() {
+    const rawPlayers = document.getElementById("input-players").value.split("\n");
+    participantes = rawPlayers.map(p => p.trim()).filter(p => p.length > 0);
+
+    if (participantes.length === 0) {
+        alert("Por favor ingresa al menos un participante.");
+        return;
+    }
+
+    let qInput = parseInt(document.getElementById("input-questions").value);
+    totalPreguntas = Math.min(Math.max(qInput || 1, 1), 30);
+
+    let delayInput = parseFloat(document.getElementById("input-delay").value);
+    tiempoEspera = (delayInput || 2) * 1000;
+
+    estadisticas = {};
+    participantes.forEach(p => {
+        estadisticas[p] = { aciertos: 0, intentos: 0 };
+    });
+
+    timestampInicioObj = new Date();
+    fechaInicio = timestampInicioObj.toLocaleDateString();
+    horaInicio = timestampInicioObj.toLocaleTimeString();
+
+    preguntaActual = 0;
+    indiceTurno = 0;
+
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission().catch(console.error);
+    }
+
+    window.addEventListener("devicemotion", detectarMovimientoSensores);
+    window.addEventListener("keydown", detectarTeclado);
+
+    cambiarPantalla("screen-game");
+    siguientePregunta();
+}
+
+function siguientePregunta() {
+    if (preguntaActual >= totalPreguntas) {
+        finalizarJuego();
+        return;
+    }
+
+    preguntaActual++;
+    
+    const jugadorActual = participantes[indiceTurno];
+
+    datosPreguntaActual = BASE_DATOS[Math.floor(Math.random() * BASE_DATOS.length)];
+    const palabraQuechua = datosPreguntaActual.base + "man";
+
+    document.getElementById("current-q").innerText = preguntaActual;
+    document.getElementById("total-q").innerText = totalPreguntas;
+    document.getElementById("turn-info").innerText = "Turno de: " + jugadorActual;
+    document.getElementById("word-display").innerText = palabraQuechua;
+    document.getElementById("feedback").innerText = "";
+    document.getElementById("feedback").className = "feedback";
+
+    aceptandoRespuestas = true;
+}
+
+/* ==========================================================================
+   3. EVALUACIÓN DE RESPUESTAS
+   ========================================================================== */
+function procesarRespuesta(direccionDetectada) {
+    if (!aceptandoRespuestas) return;
+
+    const jugadorActual = participantes[indiceTurno];
+    const fb = document.getElementById("feedback");
+
+    // Registrar intento para el cálculo final
+    estadisticas[jugadorActual].intentos++;
+
+    if (direccionDetectada === datosPreguntaActual.direccion) {
+        aceptandoRespuestas = false;
+        estadisticas[jugadorActual].aciertos++;
+
+        fb.innerText = "ALLIN! (¡BIEN!)";
+        fb.className = "feedback allin";
+
+        indiceTurno = (indiceTurno + 1) % participantes.length;
+        setTimeout(siguientePregunta, tiempoEspera);
+    } else {
+        aceptandoRespuestas = false;
+
+        fb.innerText = "MANA ALLINCHU (¡INCORRECTO!)";
+        fb.className = "feedback mana-allin";
+
+        indiceTurno = (indiceTurno + 1) % participantes.length;
+        setTimeout(siguientePregunta, tiempoEspera);
+    }
+}
+
+/* ==========================================================================
+   4. DETECCIÓN DE SENSORES Y TECLADO
+   ========================================================================== */
+function detectarMovimientoSensores(event) {
+    if (!aceptandoRespuestas) return;
+
+    let acc = event.acceleration || event.accelerationIncludingGravity;
+    if (!acc) return;
+
+    let x = acc.x || 0;
+    let y = acc.y || 0;
+    let z = acc.z || 0;
+
+    if (z > UMBRAL_ACELERACION) {
+        procesarRespuesta("adelante");
+    } else if (z < -UMBRAL_ACELERACION) {
+        procesarRespuesta("atras");
+    } else if (x > UMBRAL_ACELERACION) {
+        procesarRespuesta("derecha");
+    } else if (x < -UMBRAL_ACELERACION) {
+        procesarRespuesta("izquierda");
+    } else if (y > UMBRAL_ACELERACION) {
+        procesarRespuesta("arriba");
+    } else if (y < -UMBRAL_ACELERACION) {
+        procesarRespuesta("abajo");
+    }
+}
+
+function detectarTeclado(event) {
+    if (!aceptandoRespuestas) return;
+
+    switch (event.key) {
+        case "ArrowUp": procesarRespuesta("arriba"); break;
+        case "ArrowDown": procesarRespuesta("abajo"); break;
+        case "ArrowLeft": procesarRespuesta("izquierda"); break;
+        case "ArrowRight": procesarRespuesta("derecha"); break;
+        case "w": case "W": procesarRespuesta("adelante"); break;
+        case "s": case "S": procesarRespuesta("atras"); break;
+    }
+}
+
+/* ==========================================================================
+   5. RESULTADOS Y FINALIZACIÓN
+   ========================================================================== */
+function finalizarJuego() {
+    aceptandoRespuestas = false;
+    
+    window.removeEventListener("devicemotion", detectarMovimientoSensores);
+    window.removeEventListener("keydown", detectarTeclado);
+
+    const fin = new Date();
+    horaFin = fin.toLocaleTimeString();
+
+    const tiempoTotalSeg = Math.round((fin - timestampInicioObj) / 1000); 
+
+    document.getElementById("res-date").innerText = fechaInicio;
+    document.getElementById("res-start").innerText = horaInicio;
+    document.getElementById("res-end").innerText = horaFin;
+    document.getElementById("res-duration").innerText = `${tiempoTotalSeg} segundos`;
+
+    const tbody = document.getElementById("results-body");
+    tbody.innerHTML = "";
+
+    participantes.forEach(p => {
+        const stats = estadisticas[p];
+        const porcentaje = stats.intentos > 0 ? Math.round((stats.aciertos / stats.intentos) * 100) : 0;
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td><strong>${p}</strong></td>
+            <td>${stats.aciertos} / ${stats.intentos}</td>
+            <td><strong>${porcentaje}%</strong></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    cambiarPantalla("screen-results");
+}
+
+function reiniciarJuego() {
+    cambiarPantalla("screen-setup");
+}
+
+function cambiarPantalla(idPantalla) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(idPantalla).classList.add("active");
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!--
+    ====================================================================
+    CONFIGURACIÓN DE PARTICIPANTES (Lista inicial por defecto)
+    Cada participante en una fila:
+    - Participante 1: Juan
+    - Participante 2: María
+    - Participante 3: Carlos
+    ====================================================================
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Llimp'ikunawan pukllana - Tapiz Inca</title>
+    <style>
+        :root {
+            --bg-color: #fcf8f2;
+            --card-bg: #ffffff;
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --text-color: #1f2937;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 650px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 25px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #6d28d9;
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+        }
+
+        p.subtitle {
+            color: #6b7280;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Formulario inicial */
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Botones generales */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Encabezado del juego */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f3e8ff;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd6fe;
+            font-size: 0.9rem;
+        }
+
+        .turn-badge {
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        /* Indicador de instrucción */
+        .instruction-card {
+            background-color: #f9fafb;
+            border: 2px dashed #a7f3d0;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .target-spanish {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #047857;
+            text-transform: uppercase;
+        }
+
+        /* Contenedor del Tapiz SVG */
+        .svg-container {
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto 15px auto;
+            border: 4px solid #475569;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Secciones coloreables del SVG */
+        .tupu-part {
+            cursor: pointer;
+            stroke: #1e293b;
+            stroke-width: 2;
+            transition: fill 0.3s, opacity 0.2s;
+        }
+
+        .tupu-part:hover {
+            opacity: 0.8;
+        }
+
+        /* Paleta de Colores */
+        .palette-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #4b5563;
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .color-btn {
+            border: 3px solid transparent;
+            padding: 10px 5px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.88rem;
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.6);
+            transition: transform 0.15s, border-color 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .color-btn.selected {
+            border-color: #1e293b;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .color-btn:active {
+            transform: scale(0.95);
+        }
+
+        .feedback {
+            font-weight: bold;
+            font-size: 1.05rem;
+            min-height: 26px;
+            margin-top: 5px;
+        }
+
+        .feedback.correct { color: var(--accent); }
+        .feedback.incorrect { color: var(--danger); }
+
+        /* Estilos de Tablas de Resultados */
+        .stats-table, .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.88rem;
+        }
+
+        .stats-table th, .stats-table td,
+        .history-table th, .history-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 10px;
+            text-align: center;
+        }
+
+        .stats-table th, .history-table th {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+
+        .time-info {
+            text-align: left;
+            background-color: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .history-container {
+            max-height: 180px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+
+        /* Responsividad en Celulares */
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.4rem;
+            }
+            .target-spanish {
+                font-size: 1.2rem;
+            }
+            .palette-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .color-btn {
+                font-size: 0.8rem;
+                padding: 8px 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Llimp'ikunawan pukllana</h1>
+    <p class="subtitle">Aprende los colores en Quechua pintando el diseño imperial</p>
+
+    <!-- PANTALLA 1: INICIO Y CONFIGURACIÓN -->
+    <div id="start-screen" class="screen active">
+        <div class="form-group">
+            <label for="players-input">Participantes (un nombre por fila):</label>
+            <textarea id="players-input" placeholder="Juan&#10;María&#10;Carlos">Juan&#10;María</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="total-questions">Número total de preguntas (Máximo 30):</label>
+            <input type="number" id="total-questions" min="1" max="30" value="10">
+        </div>
+
+        <button class="btn" onclick="startGame()">¡Comenzar a Pintar!</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+    </div>
+
+    <!-- PANTALLA 2: JUEGO EN CURSO -->
+    <div id="game-screen" class="screen">
+        <div class="game-header">
+            <div>Turno: <b id="current-q-num">1</b>/<span id="max-q-num">10</span></div>
+            <div>Jugador: <span id="current-player" class="turn-badge">-</span></div>
+        </div>
+
+        <div class="instruction-card">
+            <div>Pinta la sección <b id="target-section-quechua" style="color: #6d28d9;">--</b> con el color:</div>
+            <div id="target-color-spanish" class="target-spanish">ROJO</div>
+        </div>
+
+        <!-- TAPIZ INCA VECTORIAL SVG (10 SECCIONES CON NÚMEROS DE FIGURA) -->
+        <div class="svg-container">
+            <svg viewBox="0 0 300 300" id="tapiz-svg">
+                <!-- Marco Base -->
+                <rect x="0" y="0" width="300" height="300" fill="#f8fafc" stroke="#334155" stroke-width="4"/>
+                
+                <!-- 10 SECCIONES SVG -->
+                <!-- 1. Juk (Centro Diamante) -->
+                <polygon points="150,110 190,150 150,190 110,150" class="tupu-part" id="sec-1" fill="#ffffff" onclick="clickSection('sec-1')"/>
+                
+                <!-- 2. Iskay (Trapecio Superior Centro) -->
+                <polygon points="110,30 190,30 170,90 130,90" class="tupu-part" id="sec-2" fill="#ffffff" onclick="clickSection('sec-2')"/>
+                
+                <!-- 3. Kimsa (Trapecio Inferior Centro) -->
+                <polygon points="130,210 170,210 190,270 110,270" class="tupu-part" id="sec-3" fill="#ffffff" onclick="clickSection('sec-3')"/>
+
+                <!-- 4. Tawa (Superior Izquierda) -->
+                <polygon points="15,15 95,15 95,85 15,85" class="tupu-part" id="sec-4" fill="#ffffff" onclick="clickSection('sec-4')"/>
+
+                <!-- 5. Phichqa (Superior Derecha) -->
+                <polygon points="205,15 285,15 285,85 205,85" class="tupu-part" id="sec-5" fill="#ffffff" onclick="clickSection('sec-5')"/>
+
+                <!-- 6. Suqta (Lateral Izquierda Centro) -->
+                <polygon points="15,105 85,105 85,195 15,195" class="tupu-part" id="sec-6" fill="#ffffff" onclick="clickSection('sec-6')"/>
+
+                <!-- 7. Qanchis (Lateral Derecha Centro) -->
+                <polygon points="215,105 285,105 285,195 215,195" class="tupu-part" id="sec-7" fill="#ffffff" onclick="clickSection('sec-7')"/>
+
+                <!-- 8. Pusaq (Inferior Izquierda) -->
+                <polygon points="15,215 95,215 95,285 15,285" class="tupu-part" id="sec-8" fill="#ffffff" onclick="clickSection('sec-8')"/>
+
+                <!-- 9. Jisq'un (Inferior Derecha) -->
+                <polygon points="205,215 285,215 285,285 205,285" class="tupu-part" id="sec-9" fill="#ffffff" onclick="clickSection('sec-9')"/>
+
+                <!-- 10. Chunka (Borde Marco Interior) -->
+                <polygon points="5,5 295,5 295,295 5,295 25,275 25,25 275,25 275,275 25,275 5,295" class="tupu-part" id="sec-10" fill="#ffffff" onclick="clickSection('sec-10')" fill-rule="evenodd"/>
+
+                <!-- ETIQUETAS VISUALES ÚNICAMENTE CON NÚMEROS EN LAS FIGURAS -->
+                <text x="150" y="155" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a" pointer-events="none">1</text>
+                <text x="150" y="65" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a" pointer-events="none">2</text>
+                <text x="150" y="245" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a" pointer-events="none">3</text>
+                <text x="55" y="55" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a" pointer-events="none">4</text>
+                <text x="245" y="55" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a" pointer-events="none">5</text>
+                <text x="50" y="155" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a" pointer-events="none">6</text>
+                <text x="250" y="155" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a" pointer-events="none">7</text>
+                <text x="55" y="255" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a" pointer-events="none">8</text>
+                <text x="245" y="255" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a" pointer-events="none">9</text>
+                <text x="150" y="18" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a" pointer-events="none">10</text>
+            </svg>
+        </div>
+
+        <!-- PALETA DE COLORES EN QUECHUA -->
+        <div class="palette-title">Selecciona un color de la paleta:</div>
+        <div id="palette-container" class="palette-grid">
+            <!-- Botones generados dinámicamente -->
+        </div>
+
+        <div id="feedback" class="feedback"></div>
+    </div>
+
+    <!-- PANTALLA 3: HISTORIAL Y RESULTADOS -->
+    <div id="end-screen" class="screen">
+        <h2>¡Obra de Arte Completada!</h2>
+        
+        <div class="time-info" id="time-summary">
+            <!-- Información de tiempos -->
+        </div>
+
+        <h3>Puntaje por Participante</h3>
+        <table class="stats-table">
+            <thead>
+                <tr>
+                    <th>Participante</th>
+                    <th>Aciertos</th>
+                    <th>Intentos</th>
+                    <th>Porcentaje</th>
+                </tr>
+            </thead>
+            <tbody id="stats-body">
+                <!-- Estadísticas por JS -->
+            </tbody>
+        </table>
+
+        <h3 style="margin-top: 18px;">Historial de Pintado</h3>
+        <div class="history-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Jugador</th>
+                        <th>Sección</th>
+                        <th>Objetivo</th>
+                        <th>Usado</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body">
+                    <!-- Historial por JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn" onclick="resetGame()" style="margin-top: 20px;">Volver a Jugar</button>
+    </div>
+</div>
+
+<script>
+    /* ===================================================================
+       VOCABULARIO DE COLORES EN QUECHUA Y ESPAÑOL
+       =================================================================== */
+    const QUECHUA_COLORS = [
+        { name: "Puka", hex: "#ef4444", translate: "Rojo" },
+        { name: "Q'illu", hex: "#f59e0b", translate: "Amarillo" },
+        { name: "Anqas", hex: "#3b82f6", translate: "Azul" },
+        { name: "Q'umir", hex: "#10b981", translate: "Verde" },
+        { name: "Yuraq", hex: "#f8fafc", translate: "Blanco", textDark: true },
+        { name: "Yana", hex: "#1e293b", translate: "Negro" },
+        { name: "Panti", hex: "#ec4899", translate: "Rosado" },
+        { name: "Ch'umpi", hex: "#78350f", translate: "Café" },
+        { name: "Uqi", hex: "#6b7280", translate: "Gris" },
+        { name: "Kulli", hex: "#8b5cf6", translate: "Violeta" }
+    ];
+
+    /* ===================================================================
+       MAPEO DE SECCIONES (1 a 10 en Quechua)
+       =================================================================== */
+    const SECTIONS = [
+        { id: "sec-1", quechua: "Juk", num: 1 },
+        { id: "sec-2", quechua: "Iskay", num: 2 },
+        { id: "sec-3", quechua: "Kimsa", num: 3 },
+        { id: "sec-4", quechua: "Tawa", num: 4 },
+        { id: "sec-5", quechua: "Phichqa", num: 5 },
+        { id: "sec-6", quechua: "Suqta", num: 6 },
+        { id: "sec-7", quechua: "Qanchis", num: 7 },
+        { id: "sec-8", quechua: "Pusaq", num: 8 },
+        { id: "sec-9", quechua: "Jisq'un", num: 9 },
+        { id: "sec-10", quechua: "Chunka", num: 10 }
+    ];
+
+    /* ===================================================================
+       ESTADO DEL JUEGO
+       =================================================================== */
+    let players = [];
+    let currentPlayerIdx = 0;
+    let totalQuestions = 10;
+    let currentQuestion = 0;
+    
+    let startTime, endTime;
+    let playerStats = {};
+    let questionHistory = [];
+
+    let currentTargetObj = null;
+    let currentTargetColor = null;
+    let selectedColor = null;
+
+    /* ===================================================================
+       CONTROL DE INTERFAZ Y PANTALLAS
+       =================================================================== */
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const playersText = document.getElementById('players-input').value.trim();
+        players = playersText.split('\n').map(p => p.trim()).filter(p => p.length > 0);
+
+        if (players.length === 0) {
+            alert("Por favor ingrese al menos un participante.");
+            return;
+        }
+
+        const qInput = parseInt(document.getElementById('total-questions').value);
+        if (isNaN(qInput) || qInput < 1 || qInput > 30) {
+            alert("El número de preguntas debe ser entre 1 y 30.");
+            return;
+        }
+
+        totalQuestions = qInput;
+        currentQuestion = 0;
+        currentPlayerIdx = 0;
+        questionHistory = [];
+        playerStats = {};
+
+        players.forEach(p => {
+            playerStats[p] = { correct: 0, total: 0 };
+        });
+
+        // Limpiar colores del SVG
+        SECTIONS.forEach(s => {
+            document.getElementById(s.id).setAttribute("fill", "#ffffff");
+        });
+
+        renderPalette();
+        startTime = new Date();
+        document.getElementById('max-q-num').innerText = totalQuestions;
+        
+        showScreen('game-screen');
+        nextTurn();
+    }
+
+    function renderPalette() {
+        const paletteContainer = document.getElementById('palette-container');
+        paletteContainer.innerHTML = "";
+
+        QUECHUA_COLORS.forEach((col) => {
+            const btn = document.createElement('button');
+            btn.className = 'color-btn';
+            btn.style.backgroundColor = col.hex;
+            if (col.textDark) {
+                btn.style.color = "#1e293b";
+                btn.style.textShadow = "none";
+                btn.style.border = "1px solid #cbd5e1";
+            }
+            btn.innerHTML = `<span>${col.name}</span>`;
+            btn.onclick = () => selectPaletteColor(col, btn);
+            paletteContainer.appendChild(btn);
+        });
+    }
+
+    function selectPaletteColor(colorObj, btnElement) {
+        selectedColor = colorObj;
+        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+        btnElement.classList.add('selected');
+    }
+
+    function nextTurn() {
+        if (currentQuestion >= totalQuestions) {
+            endGame();
+            return;
+        }
+
+        currentQuestion++;
+        document.getElementById('current-q-num').innerText = currentQuestion;
+
+        const activePlayer = players[currentPlayerIdx];
+        document.getElementById('current-player').innerText = activePlayer;
+
+        // Limpiar feedback
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('feedback').className = "feedback";
+
+        // Seleccionar aleatoriamente una sección y un color objetivo
+        currentTargetObj = SECTIONS[Math.floor(Math.random() * SECTIONS.length)];
+        currentTargetColor = QUECHUA_COLORS[Math.floor(Math.random() * QUECHUA_COLORS.length)];
+
+        // Mostrar sección en Quechua y color objetivo en Español
+        document.getElementById('target-section-quechua').innerText = currentTargetObj.quechua;
+        document.getElementById('target-color-spanish').innerText = currentTargetColor.translate.toUpperCase();
+
+        // Desseleccionar paleta previa
+        selectedColor = null;
+        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+    }
+
+    function clickSection(sectionId) {
+        if (sectionId !== currentTargetObj.id) {
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.innerText = `¡Atención! Haz clic en la sección ${currentTargetObj.quechua} (#${currentTargetObj.num})`;
+            feedbackEl.className = "feedback incorrect";
+            return;
+        }
+
+        if (!selectedColor) {
+            const feedbackEl = document.getElementById('feedback');
+            feedbackEl.innerText = "¡Primero selecciona un color de la paleta!";
+            feedbackEl.className = "feedback incorrect";
+            return;
+        }
+
+        const activePlayer = players[currentPlayerIdx];
+        const isCorrect = selectedColor.name === currentTargetColor.name;
+
+        // MANIPULACIÓN DEL GRÁFICO VECTORIAL SVG (Cambio del atributo fill)
+        const svgPath = document.getElementById(sectionId);
+        svgPath.setAttribute("fill", selectedColor.hex);
+
+        playerStats[activePlayer].total++;
+        if (isCorrect) {
+            playerStats[activePlayer].correct++;
+        }
+
+        // Registrar en el historial
+        questionHistory.push({
+            qIndex: currentQuestion,
+            player: activePlayer,
+            section: `${currentTargetObj.quechua} (#${currentTargetObj.num})`,
+            targetColor: `${currentTargetColor.translate} (${currentTargetColor.name})`,
+            usedColor: `${selectedColor.translate} (${selectedColor.name})`,
+            isCorrect: isCorrect
+        });
+
+        // Feedback
+        const feedbackEl = document.getElementById('feedback');
+        if (isCorrect) {
+            feedbackEl.innerText = "¡Allin! (¡Correcto!)";
+            feedbackEl.className = "feedback correct";
+        } else {
+            feedbackEl.innerText = `Mana allinchu (Incorrecto). En Quechua era: ${currentTargetColor.name}`;
+            feedbackEl.className = "feedback incorrect";
+        }
+
+        // Siguiente turno
+        currentPlayerIdx = (currentPlayerIdx + 1) % players.length;
+
+        setTimeout(() => {
+            nextTurn();
+        }, 1500);
+    }
+
+    function endGame() {
+        endTime = new Date();
+        showScreen('end-screen');
+
+        const formatDate = date => date.toLocaleDateString();
+        const formatTime = date => date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        const durationMs = endTime - startTime;
+        const durationSec = Math.floor(durationMs / 1000);
+        const minutes = Math.floor(durationSec / 60);
+        const seconds = durationSec % 60;
+
+        // Resumen de tiempo
+        document.getElementById('time-summary').innerHTML = `
+            <strong>Fecha:</strong> ${formatDate(startTime)}<br>
+            <strong>Hora de inicio:</strong> ${formatTime(startTime)}<br>
+            <strong>Hora de fin:</strong> ${formatTime(endTime)}<br>
+            <strong>Tiempo total de juego:</strong> ${minutes} min ${seconds} seg
+        `;
+
+        // Estadísticas por participante
+        const statsBody = document.getElementById('stats-body');
+        statsBody.innerHTML = "";
+
+        players.forEach(p => {
+            const stats = playerStats[p];
+            const percentage = stats.total > 0 ? ((stats.correct / stats.total) * 100).toFixed(1) : "0.0";
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${p}</b></td>
+                <td>${stats.correct}</td>
+                <td>${stats.total}</td>
+                <td><b>${percentage}%</b></td>
+            `;
+            statsBody.appendChild(tr);
+        });
+
+        // Historial detallado
+        const historyBody = document.getElementById('history-body');
+        historyBody.innerHTML = "";
+
+        questionHistory.forEach(h => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${h.qIndex}</td>
+                <td>${h.player}</td>
+                <td>${h.section}</td>
+                <td>${h.targetColor}</td>
+                <td>${h.usedColor}</td>
+                <td style="color: ${h.isCorrect ? 'var(--accent)' : 'var(--danger)'}">
+                    ${h.isCorrect ? '✔ Correcto' : '✖ Incorrecto'}
+                </td>
+            `;
+            historyBody.appendChild(tr);
+        });
+    }
+
+    function resetGame() {
+        showScreen('start-screen');
+    }
+</script>
+
+</body>
+</html>
+
+

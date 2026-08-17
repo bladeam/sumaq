@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plantilla de Proyecto - Base de Datos</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-muted: #475569;
+            --border: #e2e8f0;
+            --code-bg: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        section {
+            margin-bottom: 35px;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: var(--text);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: var(--text-muted);
+        }
+
+        /* ÁRBOL DE DIRECTORIOS */
+        .file-tree {
+            background-color: var(--code-bg);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.95rem;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .file-tree .folder { color: #38bdf8; font-weight: bold; }
+        .file-tree .file { color: #f1f5f9; }
+        .file-tree .comment { color: #94a3b8; font-style: italic; }
+
+        /* TABLA DE CONTENIDO */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .badge {
+            background: #dbeafe;
+            color: var(--primary-dark);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Estructura Estándar de Proyecto de BD</h1>
+        <p class="subtitle">Guía de organización de repositorios en GitHub para estudiantes</p>
+    </header>
+
+    <section>
+        <h2>📁 Arboleda de Directorios Requerida</h2>
+        <p>A continuación se muestra la estructura recomendada para la entrega del proyecto final:</p>
+        
+        <div class="file-tree">
+<span class="folder">📁 mi-proyecto-bd/</span>
+├── <span class="file">📄 README.md</span>                 <span class="comment"><-- Descripción del proyecto, alcance y modelo ER</span>
+├── <span class="folder">📁 modelo/</span>
+│   ├── <span class="file">diagrama_er.png</span>          <span class="comment"><-- Imagen del modelo Entidad-Relación</span>
+│   └── <span class="file">diccionario_datos.md</span>    <span class="comment"><-- Descripción de tablas, tipos de datos y claves</span>
+├── <span class="folder">📁 sql/</span>
+│   ├── <span class="file">01_crear_tablas.sql</span>     <span class="comment"><-- Lenguaje DDL (CREATE TABLE, FK, UNIQUE, etc.)</span>
+│   ├── <span class="file">02_insertar_datos.sql</span>   <span class="comment"><-- Lenguaje DML (Carga de datos iniciales/semillas)</span>
+│   ├── <span class="file">03_consultas.sql</span>        <span class="comment"><-- Consultas clave, reportes y agregaciones</span>
+│   └── <span class="file">04_procedimientos.sql</span>   <span class="comment"><-- Vistas, Triggers y Procedimientos Almacenados</span>
+└── <span class="folder">📁 reportes/</span>
+    └── <span class="file">optimizacion_indices.md</span>  <span class="comment"><-- Análisis de rendimiento (EXPLAIN ANALYZE)</span>
+        </div>
+    </section>
+
+    <section>
+        <h2>📋 Descripción de Módulos</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Carpeta / Archivo</th>
+                    <th>Tipo</th>
+                    <th>Propósito</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>README.md</code></td>
+                    <td><span class="badge">Documentación</span></td>
+                    <td>Portada general, requisitos del sistema y justificación del modelo.</td>
+                </tr>
+                <tr>
+                    <td><code>modelo/</code></td>
+                    <td><span class="badge">Diseño</span></td>
+                    <td>Diagramas conceptuales/lógicos y diccionario técnico de columnas.</td>
+                </tr>
+                <tr>
+                    <td><code>sql/</code></td>
+                    <td><span class="badge">Código SQL</span></td>
+                    <td>Scripts ordenados numéricamente para ejecución secuencial limpia.</td>
+                </tr>
+                <tr>
+                    <td><code>reportes/</code></td>
+                    <td><span class="badge">Análisis</span></td>
+                    <td>Pruebas de rendimiento, índices y planes de ejecución.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <footer>
+        <p>Materia: Base de Datos | Asignatura Universitaria</p>
+    </footer>
+</div>
+
+</body>
+</html>

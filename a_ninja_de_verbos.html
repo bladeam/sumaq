@@ -1,0 +1,622 @@
+<!--
+===================================================================
+ CONFIGURACIÓN INICIAL DEL JUEGO
+===================================================================
+PARTICIPANTES:
+- Juan Pérez
+- María Quispe
+- Carlos Condori
+
+CANTIDAD_PREGUNTAS = 8
+===================================================================
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ninja de Verbos Quechua</title>
+    <style>
+        :root {
+            --primary-color: #E67E22;
+            --secondary-color: #2C3E50;
+            --accent-color: #27AE60;
+            --bg-color: #F4F6F7;
+            --card-bg: #FFFFFF;
+            --text-color: #2C3E50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 20px;
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Formulario Configuración */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        textarea, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #BDC3C7;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        textarea:focus, input[type="number"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #D35400;
+        }
+
+        /* HUD */
+        .hud {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            background: #FFE5D9;
+            padding: 10px 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .turn-banner {
+            text-align: center;
+            background: var(--secondary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .scores-bar {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            margin-bottom: 12px;
+            padding-bottom: 5px;
+        }
+
+        .player-chip {
+            background: #ECF0F1;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            border: 2px solid transparent;
+        }
+
+        .player-chip.active {
+            border-color: var(--primary-color);
+            background: #FED8B1;
+            font-weight: bold;
+        }
+
+        /* Área de Juego */
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 380px;
+            background: #1A252F;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid #34495E;
+        }
+
+        .instruction-box {
+            text-align: center;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .floating-word {
+            position: absolute;
+            padding: 8px 16px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            user-select: none;
+            z-index: 10;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            white-space: nowrap;
+        }
+
+        .floating-word.cut {
+            background: #27AE60 !important;
+            color: white !important;
+            transform: scale(1.3);
+            opacity: 0;
+            transition: all 0.25s ease-out;
+        }
+
+        .floating-word.cut-wrong {
+            background: #E74C3C !important;
+            color: white !important;
+            transform: scale(0.7);
+            opacity: 0;
+            transition: all 0.25s ease-out;
+        }
+
+        /* Tabla Resultados */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #E0E0E0;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F8F9FA;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PANTALLA 1: CONFIGURACIÓN -->
+    <div id="screen-config" class="screen active">
+        <h1>Ninja de Verbos (Quechua)</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">Corta únicamente los <strong>VERBOS</strong> (terminados en <i>-y</i>)</p>
+
+        <div class="form-group">
+            <label for="input-participants">Participantes (un nombre por fila):</label>
+            <textarea id="input-participants" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="input-questions">Número de verbos a cortar por turno (Máximo 30):</label>
+            <input type="number" id="input-questions" min="1" max="30" value="8">
+        </div>
+
+        <button class="btn" id="btn-start">¡Comenzar Juego!</button>
+<center><h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5></center>
+    </div>
+
+    <!-- PANTALLA 2: JUEGO -->
+    <div id="screen-game" class="screen">
+        <div class="hud">
+            <div>Progreso: <span id="hud-progress">0/0</span></div>
+            <div>Fecha: <span id="hud-date"></span></div>
+            <div>Hora Inicio: <span id="hud-starttime"></span></div>
+        </div>
+
+        <div id="turn-banner" class="turn-banner">
+            Turno de: <span id="current-player-name">--</span>
+        </div>
+
+        <div id="scores-bar" class="scores-bar"></div>
+
+        <p class="instruction-box">Toca o haz clic únicamente en los <strong>VERBOS</strong>. ¡Ignores los sustantivos!</p>
+
+        <div class="game-area" id="game-area"></div>
+    </div>
+
+    <!-- PANTALLA 3: RESULTADOS -->
+    <div id="screen-results" class="screen">
+        <h1>Historial y Resultados Finales</h1>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Aciertos</th>
+                        <th>Intentos</th>
+                        <th>Efectividad (%)</th>
+                        <th>Fecha</th>
+                        <th>Hora Inicio</th>
+                        <th>Hora Fin</th>
+                        <th>Tiempo Total</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body"></tbody>
+            </table>
+        </div>
+
+        <button class="btn" id="btn-restart">Volver a Jugar</button>
+    </div>
+</div>
+
+<script>
+    const verbsList = [
+        'Akay', 'Aklluy', 'Allay', 'Amiy', 'Apay', 'Aquy', 'Aqhay', 'Arawiy', 'Armay', 'Arqhiy',
+        'Asiy', 'Asnay', 'Astay', 'Atiy', 'Away', 'Awqay', 'Ayñay', 'Ayqiy', 'Aysay', 'Aytiy',
+        'Aywiy', 'Chakay', 'Challpuy', 'Chaqmay', 'Chaqnay', 'Chaqruy', 'Chayay', 'Chimpay', 'Chinkay', 'Chiqniy',
+        'Chiriy', 'Chukuy', 'Chulluy', 'Chuqay', 'Churay', 'Ch\'allay', 'Ch\'allpay', 'Ch\'anqay', 'Ch\'aqchuy', 'Ch\'aqway',
+        'Ch\'arkiy', 'Ch\'atay', 'Ch\'away', 'Ch\'ipay', 'Ch\'iqtay', 'Ch\'irmiy', 'Ch\'irway', 'Ch\'umay', 'Ch\'unqay', 'Ch\'uskiy',
+        'Ch\'utiy', 'Chhapuy', 'Chhasay', 'Chhukuy', 'Chhuruy', 'Chhusuy', 'Chhutuy', 'Ichhuy', 'Illay', 'Inqhay',
+        'Iñiy', 'Ismuy', 'Jak\'uy', 'Jallmay', 'Jampiy', 'Jamuy', 'Jank\'ay', 'Janllay', 'Jap\'ay', 'Jap\'iy',
+        'Jarka\'ay', 'Jasp\'iy', 'Jatariy', 'Jawiy', 'Jayt\'ay', 'Jayway', 'Jich\'ay', 'Jillpuy', 'Jisp\'ay', 'Jumpiy',
+        'Junt\'ay', 'Juqhariy', 'Jurqhuy', 'Jutku\'y', 'Kachay', 'Kallchay', 'Kallpay', 'Kanay', 'Kankay', 'Kawsay',
+        'Kay', 'Kaynay', 'Kichay', 'Killay', 'Kuchuy', 'Kuntuy', 'Kutay', 'Kutichiy', 'Kutiy', 'Kuyuy',
+        'K\'ajay', 'K\'amiy', 'K\'anchay', 'K\'antiy', 'K\'aray', 'K\'arkuy', 'K\'askay', 'K\'illpiy', 'K\'iriy', 'K\'iruy',
+        'K\'ichkiy', 'K\'isñiy', 'K\'umpuy', 'K\'utuy', 'Khakay', 'Khallay', 'Khamuy', 'Khaniy', 'Khapay', 'Khituy',
+        'Khiwiy', 'Khuchuy', 'Khuskiy', 'Khuyay', 'Khuyuy', 'Laqray', 'Lat\'ay', 'Lawray', 'Llakiy', 'Llamikuy',
+        'Llamk\'ay', 'Llamt\'ay', 'Llamkhay', 'Llaqhiy', 'Llaqllay', 'Llaqway', 'Llawsay', 'Llik\'iy', 'Llimp\'iy', 'Lliqhuy',
+        'Lluchk\'ay', 'Lluch\'uy', 'Lluk\'iy', 'Llump\'ay', 'Llumk\'iy', 'Llunk\'uy', 'Lluq\'ay', 'Lluqchiy', 'Lluqsiy', 'Llut\'ay',
+        'Machay', 'Mach\'ay', 'Malliy', 'Mallkiy', 'Manchay', 'Manuy', 'Mañay', 'Maqay', 'Maqch\'iy', 'Marq\'ay',
+        'Mask\'ay', 'Mast\'ay', 'Mat\'iy', 'Mayllay', 'Mayt\'uy', 'Michiy', 'Mikhuy', 'Millpuy', 'Miray', 'Misk\'ay',
+        'Mismiy', 'Muchuy', 'Much\'ay', 'Munay', 'Muskhiy', 'Musphay', 'Musquy', 'Musyay', 'Muyuy', 'Nanay',
+        'Napay', 'Ñak\'ay', 'Ñaqch\'ay', 'Ñat\'uy', 'Ñit\'iy', 'Ñiy', 'Ñukñay', 'Ñuñuy', 'Ñut\'uy', 'Ñawiriy',
+        'Pakay', 'Pallay', 'Pantay', 'Paray', 'Pichay', 'Pikchuy', 'Piqtuy', 'Pirqay', 'Pirway', 'Pituy',
+        'Puchuy', 'Pukllay', 'Punkiy', 'Puñuy', 'Puquy', 'Puriy', 'Pusay', 'P\'akiy', 'P\'ampay', 'P\'aspay',
+        'P\'atay', 'P\'inqay', 'P\'itay', 'P\'itiy', 'P\'utuy', 'Phaskay', 'Phanchiy', 'Phaqchay', 'Pharpay', 'Phatay',
+        'Phaway', 'Phinkiy', 'Phiriy', 'Phuchkay', 'Phukuy', 'Phullpuy', 'Phurmuy', 'Phutiy', 'Phuyuy', 'Qallariy',
+        'Qaray', 'Qasay', 'Qawiy', 'Qayllay', 'Qaywiy', 'Qillqay', 'Qunqay', 'Qurmay', 'Qutuy', 'Quy',
+        'Q\'apay', 'Q\'apiy', 'Q\'aqchay', 'Q\'asay', 'Q\'ichay', 'Q\'imiy', 'Q\'impiy', 'Q\'ipiy', 'Q\'usniy', 'Qhachqay',
+        'Qhalliy', 'Qhapariy', 'Qhaquy', 'Qharquy', 'Qhatay', 'Qhatiy', 'Qhatuy', 'Qhaway', 'Qhichuy', 'Qhipay',
+        'Qhispiy', 'Qhuray', 'Qhurquy', 'Qhutuy', 'Rak\'iy', 'Rantiy', 'Rikch\'ariy', 'Rikuy', 'Rimay', 'Riqsiy',
+        'Rit\'iy', 'Riy', 'Ruthuy', 'Ruway', 'Samay', 'Saqiy', 'Saqmay', 'Saqsay', 'Saruy', 'Sat\'iy',
+        'Saway', 'Sayay', 'Sayk\'uy', 'Sik\'iy', 'Silluy', 'Simp\'ay', 'Sinruy', 'Sipiy', 'Sip\'uy', 'Siq\'iy',
+        'Siqsiy', 'Siray', 'Siriy', 'Suchuy', 'Sunt\'iy', 'Supiy', 'Suruy', 'Sut\'uy', 'Suway', 'Suyay',
+        'Suysuy', 'Takay', 'Takiy', 'Tanqay', 'Tapuy', 'Tariy', 'Tarpuy', 'Tawqay', 'Tikay', 'Tikray',
+        'Tinkuy', 'Tipiy', 'Tiyay', 'Tukuy', 'Tunkiy', 'Tumpay', 'Tupuy', 'Tuqtuy', 'Tusuy', 'Tuytuy',
+        'T\'akay', 'T\'aqay', 'T\'aqllay', 'T\'aqsay', 'T\'ikay', 'T\'impuy', 'T\'inkiy', 'T\'ipay', 'T\'ipiy', 'T\'iqiy',
+        'T\'iray', 'T\'iqway', 'T\'uqpiy', 'T\'uqsiy', 'T\'uqyay', 'Thamay', 'Thantay', 'Thañiy', 'Thasnuy', 'Thatay',
+        'Thatkiy', 'Thawtiy', 'Thunkuy', 'Thuñiy', 'Thuqay', 'Thutay', 'Unquy', 'Upyay', 'Upiy', 'Uqllay',
+        'Urmay', 'Usuy', 'Utqhay', 'Uyway', 'Wachay', 'Wach\'iy', 'Wamp\'uy', 'Wanay', 'Wantuy', 'Wanuy',
+        'Wañuy', 'Waqay', 'Waqtay', 'Waqyay', 'Warkhuy', 'Watay', 'Watuy', 'Wayk\'uy', 'Waylluy', 'Wayt\'ay',
+        'Wichq\'ay', 'Wikch\'uy', 'Willay', 'Winay', 'Wiñay', 'Wisiy', 'Yachachiy', 'Yachakuy', 'Yachay', 'Yapay',
+        'Yarqay', 'Yaykuy', 'Yupay', 'Yuyay'
+    ];
+
+    const nounsList = [
+        'Misi', 'Warmi', 'Allqu', 'Runtu', 'Sik\'imira', 'Atuq', 'Wallpa', 'Chaki', 'Maki', 'Katari',
+        'Lachiwana', 'Punku', 'Manka', 'Inti', 'Killa', 'Qhari', 'Ñawi', 'Ninri', 'Sinqa', 'Kiru',
+        'T\'anta', 'Wawa', 'Papa', 'Juk\'ucha', 'Khuchi', 'Yuthu', 'Chillwi', 'Jamp\'atu', 'Chawlla', 'Waka',
+        'Uwija', 'Pili', 'Llama', 'Kuntur', 'Jukumari', 'Charapa', 'K\'usillu', 'Kirkinchu', 'P\'isqu', 'Urpi',
+        'Ararankha', 'Ch\'uspi', 'Wayruru', 'Piki', 'Ñuqtu', 'Tullu', 'Angula', 'Khuru', 'Ch\'uru', 'Kawallu',
+        'Karwa', 'Sach\'a', 'Mansana', 'Platanu', 'Awaranku', 'Sara', 'Sanawrya', 'Kumputarura', 'Inti watana', 'Tiyana',
+        'Puñuna', 'Awtu', 'Abiyon', 'Wiksilita', 'Phuyu', 'Ch\'aska', 'Wasi', 'Iglisia', 'Tata', 'Mama',
+        'Pachi', 'Tinkunakama', 'Imilla', 'Lluqalla', 'Ch\'iti', 'Sipas', 'Wayna', 'Jampiq', 'Yachachiq', 'Yachakuq'
+    ];
+
+    const wordColors = [
+        { bg: '#FF5733', text: '#FFFFFF' },
+        { bg: '#9B59B6', text: '#FFFFFF' },
+        { bg: '#3498DB', text: '#FFFFFF' },
+        { bg: '#1ABC9C', text: '#FFFFFF' },
+        { bg: '#F1C40F', text: '#2C3E50' },
+        { bg: '#E67E22', text: '#FFFFFF' },
+        { bg: '#E84393', text: '#FFFFFF' },
+        { bg: '#00CEC9', text: '#2C3E50' },
+        { bg: '#6C5CE7', text: '#FFFFFF' },
+        { bg: '#FDCB6E', text: '#2C3E50' }
+    ];
+
+    let players = [];
+    let currentPlayerIndex = 0;
+    let totalQuestions = 8;
+    let verbsCutCurrentTurn = 0;
+    let gameStartTime = null;
+
+    let activeWords = [];
+    let animationFrameId = null;
+    let spawnTimer = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('input-participants').value = "Juan Pérez\nMaría Quispe";
+        document.getElementById('input-questions').value = 8;
+
+        document.getElementById('btn-start').addEventListener('click', startGame);
+        document.getElementById('btn-restart').addEventListener('click', resetToConfig);
+    });
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const rawParticipants = document.getElementById('input-participants').value.trim();
+        const rawQuestions = parseInt(document.getElementById('input-questions').value, 10);
+
+        const parsedNames = rawParticipants.split('\n')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
+
+        if (parsedNames.length === 0) {
+            alert('Ingresa al menos un participante.');
+            return;
+        }
+
+        totalQuestions = Math.min(Math.max(1, rawQuestions || 8), 30);
+        
+        players = parsedNames.map(name => ({
+            name: name,
+            score: 0,
+            attempts: 0
+        }));
+
+        currentPlayerIndex = 0;
+        gameStartTime = new Date();
+
+        document.getElementById('hud-date').textContent = gameStartTime.toLocaleDateString();
+        document.getElementById('hud-starttime').textContent = gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        showScreen('screen-game');
+        startPlayerTurn();
+    }
+
+    function startPlayerTurn() {
+        verbsCutCurrentTurn = 0;
+        clearGameArea();
+        updateTurnUI();
+
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        if (spawnTimer) clearInterval(spawnTimer);
+
+        animationFrameId = requestAnimationFrame(updateGameLoop);
+
+        spawnTimer = setInterval(() => {
+            if (verbsCutCurrentTurn < totalQuestions) {
+                spawnWord();
+            }
+        }, 900);
+    }
+
+    function clearGameArea() {
+        const gameArea = document.getElementById('game-area');
+        gameArea.innerHTML = '';
+        activeWords = [];
+    }
+
+    function updateTurnUI() {
+        const currentPlayer = players[currentPlayerIndex];
+        document.getElementById('current-player-name').textContent = currentPlayer.name;
+
+        const scoresBar = document.getElementById('scores-bar');
+        scoresBar.innerHTML = '';
+        players.forEach((p, idx) => {
+            const chip = document.createElement('div');
+            chip.classList.add('player-chip');
+            if (idx === currentPlayerIndex) chip.classList.add('active');
+            chip.textContent = `${p.name}: ${p.score} pts (${p.attempts} int)`;
+            scoresBar.appendChild(chip);
+        });
+
+        document.getElementById('hud-progress').textContent = `${verbsCutCurrentTurn}/${totalQuestions}`;
+    }
+
+    function spawnWord() {
+        const gameArea = document.getElementById('game-area');
+        if (!gameArea) return;
+
+        // 30% Verbo, 70% Sustantivo
+        const isVerb = Math.random() < 0.30;
+        let selectedText = isVerb 
+            ? verbsList[Math.floor(Math.random() * verbsList.length)]
+            : nounsList[Math.floor(Math.random() * nounsList.length)];
+
+        const randomColor = wordColors[Math.floor(Math.random() * wordColors.length)];
+
+        const wordElem = document.createElement('div');
+        wordElem.classList.add('floating-word');
+        wordElem.textContent = selectedText;
+        wordElem.style.backgroundColor = randomColor.bg;
+        wordElem.style.color = randomColor.text;
+
+        const maxX = Math.max(20, gameArea.clientWidth - 130);
+        const startX = Math.floor(Math.random() * maxX);
+        const startY = gameArea.clientHeight;
+        const speedY = 1.2 + Math.random() * 1.5;
+
+        wordElem.style.left = `${startX}px`;
+        wordElem.style.top = `${startY}px`;
+
+        const wordObj = {
+            element: wordElem,
+            data: { text: selectedText, isVerb: isVerb },
+            x: startX,
+            y: startY,
+            speed: speedY,
+            isSliced: false
+        };
+
+        const sliceAction = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            sliceWord(wordObj);
+        };
+
+        wordElem.addEventListener('mousedown', sliceAction);
+        wordElem.addEventListener('touchstart', sliceAction);
+
+        gameArea.appendChild(wordElem);
+        activeWords.push(wordObj);
+    }
+
+    function sliceWord(wordObj) {
+        if (wordObj.isSliced) return;
+        wordObj.isSliced = true;
+
+        const currentPlayer = players[currentPlayerIndex];
+        currentPlayer.attempts++;
+
+        if (wordObj.data.isVerb) {
+            wordObj.element.classList.add('cut');
+            currentPlayer.score++;
+            verbsCutCurrentTurn++;
+        } else {
+            wordObj.element.classList.add('cut-wrong');
+        }
+
+        updateTurnUI();
+
+        setTimeout(() => {
+            if (wordObj.element && wordObj.element.parentNode) {
+                wordObj.element.parentNode.removeChild(wordObj.element);
+            }
+        }, 250);
+
+        if (verbsCutCurrentTurn >= totalQuestions) {
+            setTimeout(endPlayerTurn, 300);
+        }
+    }
+
+    function updateGameLoop() {
+        const gameArea = document.getElementById('game-area');
+
+        if (gameArea) {
+            for (let i = activeWords.length - 1; i >= 0; i--) {
+                const w = activeWords[i];
+
+                if (!w.isSliced) {
+                    w.y -= w.speed;
+                    w.element.style.top = `${w.y}px`;
+
+                    if (w.y < -50) {
+                        if (w.element && w.element.parentNode) {
+                            w.element.parentNode.removeChild(w.element);
+                        }
+                        activeWords.splice(i, 1);
+                    }
+                }
+            }
+        }
+
+        animationFrameId = requestAnimationFrame(updateGameLoop);
+    }
+
+    function endPlayerTurn() {
+        if (spawnTimer) clearInterval(spawnTimer);
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+        alert(`¡Turno completado para ${players[currentPlayerIndex].name}!`);
+
+        currentPlayerIndex++;
+
+        if (currentPlayerIndex < players.length) {
+            startPlayerTurn();
+        } else {
+            endGame();
+        }
+    }
+
+    function endGame() {
+        if (spawnTimer) clearInterval(spawnTimer);
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+        const gameEndTime = new Date();
+        const durationSec = Math.round((gameEndTime - gameStartTime) / 1000);
+
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = '';
+
+        const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
+        sortedPlayers.forEach(p => {
+            const percentage = p.attempts > 0 
+                ? Math.round((p.score / p.attempts) * 100) 
+                : 0;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${p.name}</strong></td>
+                <td>${p.score}</td>
+                <td>${p.attempts}</td>
+                <td><strong>${percentage}%</strong></td>
+                <td>${gameStartTime.toLocaleDateString()}</td>
+                <td>${gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                <td>${gameEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</td>
+                <td>${durationSec} seg</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        showScreen('screen-results');
+    }
+
+    function resetToConfig() {
+        if (spawnTimer) clearInterval(spawnTimer);
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        showScreen('screen-config');
+    }
+</script>
+</body>
+</html>
+
+

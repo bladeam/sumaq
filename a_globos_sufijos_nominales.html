@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sutikunaman Yapaqkuna - Sufijos Nominales en Quechua</title>
+    <style>
+        :root {
+            --primary: #F59E0B;
+            --primary-dark: #D97706;
+            --primary-glow: rgba(245, 158, 11, 0.35);
+            --bg-color: #0B0F19;
+            --card-bg: #1E293B;
+            --text-color: #F8FAFC;
+            --accent-green: #10B981;
+            --accent-red: #EF4444;
+            --accent-blue: #3B82F6;
+            --accent-purple: #8B5CF6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 20% 20%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            height: 96vh;
+            max-height: 880px;
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,255,255,0.1);
+            padding: 22px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER & TITLES */
+        .header-title {
+            text-align: center;
+            position: relative;
+            margin-bottom: 5px;
+        }
+
+        h1 {
+            text-align: center;
+            background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #D97706 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94A3B8;
+            font-size: 0.92rem;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .screen {
+            display: none;
+            height: 100%;
+            width: 100%;
+            flex-direction: column;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* FORMULARIO DE CONFIGURACIÓN */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #FBBF24;
+            font-size: 0.95rem;
+            letter-spacing: 0.2px;
+        }
+
+        textarea, input[type="number"], select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #334155;
+            background: #0F172A;
+            color: #FFF;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        textarea:focus, input[type="number"]:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: #0F172A;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: auto;
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.45);
+            color: #FFFFFF;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .teacher-credit {
+            text-align: center;
+            margin-top: 15px;
+            color: #64748B;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .teacher-credit h5 {
+            color: #CBD5E1;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* HUD DEL JUEGO */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid #334155;
+            padding: 10px 18px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            color: #94A3B8;
+        }
+
+        .hud-value {
+            color: #F8FAFC;
+            font-weight: 700;
+        }
+
+        .turn-banner {
+            text-align: center;
+            background: linear-gradient(90deg, #3B82F6, #1D4ED8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* CAJA DE PREGUNTA (SOLO SUFIJO) */
+        .target-box {
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+            border: 2px solid var(--primary);
+            padding: 12px 16px;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #FFF;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+
+        .target-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .target-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #94A3B8;
+            letter-spacing: 0.5px;
+        }
+
+        .quechua-display {
+            font-size: 1.6rem;
+            color: #FBBF24;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+        }
+
+        .audio-btn {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+            transition: all 0.2s;
+            flex-shrink: 0;
+            color: #0F172A;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 15px rgba(245, 158, 11, 0.6);
+        }
+
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* ÁREA DE JUEGO Y GLOBOS */
+        .game-area {
+            flex: 1;
+            background: radial-gradient(circle at center, #111827 0%, #030712 100%);
+            border-radius: 18px;
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed #334155;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .balloon {
+            --b-color: #3B82F6;
+            position: absolute;
+            width: 85px;
+            height: 102px;
+            background-color: var(--b-color);
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: inset -10px -10px 0px rgba(0,0,0,0.25), inset 6px 6px 12px rgba(255,255,255,0.3), 0 8px 18px rgba(0,0,0,0.5);
+            z-index: 2;
+            transition: transform 0.1s ease;
+        }
+
+        .balloon-text {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 0 6px;
+            line-height: 1.1;
+            text-shadow: 
+                2px 2px 0px #000,
+               -2px -2px 0px #000,
+                2px -2px 0px #000,
+               -2px 2px 0px #000,
+                0px 3px 6px rgba(0,0,0,0.9);
+            pointer-events: none;
+            word-break: break-word;
+        }
+
+        .balloon::after {
+            content: '';
+            position: absolute;
+            bottom: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 11px solid var(--b-color);
+        }
+
+        .balloon::before {
+            content: '';
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            width: 2px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.45);
+        }
+
+        .balloon:active {
+            transform: scale(0.92);
+        }
+
+        /* PANTALLA RESULTADOS */
+        .summary-card {
+            background: #0F172A;
+            border: 1px solid #334155;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .summary-card p {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #1E293B;
+            padding: 4px 0;
+        }
+
+        .summary-card p:last-child {
+            border-bottom: none;
+        }
+
+        .table-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: #0F172A;
+            color: #FBBF24;
+            position: sticky;
+            top: 0;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        .badge-eff {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: 800;
+        }
+
+        .pop-effect {
+            position: absolute;
+            pointer-events: none;
+            font-size: 1.5rem;
+            font-weight: 900;
+            animation: popUp 0.8s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes popUp {
+            0% { opacity: 1; transform: scale(0.8) translateY(0); }
+            100% { opacity: 0; transform: scale(1.4) translateY(-40px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- PANTALLA 1: CONFIGURACIÓN -->
+    <div id="screen-config" class="screen active">
+        <div class="header-title">
+            <h1>Sutikunaman Yapaqkuna</h1>
+            <p class="subtitle">Aprende los sufijos nominales en Quechua reventando globos</p>
+        </div>
+
+        <div class="form-container">
+            <div class="form-group">
+                <label for="input-participants">👤 Participantes (uno por fila):</label>
+                <textarea id="input-participants" rows="3">Juan Pérez
+María Quispe
+Carlos Condori</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="input-questions">❓ Preguntas por participante (Máx 30):</label>
+                <input type="number" id="input-questions" min="1" max="30" value="5">
+            </div>
+
+            <div class="form-group">
+                <label for="select-level">🎯 Nivel / Banco de Sufijos:</label>
+                <select id="select-level">
+                    <option value="basic" selected>8 Sufijos Básicos (Man, Wan, Paq, Pi, Jina, Rayku, Manta, Kama)</option>
+                    <option value="expanded">12 Sufijos Extendidos (+ Ntinkama, Pura, Intin, Qama)</option>
+                </select>
+            </div>
+
+            <button class="btn" id="btn-start">
+                <span>¡Iniciar Juego!</span> 🎈
+            </button>
+        </div>
+
+        <div class="teacher-credit">
+            <h5>Yachachiq: M.Sc. Bladimir Arias Mejia</h5>
+        </div>
+    </div>
+
+    <!-- PANTALLA 2: JUEGO -->
+    <div id="screen-game" class="screen">
+        <div class="hud">
+            <div class="hud-item">Pregunta: <span id="hud-turn" class="hud-value">1/5</span></div>
+            <div class="hud-item">Fecha: <span id="hud-date" class="hud-value">--</span></div>
+            <div class="hud-item">Inicio: <span id="hud-starttime" class="hud-value">--</span></div>
+        </div>
+
+        <div class="turn-banner">
+            👤 Turno de: <span id="current-player-name">--</span>
+        </div>
+
+        <!-- RECUADRO CON ÚNICAMENTE EL SUFIJO -->
+        <div class="target-box">
+            <div class="target-info">
+                <span class="target-label">Revienta el significado del sufijo:</span>
+                <span class="quechua-display" id="quechua-word">--</span>
+            </div>
+            <button class="audio-btn" id="btn-speak" title="Escuchar pronunciación">🔊</button>
+        </div>
+
+        <div class="game-area" id="game-area"></div>
+    </div>
+
+    <!-- PANTALLA 3: RESULTADOS -->
+    <div id="screen-results" class="screen">
+        <div class="header-title">
+            <h1>Historial y Puntajes</h1>
+            <p class="subtitle">Resumen final de la sesión de aprendizaje</p>
+        </div>
+
+        <div class="summary-card" id="summary-card"></div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participante</th>
+                        <th>Aciertos</th>
+                        <th>Preguntas</th>
+                        <th>Efectividad</th>
+                    </tr>
+                </thead>
+                <tbody id="results-table-body"></tbody>
+            </table>
+        </div>
+
+        <button class="btn" id="btn-restart">🔄 Volver a Configurar</button>
+    </div>
+</div>
+
+<script>
+    const SUFFIX_DATA_BASIC = [
+        { suffix: "-man", meaning: "Hacia / A" },
+        { suffix: "-wan", meaning: "Con" },
+        { suffix: "-paq", meaning: "Para" },
+        { suffix: "-pi", meaning: "En" },
+        { suffix: "-jina", meaning: "Como / Semejante" },
+        { suffix: "-rayku", meaning: "Por / A causa de" },
+        { suffix: "-manta", meaning: "De / Desde" },
+        { suffix: "-kama", meaning: "Hasta" }
+    ];
+
+    const SUFFIX_DATA_EXPANDED = [
+        ...SUFFIX_DATA_BASIC,
+        { suffix: "-pura", meaning: "Entre (iguales)" },
+        { suffix: "-nti", meaning: "Con / Junto con" },
+        { suffix: "-ta", meaning: "A / Hacia (Obj. Directo)" },
+        { suffix: "-qa", meaning: "En cuanto a / Tópico" }
+    ];
+
+    const balloonColors = [
+        '#EF4444', '#3B82F6', '#10B981', '#F59E0B', 
+        '#8B5CF6', '#EC4899', '#06B6D4', '#F97316'
+    ];
+
+    let currentDataSet = SUFFIX_DATA_BASIC;
+    let players = [];
+    let currentPlayerIndex = 0;
+    let questionsPerPlayer = 5;
+    let totalQuestionsCount = 0;
+    let currentQuestionIndex = 0;
+    
+    let gameStartTime = null;
+    let gameEndTime = null;
+
+    let targetSuffixObj = null;
+    let activeBalloons = [];
+    let animationFrameId = null;
+    let isRoundActive = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('btn-start').addEventListener('click', startGame);
+        document.getElementById('btn-restart').addEventListener('click', resetToConfig);
+        document.getElementById('btn-speak').addEventListener('click', speakQuechuaWord);
+    });
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        const rawParticipants = document.getElementById('input-participants').value.trim();
+        const rawQuestions = parseInt(document.getElementById('input-questions').value, 10);
+        const selectedLevel = document.getElementById('select-level').value;
+
+        currentDataSet = (selectedLevel === 'expanded') ? SUFFIX_DATA_EXPANDED : SUFFIX_DATA_BASIC;
+
+        const parsedNames = rawParticipants.split('\n')
+            .map(p => p.trim())
+            .filter(p => p.length > 0);
+
+        if (parsedNames.length === 0) {
+            alert('Por favor, ingresa al menos un participante.');
+            return;
+        }
+
+        questionsPerPlayer = Math.min(Math.max(1, rawQuestions || 5), 30);
+
+        players = parsedNames.map(name => ({
+            name: name,
+            score: 0,
+            questionsPlayed: 0
+        }));
+
+        currentPlayerIndex = 0;
+        currentQuestionIndex = 0;
+        totalQuestionsCount = players.length * questionsPerPlayer;
+        gameStartTime = new Date();
+
+        document.getElementById('hud-date').textContent = gameStartTime.toLocaleDateString();
+        document.getElementById('hud-starttime').textContent = gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        showScreen('screen-game');
+        nextTurn();
+    }
+
+    function speakQuechuaWord() {
+        if ('speechSynthesis' in window && targetSuffixObj) {
+            const utterance = new SpeechSynthesisUtterance(`Sufijo ${targetSuffixObj.suffix.replace('-', '')}`);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.85;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function nextTurn() {
+        if (currentQuestionIndex >= totalQuestionsCount) {
+            endGame();
+            return;
+        }
+
+        const currentPlayer = players[currentPlayerIndex];
+        document.getElementById('current-player-name').textContent = currentPlayer.name;
+        document.getElementById('hud-turn').textContent = `${currentPlayer.questionsPlayed + 1}/${questionsPerPlayer}`;
+
+        const randomIndex = Math.floor(Math.random() * currentDataSet.length);
+        targetSuffixObj = currentDataSet[randomIndex];
+
+        // Se asigna únicamente el sufijo
+        document.getElementById('quechua-word').textContent = targetSuffixObj.suffix;
+
+        setTimeout(speakQuechuaWord, 350);
+
+        spawnBalloons();
+        isRoundActive = true;
+
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        animationFrameId = requestAnimationFrame(updateGameLoop);
+    }
+
+    function spawnBalloons() {
+        const gameArea = document.getElementById('game-area');
+        gameArea.innerHTML = '';
+        activeBalloons = [];
+
+        let optionsList = [targetSuffixObj];
+        
+        while (optionsList.length < 5 && optionsList.length < currentDataSet.length) {
+            let randomObj = currentDataSet[Math.floor(Math.random() * currentDataSet.length)];
+            if (!optionsList.some(item => item.suffix === randomObj.suffix)) {
+                optionsList.push(randomObj);
+            }
+        }
+
+        optionsList.sort(() => Math.random() - 0.5);
+
+        const areaWidth = gameArea.clientWidth || 320;
+        const balloonWidth = 85;
+        const stepX = (areaWidth - balloonWidth - 10) / optionsList.length;
+
+        optionsList.forEach((item, index) => {
+            const el = document.createElement('div');
+            el.className = 'balloon';
+
+            const color = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+            el.style.setProperty('--b-color', color);
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'balloon-text';
+            textSpan.textContent = item.meaning;
+            el.appendChild(textSpan);
+
+            const startX = Math.max(8, Math.floor(index * stepX + Math.random() * (stepX - 12)));
+            const startY = -110 - (Math.random() * 160);
+            const speed = 1.1 + Math.random() * 1.2;
+
+            el.style.left = `${startX}px`;
+            el.style.top = `${startY}px`;
+
+            el.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                if (!isRoundActive) return;
+                popBalloon(item, el, e.clientX, e.clientY);
+            });
+
+            gameArea.appendChild(el);
+
+            activeBalloons.push({
+                element: el,
+                itemData: item,
+                x: startX,
+                y: startY,
+                speed: speed,
+                popped: false
+            });
+        });
+    }
+
+    function updateGameLoop() {
+        if (!isRoundActive) return;
+
+        const gameArea = document.getElementById('game-area');
+        const areaHeight = gameArea.clientHeight || 400;
+        let allPassed = true;
+
+        activeBalloons.forEach(b => {
+            if (!b.popped) {
+                b.y += b.speed;
+                b.element.style.top = `${b.y}px`;
+
+                if (b.y < areaHeight) {
+                    allPassed = false;
+                }
+            }
+        });
+
+        if (allPassed) {
+            isRoundActive = false;
+            handleTurnResult(false, `¡Tiempo agotado! Los globos cayeron. El sufijo "${targetSuffixObj.suffix}" significa "${targetSuffixObj.meaning}".`);
+            return;
+        }
+
+        animationFrameId = requestAnimationFrame(updateGameLoop);
+    }
+
+    function popBalloon(selectedItem, element, posX, posY) {
+        if (!isRoundActive) return;
+        isRoundActive = false;
+        cancelAnimationFrame(animationFrameId);
+
+        element.style.transform = 'scale(1.4)';
+        element.style.opacity = '0';
+        element.style.transition = 'all 0.15s ease-out';
+
+        const isCorrect = (selectedItem.suffix === targetSuffixObj.suffix);
+
+        if (isCorrect) {
+            players[currentPlayerIndex].score++;
+            showFloatingFeedback("¡Allin (Correcto)! ✨", true, element);
+            setTimeout(() => {
+                handleTurnResult(true, `¡Allin (Correcto)! El sufijo "${targetSuffixObj.suffix}" significa "${targetSuffixObj.meaning}".`);
+            }, 250);
+        } else {
+            showFloatingFeedback("¡Pantanki (Incorrecto)! ❌", false, element);
+            setTimeout(() => {
+                handleTurnResult(false, `¡Pantanki (Incorrecto)! Reventaste "${selectedItem.meaning}". El sufijo "${targetSuffixObj.suffix}" significa "${targetSuffixObj.meaning}".`);
+            }, 250);
+        }
+    }
+
+    function showFloatingFeedback(text, isSuccess, targetEl) {
+        const gameArea = document.getElementById('game-area');
+        const feedback = document.createElement('div');
+        feedback.className = 'pop-effect';
+        feedback.textContent = text;
+        feedback.style.color = isSuccess ? '#10B981' : '#EF4444';
+        
+        const rect = targetEl.getBoundingClientRect();
+        const areaRect = gameArea.getBoundingClientRect();
+        
+        feedback.style.left = `${rect.left - areaRect.left + 10}px`;
+        feedback.style.top = `${rect.top - areaRect.top}px`;
+        
+        gameArea.appendChild(feedback);
+        setTimeout(() => feedback.remove(), 800);
+    }
+
+    function handleTurnResult(success, message) {
+        const currentPlayer = players[currentPlayerIndex];
+        currentPlayer.questionsPlayed++;
+        currentQuestionIndex++;
+
+        alert(message);
+
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+        nextTurn();
+    }
+
+    function endGame() {
+        isRoundActive = false;
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+        gameEndTime = new Date();
+        const durationSec = Math.round((gameEndTime - gameStartTime) / 1000);
+        const minutes = Math.floor(durationSec / 60);
+        const seconds = durationSec % 60;
+
+        const summaryCard = document.getElementById('summary-card');
+        summaryCard.innerHTML = `
+            <p><span>📅 Fecha:</span> <strong>${gameStartTime.toLocaleDateString()}</strong></p>
+            <p><span>⏰ Inicio:</span> <strong>${gameStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong></p>
+            <p><span>🏁 Fin:</span> <strong>${gameEndTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong></p>
+            <p><span>⏱️ Duración:</span> <strong>${minutes} min ${seconds} seg</strong></p>
+        `;
+
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = '';
+
+        const sortedPlayers = [...players].sort((a, b) => (b.score / (b.questionsPlayed || 1)) - (a.score / (a.questionsPlayed || 1)));
+
+        sortedPlayers.forEach(p => {
+            const percentage = p.questionsPlayed > 0
+                ? Math.round((p.score / p.questionsPlayed) * 100)
+                : 0;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${p.name}</strong></td>
+                <td>${p.score}</td>
+                <td>${p.questionsPlayed}</td>
+                <td><span class="badge-eff">${percentage}%</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        showScreen('screen-results');
+    }
+
+    function resetToConfig() {
+        showScreen('screen-config');
+    }
+</script>
+</body>
+</html>

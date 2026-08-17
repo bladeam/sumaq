@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sufijos Nominales en Quechua - Edición Móvil & Pro</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --primary: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --text-main: #1e293b;
+            --error-color: #ef4444;
+            --success-color: #22c55e;
+            --cell-bg: #e2e8f0;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+
+        h1 {
+            margin: 10px 0;
+            color: var(--text-main);
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            width: 100%;
+        }
+
+        /* Configuración Inicial */
+        #game-setup {
+            max-width: 480px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .custom-grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        /* Botones */
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Estructura del Juego (Layout Adaptativo Móvil) */
+        .game-layout {
+            display: flex;
+            flex-direction: row;
+            gap: 2%;
+            width: 100%;
+            max-width: 1300px;
+            align-items: start;
+        }
+
+        /* Panel Izquierdo: Sufijos (28% en móvil) */
+        .side-panel {
+            width: 28%;
+            position: sticky;
+            top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: calc(100vh - 20px);
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        @media (min-width: 768px) {
+            .side-panel {
+                width: 250px;
+            }
+            .grid-wrapper {
+                width: calc(100% - 270px) !important;
+            }
+        }
+
+        /* Indicador de Turno y Tiempo */
+        #turn-indicator {
+            background: var(--primary);
+            color: white;
+            padding: 8px 5px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        #timer-display {
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #475569;
+            background: #f1f5f9;
+            padding: 6px 4px;
+            border-radius: 8px;
+        }
+
+        /* Paleta de Sufijos Nominales */
+        #suffix-palette {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            justify-items: center;
+            padding: 8px 4px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .suffix-card {
+            width: 100%;
+            padding: 10px 8px;
+            background: #1e293b;
+            color: #ffffff;
+            border-radius: 8px;
+            cursor: grab;
+            font-weight: 800;
+            font-size: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            touch-action: none;
+            user-select: none;
+            border: 2px solid transparent;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+
+        .suffix-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .suffix-card:active {
+            cursor: grabbing;
+        }
+
+        /* Panel Derecho: Cuadrícula (70% en móvil) */
+        .grid-wrapper {
+            width: 70%;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: calc(100vh - 20px);
+            padding: 10px;
+        }
+
+        #word-table {
+            display: grid;
+            gap: 6px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .word-cell {
+            background: var(--cell-bg);
+            border: 1.5px dashed #cbd5e1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: #334155;
+            user-select: none;
+            min-height: 48px;
+            padding: 4px;
+            text-align: center;
+            word-break: break-word;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .word-cell.correct {
+            border-style: solid;
+            border-color: rgba(255, 255, 255, 0.4);
+            font-weight: 900;
+            font-size: 0.85rem;
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.85); }
+            100% { transform: scale(1); }
+        }
+
+        /* Toast "Mana allinchu" */
+        #toast-error {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background-color: var(--error-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        #toast-error.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Marcadores */
+        .scoreboard {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .player-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+
+        .player-card.active {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        /* Modal Resumen */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 550px;
+            width: 92%;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .date-time-info {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .summary-badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: bold;
+            padding: 6px 14px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin: 10px 0;
+        }
+
+        .results-table {
+            width: 100%;
+            margin: 10px 0 20px 0;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .results-table th, .results-table td {
+            padding: 8px 4px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .results-table th {
+            background-color: #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Sutikunaman Yapaqkuna - Sufijos Nominales</h1>
+
+    <!-- Toast Mensaje de Error -->
+    <div id="toast-error">Mana allinchu</div>
+
+    <!-- Pantalla de Configuración -->
+    <div id="game-setup" class="card">
+        <div class="form-group">
+            <label for="player-count">¿Cuántos jugadores?</label>
+            <select id="player-count">
+                <option value="1">1 Jugador</option>
+                <option value="2">2 Jugadores</option>
+                <option value="3">3 Jugadores</option>
+                <option value="4">4 Jugadores</option>
+            </select>
+        </div>
+
+        <div id="player-names-container"></div>
+
+        <div class="form-group">
+            <label for="grid-size">Tamaño de la cuadrícula:</label>
+            <select id="grid-size">
+                <option value="3">3 x 3</option>
+                <option value="4" selected>4 x 4</option>
+                <option value="5">5 x 5</option>
+                <option value="6">6 x 6</option>
+                <option value="8">8 x 8</option>
+                <option value="10">10 x 10</option>
+                <option value="custom">Personalizado (Filas x Col)</option>
+            </select>
+        </div>
+
+        <div id="custom-grid-inputs" class="form-group custom-grid-container" style="display: none;">
+            <div>
+                <label for="custom-rows">Filas (1-30):</label>
+                <input type="number" id="custom-rows" min="1" max="30" value="5">
+            </div>
+            <div>
+                <label for="custom-cols">Columnas (1-30):</label>
+                <input type="number" id="custom-cols" min="1" max="30" value="5">
+            </div>
+        </div>
+
+        <button id="start-button" class="btn">Iniciar Juego</button>
+    </div>
+
+    <!-- Pantalla Principal del Juego -->
+    <div id="game-layout" class="game-layout" style="display: none;">
+        <!-- Panel Izquierdo Flotante (Sufijos) -->
+        <div class="side-panel">
+            <div id="turn-indicator">Jugador 1</div>
+            <div id="timer-display">00:00</div>
+            
+            <div class="card" style="padding: 8px 4px;">
+                <div id="suffix-palette"></div>
+            </div>
+            
+            <div id="scoreboard" class="scoreboard"></div>
+            <button id="restart-button" class="btn" style="padding: 8px; font-size: 0.8rem;">Reiniciar</button>
+        </div>
+
+        <!-- Panel Derecho (Cuadrícula con Significados) -->
+        <div class="card grid-wrapper">
+            <div id="word-table"></div>
+        </div>
+    </div>
+
+    <!-- Modal de Resultados -->
+    <div id="results-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>¡Partida Finalizada! 🎉</h2>
+            <div id="date-time-text" class="date-time-info"></div>
+            <div id="summary-badge" class="summary-badge"></div>
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Jugador</th>
+                        <th>Casillas</th>
+                        <th>Errores</th>
+                        <th>Precisión</th>
+                        <th>Tiempo</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body"></tbody>
+            </table>
+
+            <button id="modal-close-btn" class="btn">Jugar de Nuevo</button>
+        </div>
+    </div>
+
+    <script>
+        const suffixData = [
+            { suffix: '-man', meaning: 'Hacia', color: '#2563eb' },
+            { suffix: '-wan', meaning: 'Con', color: '#059669' },
+            { suffix: '-paq', meaning: 'Para', color: '#d97706' },
+            { suffix: '-pi', meaning: 'En', color: '#7c3aed' },
+            { suffix: '-jina', meaning: 'Como', color: '#db2777' },
+            { suffix: '-rayku', meaning: 'Por', color: '#dc2626' },
+            { suffix: '-manta', meaning: 'De', color: '#0891b2' },
+            { suffix: '-kama', meaning: 'Hasta', color: '#65a30d' }
+        ];
+
+        let draggedSuffix = null;
+        let players = [];
+        let currentPlayerIndex = 0;
+        let totalCellsCount = 0;
+        let matchedCellsCount = 0;
+        let timerInterval = null;
+
+        const setupScreen = document.getElementById('game-setup');
+        const gameLayout = document.getElementById('game-layout');
+        const playerCountSelect = document.getElementById('player-count');
+        const playerNamesContainer = document.getElementById('player-names-container');
+        const gridSizeSelect = document.getElementById('grid-size');
+        const customGridInputs = document.getElementById('custom-grid-inputs');
+        const customRowsInput = document.getElementById('custom-rows');
+        const customColsInput = document.getElementById('custom-cols');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const paletteContainer = document.getElementById('suffix-palette');
+        const wordTable = document.getElementById('word-table');
+        const turnIndicator = document.getElementById('turn-indicator');
+        const timerDisplay = document.getElementById('timer-display');
+        const scoreboard = document.getElementById('scoreboard');
+        const toastError = document.getElementById('toast-error');
+        const resultsModal = document.getElementById('results-modal');
+        const resultsBody = document.getElementById('results-body');
+        const dateTimeText = document.getElementById('date-time-text');
+        const summaryBadge = document.getElementById('summary-badge');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        gridSizeSelect.addEventListener('change', () => {
+            customGridInputs.style.display = gridSizeSelect.value === 'custom' ? 'grid' : 'none';
+        });
+
+        function formatTime(seconds) {
+            const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+            const secs = String(seconds % 60).padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        playerCountSelect.addEventListener('change', () => {
+            const count = parseInt(playerCountSelect.value);
+            playerNamesContainer.innerHTML = '';
+            for (let i = 1; i <= count; i++) {
+                const div = document.createElement('div');
+                div.className = 'form-group';
+                div.innerHTML = `
+                    <label>Nombre del Jugador ${i}:</label>
+                    <input type="text" id="player-${i}-name" value="Jugador ${i}">
+                `;
+                playerNamesContainer.appendChild(div);
+            }
+        });
+        playerCountSelect.dispatchEvent(new Event('change'));
+
+        function startPlayerTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                players[currentPlayerIndex].timeElapsed++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const activePlayer = players[currentPlayerIndex];
+            timerDisplay.textContent = `${activePlayer.name}: ${formatTime(activePlayer.timeElapsed)}`;
+        }
+
+        function showErrorToast() {
+            toastError.classList.add('show');
+            setTimeout(() => {
+                toastError.classList.remove('show');
+            }, 800);
+        }
+
+        function shuffleArray(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function initGame() {
+            let rows, cols;
+            if (gridSizeSelect.value === 'custom') {
+                rows = Math.max(1, Math.min(30, parseInt(customRowsInput.value) || 5));
+                cols = Math.max(1, Math.min(30, parseInt(customColsInput.value) || 5));
+            } else {
+                rows = parseInt(gridSizeSelect.value);
+                cols = rows;
+            }
+
+            totalCellsCount = rows * cols;
+            matchedCellsCount = 0;
+
+            // Renderizar Sufijos en Panel Izquierdo
+            paletteContainer.innerHTML = '';
+            shuffleArray([...suffixData]).forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'suffix-card';
+                card.textContent = item.suffix;
+                card.draggable = true;
+                card.dataset.meaning = item.meaning;
+                card.title = `Sufijo: ${item.suffix}`;
+
+                card.addEventListener('dragstart', () => {
+                    draggedSuffix = item;
+                });
+                paletteContainer.appendChild(card);
+            });
+
+            // Preparar Significados en la Cuadrícula Derecha
+            let meanings = [];
+            while (meanings.length < totalCellsCount) {
+                meanings.push(...suffixData.map(s => s.meaning));
+            }
+            meanings = shuffleArray(meanings.slice(0, totalCellsCount));
+
+            wordTable.innerHTML = '';
+            wordTable.style.gridTemplateColumns = `repeat(${cols}, minmax(65px, 1fr))`;
+
+            meanings.forEach(meaningText => {
+                const cell = document.createElement('div');
+                cell.className = 'word-cell';
+                cell.textContent = meaningText;
+                cell.dataset.meaning = meaningText;
+
+                cell.addEventListener('dragover', (e) => e.preventDefault());
+
+                cell.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (cell.classList.contains('correct')) return;
+
+                    const currentPlayer = players[currentPlayerIndex];
+
+                    if (draggedSuffix && draggedSuffix.meaning === cell.dataset.meaning) {
+                        // Cambiar de color y texto al seleccionar correctamente
+                        cell.style.backgroundColor = draggedSuffix.color;
+                        cell.style.color = '#ffffff';
+                        cell.textContent = `${draggedSuffix.suffix} (${draggedSuffix.meaning})`;
+                        cell.classList.add('correct');
+                        
+                        currentPlayer.score++;
+                        matchedCellsCount++;
+
+                        if (matchedCellsCount === totalCellsCount) {
+                            endGame();
+                            return;
+                        }
+                    } else {
+                        currentPlayer.errors++;
+                        showErrorToast();
+                    }
+
+                    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+                    updateUI();
+                    startPlayerTimer();
+                });
+
+                wordTable.appendChild(cell);
+            });
+
+            startPlayerTimer();
+            updateUI();
+        }
+
+        function updateUI() {
+            turnIndicator.textContent = `Turno: ${players[currentPlayerIndex].name}`;
+            updateTimerDisplay();
+
+            scoreboard.innerHTML = '';
+            players.forEach((player) => {
+                const card = document.createElement('div');
+                card.className = `player-card ${players[currentPlayerIndex] === player ? 'active' : ''}`;
+                card.innerHTML = `
+                    <strong>${player.name}</strong><br>
+                    <small>Casillas: ${player.score} | E:${player.errors}</small>
+                `;
+                scoreboard.appendChild(card);
+            });
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            dateTimeText.textContent = `Partida realizada el ${dateStr} a las ${timeStr}`;
+            summaryBadge.textContent = `Total de casillas completadas: ${matchedCellsCount} de ${totalCellsCount}`;
+
+            resultsBody.innerHTML = '';
+            players.forEach(p => {
+                const totalAttempts = p.score + p.errors;
+                const accuracy = totalAttempts > 0 ? Math.round((p.score / totalAttempts) * 100) : 0;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${p.name}</strong></td>
+                    <td style="color: var(--success-color); font-weight: bold;">${p.score} / ${totalCellsCount}</td>
+                    <td style="color: var(--error-color); font-weight: bold;">${p.errors}</td>
+                    <td>${accuracy}%</td>
+                    <td>${formatTime(p.timeElapsed)}</td>
+                `;
+                resultsBody.appendChild(row);
+            });
+
+            resultsModal.classList.add('active');
+        }
+
+        startButton.addEventListener('click', () => {
+            const count = parseInt(playerCountSelect.value);
+            players = [];
+            for (let i = 1; i <= count; i++) {
+                const nameInput = document.getElementById(`player-${i}-name`);
+                players.push({
+                    name: nameInput.value.trim() || `Jugador ${i}`,
+                    score: 0,
+                    errors: 0,
+                    timeElapsed: 0
+                });
+            }
+            currentPlayerIndex = 0;
+            setupScreen.style.display = 'none';
+            gameLayout.style.display = 'flex';
+            initGame();
+        });
+
+        restartButton.addEventListener('click', () => {
+            players.forEach(p => { 
+                p.score = 0; 
+                p.errors = 0; 
+                p.timeElapsed = 0; 
+            });
+            currentPlayerIndex = 0;
+            initGame();
+        });
+
+        modalCloseBtn.addEventListener('click', () => {
+            resultsModal.classList.remove('active');
+            gameLayout.style.display = 'none';
+            setupScreen.style.display = 'block';
+        });
+    </script>
+</body>
+</html>

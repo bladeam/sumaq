@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master English Pronunciation - Interactive Masterclass</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --bg-card: #151d30;
+            --bg-card-hover: #1c2742;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-pink: #ec4899;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #24304f;
+            --glass-bg: rgba(21, 29, 48, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 50px;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* HEADER SECTION */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .badge-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2));
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 30px;
+            color: var(--accent-cyan);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 30%, var(--accent-cyan) 70%, var(--accent-purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* SPEECH CONTROLS PANEL */
+        .speech-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 1.25rem 2rem;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+            min-width: 240px;
+        }
+
+        .control-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        select, input[type="range"] {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            outline: none;
+            width: 100%;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        select:focus {
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+
+        .rate-value {
+            font-family: 'Fira Code', monospace;
+            font-weight: 700;
+            color: var(--accent-pink);
+            min-width: 35px;
+        }
+
+        /* NAVIGATION TABS */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.8rem 1.4rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        /* MODULE CARDS & GRID */
+        .module-section {
+            display: none;
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .module-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .rule-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 1.8rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rule-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .rule-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .rule-card:hover::before {
+            opacity: 1;
+        }
+
+        .rule-badge {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-amber);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .rule-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .rule-description {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* WORD ITEMS & LISTEN BUTTONS */
+        .examples-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .word-item {
+            background: rgba(11, 15, 25, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+
+        .word-item:hover {
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.05);
+        }
+
+        .word-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .word-text {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #ffffff;
+        }
+
+        .word-phonetic {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-pink);
+            background: rgba(236, 72, 153, 0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .word-translation {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .btn-speak {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2));
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            color: var(--accent-cyan);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-speak:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-dark);
+            transform: scale(1.1);
+            box-shadow: 0 0 12px var(--accent-cyan);
+        }
+
+        .btn-speak.speaking {
+            animation: pulse 1s infinite alternate;
+            background: var(--accent-pink);
+            color: #fff;
+            border-color: var(--accent-pink);
+        }
+
+        @keyframes pulse {
+            from { box-shadow: 0 0 4px var(--accent-pink); transform: scale(1); }
+            to { box-shadow: 0 0 16px var(--accent-pink); transform: scale(1.15); }
+        }
+
+        /* COMPARISON TABLE STYLE CARD */
+        .comparison-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: rgba(11, 15, 25, 0.5);
+            padding: 10px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+
+        .comp-column {
+            text-align: center;
+            padding: 8px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .comp-header {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--accent-amber);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        /* PRACTICE & QUIZ SECTION */
+        .quiz-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(6, 182, 212, 0.1));
+            border: 2px solid var(--accent-purple);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            max-width: 700px;
+            margin: 2rem auto 0 auto;
+        }
+
+        .quiz-word {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #fff;
+            margin: 1rem 0;
+            letter-spacing: 1px;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-option {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-option:hover {
+            border-color: var(--accent-cyan);
+            background: var(--bg-card-hover);
+        }
+
+        .btn-option.correct {
+            background: var(--accent-green) !important;
+            color: #fff;
+            border-color: var(--accent-green);
+        }
+
+        .btn-option.wrong {
+            background: var(--accent-pink) !important;
+            color: #fff;
+            border-color: var(--accent-pink);
+        }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            font-weight: 700;
+            min-height: 24px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="badge-title"><i class="fa-solid fa-microphone-lines"></i> Interactive Speech Studio</span>
+        <h1>Reglas de Pronunciación en Inglés</h1>
+        <p>Aprende las reglas esenciales, escucha la pronunciación nativa en tiempo real y entrena tu oído.</p>
+    </header>
+
+    <!-- SPEECH ENGINE CONTROLS -->
+    <div class="speech-panel">
+        <div class="control-group">
+            <label for="voiceSelect"><i class="fa-solid fa-user-gear"></i> Voz Nativa:</label>
+            <select id="voiceSelect">
+                <option value="">Cargando voces del sistema...</option>
+            </select>
+        </div>
+        <div class="control-group" style="max-width: 280px;">
+            <label for="rateRange"><i class="fa-solid fa-gauge-high"></i> Velocidad:</label>
+            <input type="range" id="rateRange" min="0.5" max="1.2" step="0.1" value="0.85">
+            <span class="rate-value" id="rateVal">0.85x</span>
+        </div>
+    </div>
+
+    <!-- MODULE NAVIGATION -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-vocales')">
+            <i class="fa-solid fa-font"></i> 1. Vocales (Magic E)
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-combos')">
+            <i class="fa-solid fa-layer-group"></i> 2. Dptongos & Combos
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-consonantes')">
+            <i class="fa-solid fa-comment-dots"></i> 3. Consonantes Clave
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-pasado')">
+            <i class="fa-solid fa-clock-rotate-left"></i> 4. Pasado (-ED)
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-ritmo')">
+            <i class="fa-solid fa-wave-square"></i> 5. Schwa & Ritmo
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-quiz')">
+            <i class="fa-solid fa-gamepad"></i> Desafío Interactivo
+        </button>
+    </div>
+
+    <!-- MODULE 1: VOCALES -->
+    <div id="tab-vocales" class="module-section active">
+        <div class="rules-grid">
+            <!-- Rule 1 -->
+            <div class="rule-card">
+                <span class="rule-badge">Regla Fundamental</span>
+                <div class="rule-title">
+                    <span>Vocales Cortas (CVC)</span>
+                    <i class="fa-solid fa-compress" style="color: var(--accent-cyan);"></i>
+                </div>
+                <p class="rule-description">Ocurren en palabras simples que terminan en consonante. Tienen un sonido corto y directo.</p>
+                <div class="examples-list">
+                    <div class="word-item">
+                        <div class="word-info">
+                            <span class="word-text">Cat</span>
+                            <span class="word-phonetic">/kæt/</span>
+                            <span class="word-translation">Gato</span>
+                        </div>
+                        <button class="btn-speak" onclick="speak('Cat')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info">
+                            <span class="word-text">Bed</span>
+                            <span class="word-phonetic">/bed/</span>
+                            <span class="word-translation">Cama</span>
+                        </div>
+                        <button class="btn-speak" onclick="speak('Bed')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info">
+                            <span class="word-text">Dog</span>
+                            <span class="word-phonetic">/dɒɡ/</span>
+                            <span class="word-translation">Perro</span>
+                        </div>
+                        <button class="btn-speak" onclick="speak('Dog')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rule 2 -->
+            <div class="rule-card">
+                <span class="rule-badge">El Gran Truco</span>
+                <div class="rule-title">
+                    <span>E Muda / Magic E</span>
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-pink);"></i>
+                </div>
+                <p class="rule-description">Si se añade una "E" al final, no se pronuncia pero transforma la vocal anterior en **larga** (suena como en el abecedario).</p>
+                <div class="examples-list">
+                    <!-- Pair 1 -->
+                    <div class="comparison-box">
+                        <div class="comp-column">
+                            <div class="comp-header">Corta</div>
+                            <span class="word-text">Kit</span>
+                            <button class="btn-speak" style="margin: 6px auto 0 auto;" onclick="speak('Kit')"><i class="fa-solid fa-volume-high"></i></button>
+                        </div>
+                        <div class="comp-column">
+                            <div class="comp-header">Larga (+E)</div>
+                            <span class="word-text">Kite</span>
+                            <button class="btn-speak" style="margin: 6px auto 0 auto;" onclick="speak('Kite')"><i class="fa-solid fa-volume-high"></i></button>
+                        </div>
+                    </div>
+                    <!-- Pair 2 -->
+                    <div class="comparison-box">
+                        <div class="comp-column">
+                            <div class="comp-header">Corta</div>
+                            <span class="word-text">Hop</span>
+                            <button class="btn-speak" style="margin: 6px auto 0 auto;" onclick="speak('Hop')"><i class="fa-solid fa-volume-high"></i></button>
+                        </div>
+                        <div class="comp-column">
+                            <div class="comp-header">Larga (+E)</div>
+                            <span class="word-text">Hope</span>
+                            <button class="btn-speak" style="margin: 6px auto 0 auto;" onclick="speak('Hope')"><i class="fa-solid fa-volume-high"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE 2: COMBINACIONES -->
+    <div id="tab-combos" class="module-section">
+        <div class="rules-grid">
+            <div class="rule-card">
+                <span class="rule-badge">Doble Vocal</span>
+                <div class="rule-title">EE / EA (/iː/)</div>
+                <p class="rule-description">Producen un sonido de "I" larga y sostenida, sonriendo levemente al hablar.</p>
+                <div class="examples-list">
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">See</span><span class="word-phonetic">/siː/</span></div>
+                        <button class="btn-speak" onclick="speak('See')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Teacher</span><span class="word-phonetic">/ˈtiː.tʃər/</span></div>
+                        <button class="btn-speak" onclick="speak('Teacher')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <span class="rule-badge">Variante OO</span>
+                <div class="rule-title">Doble OO (Larga vs Corta)</div>
+                <p class="rule-description">Puede sonar como U larga (/uː/) o una U corta relajada (/ʊ/).</p>
+                <div class="examples-list">
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Moon (Larga)</span><span class="word-phonetic">/muːn/</span></div>
+                        <button class="btn-speak" onclick="speak('Moon')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Book (Corta)</span><span class="word-phonetic">/bʊk/</span></div>
+                        <button class="btn-speak" onclick="speak('Book')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <span class="rule-badge">Sonido AU</span>
+                <div class="rule-title">OU / OW (/aʊ/)</div>
+                <p class="rule-description">Generan un diptongo similar al español "AU".</p>
+                <div class="examples-list">
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">House</span><span class="word-phonetic">/haʊs/</span></div>
+                        <button class="btn-speak" onclick="speak('House')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Now</span><span class="word-phonetic">/naʊ/</span></div>
+                        <button class="btn-speak" onclick="speak('Now')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE 3: CONSONANTES -->
+    <div id="tab-consonantes" class="module-section">
+        <div class="rules-grid">
+            <div class="rule-card">
+                <span class="rule-badge">El Gran Desafío</span>
+                <div class="rule-title">Las 2 Formas de TH</div>
+                <p class="rule-description">Coloca la lengua entre los dientes. Puede ser **Sorda** (solo aire) o **Sonora** (con vibración vocal).</p>
+                <div class="examples-list">
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Think (Sorda)</span><span class="word-phonetic">/θɪŋk/</span></div>
+                        <button class="btn-speak" onclick="speak('Think')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">This (Sonora)</span><span class="word-phonetic">/ðɪs/</span></div>
+                        <button class="btn-speak" onclick="speak('This')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <span class="rule-badge">Letras Silenciosas</span>
+                <div class="rule-title">KN y WR Silenciosas</div>
+                <p class="rule-description">La 'K' y la 'W' al inicio de estas combinaciones **nunca** se pronuncian.</p>
+                <div class="examples-list">
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Know</span><span class="word-phonetic">/noʊ/</span></div>
+                        <button class="btn-speak" onclick="speak('Know')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Write</span><span class="word-phonetic">/raɪt/</span></div>
+                        <button class="btn-speak" onclick="speak('Write')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <span class="rule-badge">Terminaciones</span>
+                <div class="rule-title">TION vs SION</div>
+                <p class="rule-description">-TION suena como "SHEN". -SION tiene un zumbido suave ("ZHEN").</p>
+                <div class="examples-list">
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Action</span><span class="word-phonetic">/ˈæk.ʃən/</span></div>
+                        <button class="btn-speak" onclick="speak('Action')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Vision</span><span class="word-phonetic">/ˈvɪʒ.ən/</span></div>
+                        <button class="btn-speak" onclick="speak('Vision')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE 4: PASADO -ED -->
+    <div id="tab-pasado" class="module-section">
+        <div class="rules-grid">
+            <div class="rule-card">
+                <span class="rule-badge">Sonido /ɪd/</span>
+                <div class="rule-title">Termina en T o D</div>
+                <p class="rule-description">Solo aquí se añade una nueva sílaba completa que suena como "ID".</p>
+                <div class="examples-list">
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Wanted</span><span class="word-phonetic">/ˈwɑːn.tɪd/</span></div>
+                        <button class="btn-speak" onclick="speak('Wanted')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Needed</span><span class="word-phonetic">/ˈniː.dɪd/</span></div>
+                        <button class="btn-speak" onclick="speak('Needed')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <span class="rule-badge">Sonido /t/</span>
+                <div class="rule-title">Sonidos Sordos (k, p, f, s, sh)</div>
+                <p class="rule-description">La -ED final se pronuncia como una seca 'T'. No agregues vocal.</p>
+                <div class="examples-list">
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Walked</span><span class="word-phonetic">/wɑːkt/</span></div>
+                        <button class="btn-speak" onclick="speak('Walked')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Washed</span><span class="word-phonetic">/wɑːʃt/</span></div>
+                        <button class="btn-speak" onclick="speak('Washed')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rule-card">
+                <span class="rule-badge">Sonido /d/</span>
+                <div class="rule-title">Sonidos Sonoros (resto)</div>
+                <p class="rule-description">La -ED suena suavemente como una 'D' suave al final.</p>
+                <div class="examples-list">
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Played</span><span class="word-phonetic">/pleɪd/</span></div>
+                        <button class="btn-speak" onclick="speak('Played')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info"><span class="word-text">Loved</span><span class="word-phonetic">/lʌvd/</span></div>
+                        <button class="btn-speak" onclick="speak('Loved')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE 5: RITMO & SCHWA -->
+    <div id="tab-ritmo" class="module-section">
+        <div class="rules-grid">
+            <div class="rule-card" style="grid-column: 1 / -1;">
+                <span class="rule-badge">El Rey del Inglés</span>
+                <div class="rule-title">El Sonido Schwa (/ə/)</div>
+                <p class="rule-description">Es el sonido vocálico más común. Ocurre en las sílabas no acentuadas y suena como un "uh" suave y perezoso.</p>
+                <div class="examples-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                    <div class="word-item">
+                        <div class="word-info">
+                            <span class="word-text">About</span>
+                            <span class="word-phonetic">/əˈbaʊt/</span>
+                            <span class="word-translation">"uh-BOUT"</span>
+                        </div>
+                        <button class="btn-speak" onclick="speak('About')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info">
+                            <span class="word-text">Banana</span>
+                            <span class="word-phonetic">/bəˈnæn.ə/</span>
+                            <span class="word-translation">"buh-NA-nuh"</span>
+                        </div>
+                        <button class="btn-speak" onclick="speak('Banana')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                    <div class="word-item">
+                        <div class="word-info">
+                            <span class="word-text">Computer</span>
+                            <span class="word-phonetic">/kəmˈpjuː.tər/</span>
+                            <span class="word-translation">"kuhm-PYOO-ter"</span>
+                        </div>
+                        <button class="btn-speak" onclick="speak('Computer')"><i class="fa-solid fa-volume-high"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODULE 6: QUIZ INTERACTIVO -->
+    <div id="tab-quiz" class="module-section">
+        <div class="quiz-card">
+            <span class="badge-title"><i class="fa-solid fa-ear-listen"></i> Entrena tu Oído</span>
+            <h2>Escucha y Selecciona la Pronunciación Correcta</h2>
+            <div class="quiz-word" id="quizWordDisplay">???</div>
+            <button class="btn-speak" style="margin: 0 auto 1.5rem auto; width: 50px; height: 50px; font-size: 1.2rem;" onclick="playQuizWord()">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+            <div class="quiz-options" id="quizOptions">
+                <!-- Options inserted by JS -->
+            </div>
+            <div class="quiz-feedback" id="quizFeedback"></div>
+            <button class="tab-btn" style="margin: 1.5rem auto 0 auto; background: var(--bg-card);" onclick="nextQuizQuestion()">
+                Siguiente Palabra <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // SPEECH SYNTHESIS ENGINE
+    const synth = window.speechSynthesis;
+    let voices = [];
+    let selectedVoice = null;
+
+    const voiceSelect = document.getElementById('voiceSelect');
+    const rateRange = document.getElementById('rateRange');
+    const rateVal = document.getElementById('rateVal');
+
+    function populateVoices() {
+        voices = synth.getVoices().filter(v => v.lang.includes('en'));
+        voiceSelect.innerHTML = '';
+        
+        if(voices.length === 0) {
+            voiceSelect.innerHTML = '<option value="">No en-US voices found</option>';
+            return;
+        }
+
+        voices.forEach((voice, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${voice.name} (${voice.lang})`;
+            if(voice.name.includes('Natural') || voice.name.includes('Google') || voice.default) {
+                option.selected = true;
+                selectedVoice = voice;
+            }
+            voiceSelect.appendChild(option);
+        });
+
+        if(!selectedVoice && voices.length > 0) {
+            selectedVoice = voices[0];
+        }
+    }
+
+    populateVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    voiceSelect.addEventListener('change', () => {
+        selectedVoice = voices[voiceSelect.value];
+    });
+
+    rateRange.addEventListener('input', () => {
+        rateVal.textContent = `${rateRange.value}x`;
+    });
+
+    function speak(text, callback) {
+        if (synth.speaking) {
+            synth.cancel();
+        }
+
+        const utterThis = new SpeechSynthesisUtterance(text);
+        if (selectedVoice) {
+            utterThis.voice = selectedVoice;
+        }
+        utterThis.rate = parseFloat(rateRange.value);
+        utterThis.pitch = 1.0;
+
+        utterThis.onend = () => {
+            if(callback) callback();
+        };
+
+        synth.speak(utterThis);
+    }
+
+    // TAB NAVIGATION
+    function switchTab(tabId) {
+        document.querySelectorAll('.module-section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+
+        if(tabId === 'tab-quiz') {
+            nextQuizQuestion();
+        }
+    }
+
+    // INTERACTIVE QUIZ ENGINE
+    const quizData = [
+        { word: "Walked", options: ["Suena /wɑːkt/ (con T)", "Suena /wɑːk-ed/ (con ED)", "Suena /wɑːkd/ (con D)"], correct: 0 },
+        { word: "Kite", options: ["Vocal Corta (/kɪt/)", "Vocal Larga por E Muda (/kaɪt/)", "Sonido Schwa (/kət/)"], correct: 1 },
+        { word: "Think", options: ["TH Sonora (Zumbido)", "TH Sorda (Soplada)", "T Tradicional"], correct: 1 },
+        { word: "Wanted", options: ["Suena con /t/ al final", "Suena con /d/ suave", "Añade sílaba /ɪd/"], correct: 2 },
+        { word: "Write", options: ["Se pronuncia la W", "La W es Silenciosa", "Suena como Vrite"], correct: 1 }
+    ];
+
+    let currentQuiz = null;
+
+    function nextQuizQuestion() {
+        const feedback = document.getElementById('quizFeedback');
+        feedback.textContent = '';
+        
+        const randomIndex = Math.floor(Math.random() * quizData.length);
+        currentQuiz = quizData[randomIndex];
+
+        document.getElementById('quizWordDisplay').textContent = currentQuiz.word;
+        
+        const optionsContainer = document.getElementById('quizOptions');
+        optionsContainer.innerHTML = '';
+
+        currentQuiz.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-option';
+            btn.textContent = opt;
+            btn.onclick = () => checkAnswer(idx, btn);
+            optionsContainer.appendChild(btn);
+        });
+
+        playQuizWord();
+    }
+
+    function playQuizWord() {
+        if(currentQuiz) {
+            speak(currentQuiz.word);
+        }
+    }
+
+    function checkAnswer(selectedIdx, btnElement) {
+        const feedback = document.getElementById('quizFeedback');
+        const allButtons = document.querySelectorAll('.btn-option');
+        
+        allButtons.forEach(btn => btn.disabled = true);
+
+        if(selectedIdx === currentQuiz.correct) {
+            btnElement.classList.add('correct');
+            feedback.style.color = 'var(--accent-green)';
+            feedback.textContent = '¡Correcto! Excelentes oídos 🎧';
+        } else {
+            btnElement.classList.add('wrong');
+            allButtons[currentQuiz.correct].classList.add('correct');
+            feedback.style.color = 'var(--accent-pink)';
+            feedback.textContent = 'Casi... Revisa la regla correspondiente.';
+        }
+    }
+</script>
+
+</body>
+</html>

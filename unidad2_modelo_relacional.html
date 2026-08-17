@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unidad II - El Modelo Relacional (BAD 402)</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-color: #10b981;
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --highlight: #f59e0b;
+            --secondary: #38bdf8;
+            --border-radius: 16px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; align-items: center; overflow: hidden; }
+        .progress-container { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); position: fixed; top: 0; left: 0; z-index: 100; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-color), var(--secondary)); width: 5%; transition: width 0.3s ease; }
+        .deck { width: 90%; max-width: 1000px; height: 80vh; margin-top: 25px; position: relative; display: flex; justify-content: center; align-items: center; }
+        .slide { position: absolute; width: 100%; height: 100%; background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--border-radius); padding: 35px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; justify-content: space-between; opacity: 0; visibility: hidden; transform: translateY(20px) scale(0.98); transition: all 0.4s ease-in-out; overflow-y: auto; }
+        .slide.active { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+        .slide-header { border-bottom: 2px solid rgba(16, 185, 129, 0.2); padding-bottom: 12px; margin-bottom: 15px; }
+        .tag { background: rgba(16, 185, 129, 0.15); color: var(--accent-color); font-size: 0.85rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 6px; }
+        h1 { font-size: 2rem; color: #ffffff; font-weight: 700; }
+        h2 { font-size: 1.4rem; color: var(--accent-color); margin-bottom: 10px; }
+        p, li { font-size: 1.05rem; line-height: 1.5; color: var(--text-muted); }
+        .content-body { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .info-box { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.05); border-left: 4px solid var(--accent-color); padding: 15px; border-radius: 8px; }
+        .info-box.orange { border-left-color: var(--highlight); }
+        .info-box.blue { border-left-color: var(--secondary); }
+        .info-box h3 { color: #ffffff; font-size: 1.1rem; margin-bottom: 5px; }
+        .example-box { background: rgba(16, 185, 129, 0.08); border: 1px dashed var(--accent-color); padding: 12px; border-radius: 8px; font-size: 0.95rem; color: #e2e8f0; }
+        .interactive-btn { background: rgba(16, 185, 129, 0.1); border: 1px dashed var(--accent-color); color: var(--accent-color); padding: 10px; border-radius: 8px; cursor: pointer; text-align: center; font-weight: 600; transition: all 0.2s ease; margin-top: 5px; }
+        .interactive-btn:hover { background: var(--accent-color); color: #000000; }
+        .hidden-details { display: none; background: #090d16; padding: 10px; border-radius: 8px; margin-top: 6px; font-size: 0.9rem; color: #cbd5e1; }
+        .controls { width: 90%; max-width: 1000px; display: flex; justify-content: space-between; align-items: center; padding: 15px 0; }
+        .btn-nav { background: var(--accent-color); color: #0f172a; border: none; padding: 10px 20px; font-size: 0.95rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: background 0.2s ease; }
+        .btn-nav:hover { background: var(--accent-hover); color: #ffffff; }
+        .btn-nav:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+        .slide-counter { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; background: #090d16; border-radius: 6px; overflow: hidden; }
+        th, td { border: 1px solid rgba(255, 255, 255, 0.1); padding: 8px 12px; text-align: left; font-size: 0.9rem; }
+        th { background: rgba(16, 185, 129, 0.2); color: #fff; }
+        code { background: #10b98122; color: #10b981; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } .slide { padding: 20px; } }
+    </style>
+</head>
+<body>
+    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="deck">
+
+        <!-- Slide 1 -->
+        <div class="slide active">
+            <div class="slide-header">
+                <span class="tag">BAD 402 - Unidad II</span>
+                <h1>El Modelo Relacional</h1>
+                <p>Estructuras, Claves, Reglas de Integridad y Transformación E-R</p>
+            </div>
+            <div class="content-body">
+                <div class="info-box blue">
+                    <h3>🎯 Objetivo de la Unidad</h3>
+                    <p>Comprender la estructura formal del Modelo Relacional creado por E. F. Codd, sus reglas de integridad y cómo transformar un Modelo Entidad-Relación en tablas físicas.</p>
+                </div>
+                <div class="example-box">
+                    <strong>💡 Idea Central:</strong> Toda la información del mundo real se representa organizándola estrictamente en <strong>tablas de dos dimensiones</strong> (Filas y Columnas).
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Origen</span>
+                <h1>1. Origen del Modelo Relacional</h1>
+            </div>
+            <div class="content-body">
+                <p>Propuesto por <strong>Edgar Frank Codd</strong> en 1970 en IBM.</p>
+                <div class="info-box orange">
+                    <h3>¿Por qué revolucionó la industria?</h3>
+                    <p>Antes de 1970 se usaban modelos jerárquicos o en red muy complejos donde había que programar "rutas físicas" para buscar datos. Codd aportó una base matemática elegante basada en la teoría de conjuntos.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Conceptos</span>
+                <h1>2. Definición de Relación (Tabla)</h1>
+            </div>
+            <div class="content-body">
+                <p>Una <strong>Relación</strong> es una tabla bidimensional compuesta por filas y columnas con características específicas:</p>
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h3>Características Principales</h3>
+                        <p>• El orden de las filas no importa.</p>
+                        <p>• El orden de las columnas no importa.</p>
+                        <p>• No puede haber dos filas exactamente iguales.</p>
+                    </div>
+                    <div class="info-box blue">
+                        <h3>Terminología Formal</h3>
+                        <p>• Tabla = <strong>Relación</strong></p>
+                        <p>• Fila = <strong>Tupla</strong></p>
+                        <p>• Columna = <strong>Atributo</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Dominio</span>
+                <h1>3. Atributos y Dominios</h1>
+            </div>
+            <div class="content-body">
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h3>Atributo</h3>
+                        <p>Nombre de una columna que representa una propiedad de la entidad (ej: <code>Precio</code>, <code>Stock</code>).</p>
+                    </div>
+                    <div class="info-box orange">
+                        <h3>Dominio</h3>
+                        <p>Conjunto de valores válidos y atómicos que un atributo puede tomar (ej: Dominio de <code>Edad</code> = Entero entre 0 y 120).</p>
+                    </div>
+                </div>
+                <div class="example-box">
+                    <strong>Ejemplo Sencillo:</strong> Si el dominio del atributo <code>Fecha_Nacimiento</code> es tipo 'FECHA', la BD rechazará intentar guardar el texto "Ayer".
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Claves</span>
+                <h1>4. Concepto de Claves (Keys)</h1>
+            </div>
+            <div class="content-body">
+                <p>Las claves permiten identificar registros y establecer conexiones relacionales entre tablas.</p>
+                <div class="grid-3">
+                    <div class="info-box">
+                        <h3>Superclave</h3>
+                        <p>Conjunto de uno o más atributos que identifican unívocamente una tupla.</p>
+                    </div>
+                    <div class="info-box blue">
+                        <h3>Clave Candidata</h3>
+                        <p>Una superclave mínima (sin atributos sobrantes).</p>
+                    </div>
+                    <div class="info-box orange">
+                        <h3>Clave Primaria (PK)</h3>
+                        <p>La clave candidata elegida por el diseñador.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Claves</span>
+                <h1>5. Clave Primaria (Primary Key - PK)</h1>
+            </div>
+            <div class="content-body">
+                <div class="info-box">
+                    <h3>Atributo Identificador Principal</h3>
+                    <p>Es la columna elegida para identificar de forma única e inconfundible cada fila de la tabla.</p>
+                </div>
+                <div class="example-box">
+                    <strong>Ejemplo:</strong> En la tabla <code>CLIENTES</code>, el número de Cédula de Identidad (<code>CI</code>) es la PK. No pueden existir dos clientes con la misma cédula.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Claves</span>
+                <h1>6. Clave Foránea (Foreign Key - FK)</h1>
+            </div>
+            <div class="content-body">
+                <div class="info-box blue">
+                    <h3>Enlace entre Tablas</h3>
+                    <p>Es un atributo en una tabla que hace referencia a la Clave Primaria (PK) de otra tabla, estableciendo una relación formal.</p>
+                </div>
+                <table>
+                    <tr><th>ID_Inscripción</th><th>Estudiante_CI (FK)</th><th>Curso_ID (FK)</th></tr>
+                    <tr><td>101</td><td>884123 (Apunta a Alumno)</td><td>MAT-101 (Apunta a Curso)</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Slide 8 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Integridad</span>
+                <h1>7. Regla 1: Integridad de Entidades</h1>
+            </div>
+            <div class="content-body">
+                <div class="info-box orange">
+                    <h3>Ninguna Clave Primaria puede ser NULL</h3>
+                    <p>Dado que la PK se utiliza para identificar de forma única a cada tupla, no se permite que tenga un valor desconocido o nulo (<code>NULL</code>).</p>
+                </div>
+                <div class="interactive-btn" onclick="toggleDetails('d2_1')">❓ ¿Por qué no puede ser NULL?</div>
+                <div id="d2_1" class="hidden-details">
+                    Si dos filas tuvieran PK en NULL, la base de datos no tendría forma de distinguirlas ni de saber a cuál hacer referencia en otras tablas.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Integridad</span>
+                <h1>8. Regla 2: Integridad Referencial</h1>
+            </div>
+            <div class="content-body">
+                <div class="info-box blue">
+                    <h3>Consistencia entre Relaciones</h3>
+                    <p>Un valor de Clave Foránea (FK) debe obligatoriamente coincidir con un valor existente de la Clave Primaria (PK) a la que apunta, o bien ser totalmente NULL.</p>
+                </div>
+                <div class="example-box">
+                    <strong>Ejemplo de Violación:</strong> Intentar registrar un pedido para el <code>Cliente_ID = 99</code> cuando en la tabla de Clientes el ID más alto es el 50.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Mapeo</span>
+                <h1>9. Transformación Entidad-Relación a Relacional</h1>
+            </div>
+            <div class="content-body">
+                <p>El proceso de diseño pasa de un diagrama conceptual E-R a un esquema relacional lógico siguiendo reglas claras:</p>
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h3>Paso 1: Entidades</h3>
+                        <p>Cada entidad regular se convierte en una <strong>Tabla</strong>.</p>
+                    </div>
+                    <div class="info-box orange">
+                        <h3>Paso 2: Atributos</h3>
+                        <p>Los atributos pasan a ser <strong>Columnas</strong> de dicha tabla.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Mapeo</span>
+                <h1>10. Mapeo de Relaciones 1:N (Uno a Muchos)</h1>
+            </div>
+            <div class="content-body">
+                <div class="info-box">
+                    <h3>Regla para 1:N</h3>
+                    <p>La Clave Primaria del lado de la cardinalidad <strong>1</strong> pasa como Clave Foránea (FK) a la tabla del lado de cardinalidad <strong>N</strong>.</p>
+                </div>
+                <div class="example-box">
+                    <strong>Ejemplo:</strong> Un <code>DEPARTAMENTO</code> tiene muchos <code>EMPLEADOS</code>.<br>
+                    <strong>Solución:</strong> Se agrega la columna <code>Depto_ID</code> (FK) dentro de la tabla <code>EMPLEADO</code>.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Mapeo</span>
+                <h1>11. Mapeo de Relaciones N:M (Muchos a Muchos)</h1>
+            </div>
+            <div class="content-body">
+                <div class="info-box orange">
+                    <h3>Regla para N:M</h3>
+                    <p>Se DEBE crear una <strong>nueva tabla intermedia</strong> (tabla de uniones) cuyas claves primarias serán las PKs de las dos entidades originales.</p>
+                </div>
+                <div class="example-box">
+                    <strong>Ejemplo:</strong> <code>ESTUDIANTE</code> M:N <code>MATERIA</code>.<br>
+                    <strong>Solución:</strong> Se crea la tabla <code>INSCRIPCION</code> con (<code>Estudiante_CI</code>, <code>Sigla_Materia</code>) como PK compuesta.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Mapeo</span>
+                <h1>12. Mapeo de Relaciones 1:1 (Uno a Uno)</h1>
+            </div>
+            <div class="content-body">
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h3>Opción A: Propagación de Clave</h3>
+                        <p>Se coloca la PK de una entidad como FK en la otra (preferentemente en la que tiene participación total).</p>
+                    </div>
+                    <div class="info-box blue">
+                        <h3>Opción B: Fusión de Tablas</h3>
+                        <p>Si ambas tienen participación total, se pueden unir en una sola tabla.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Atributos</span>
+                <h1>13. Mapeo de Atributos Multivaluados</h1>
+            </div>
+            <div class="content-body">
+                <div class="info-box orange">
+                    <h3>¿Qué hacer con un atributo que tiene varios valores?</h3>
+                    <p>No se pueden meter varios valores en una sola celda. Se debe crear una <strong>tabla independiente</strong> para ese atributo.</p>
+                </div>
+                <div class="example-box">
+                    <strong>Ejemplo:</strong> Un cliente tiene 3 números de teléfono.<br>
+                    Tabla <code>TELEFONOS_CLIENTE</code>: (<code>Cliente_CI</code> [FK], <code>Telefono</code>)
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Esquema</span>
+                <h1>14. Representación del Esquema Relacional</h1>
+            </div>
+            <div class="content-body">
+                <p>Notación estándar de texto para describir la estructura del diseño:</p>
+                <div class="example-box">
+                    <strong>Notación:</strong><br>
+                    CLIENTE (<u>CI</u>, Nombre, Apellido, Email)<br>
+                    PEDIDO (<u>ID_Pedido</u>, Fecha, Total, <i>Cliente_CI</i>)<br><br>
+                    <i>* Las subrayadas (<u>CI</u>) son PKs, las cursivas (<i>Cliente_CI</i>) son FKs.</i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - SQL</span>
+                <h1>15. Creación de Tablas en SQL Real</h1>
+            </div>
+            <div class="content-body">
+                <p>Traducción de nuestro esquema relacional al código <code>DDL</code>:</p>
+                <div class="example-box">
+                    <code>
+                        CREATE TABLE Cliente (<br>
+                        &nbsp;&nbsp;ci INT PRIMARY KEY,<br>
+                        &nbsp;&nbsp;nombre VARCHAR(50) NOT NULL<br>
+                        );
+                    </code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - SQL</span>
+                <h1>16. Definiendo Foreign Keys en SQL</h1>
+            </div>
+            <div class="content-body">
+                <div class="example-box">
+                    <code>
+                        CREATE TABLE Pedido (<br>
+                        &nbsp;&nbsp;id_pedido INT PRIMARY KEY,<br>
+                        &nbsp;&nbsp;fecha DATE,<br>
+                        &nbsp;&nbsp;cliente_ci INT,<br>
+                        &nbsp;&nbsp;FOREIGN KEY (cliente_ci) REFERENCES Cliente(ci)<br>
+                        );
+                    </code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Casos</span>
+                <h1>17. Caso Práctico: Tienda en Línea</h1>
+            </div>
+            <div class="content-body">
+                <p>Diseño para la relación Producto - Categoria:</p>
+                <div class="info-box">
+                    <p>• Una Categoría tiene muchos Productos (1:N).</p>
+                    <p>• Esquema: CATEGORIA(<u>id_cat</u>, nombre)</p>
+                    <p>• Esquema: PRODUCTO(<u>id_prod</u>, nombre, precio, <i>id_cat</i>)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Validación</span>
+                <h1>18. Chequeo de Reglas de Calidad</h1>
+            </div>
+            <div class="content-body">
+                <div class="grid-3">
+                    <div class="info-box">
+                        <h3>¿Hay claves primarias en todas las tablas?</h3>
+                    </div>
+                    <div class="info-box orange">
+                        <h3>¿Las Foreign Keys apuntan correctamente?</h3>
+                    </div>
+                    <div class="info-box blue">
+                        <h3>¿Se eliminaron atributos multivaluados?</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20 -->
+        <div class="slide">
+            <div class="slide-header">
+                <span class="tag">Unidad II - Resumen</span>
+                <h1>19. Conclusiones de la Unidad II</h1>
+            </div>
+            <div class="content-body">
+                <div class="grid-2">
+                    <div class="info-box">
+                        <h3>Rigor Lógico</h3>
+                        <p>El Modelo Relacional garantiza orden y solidez matemática mediante sus restricciones de integridad.</p>
+                    </div>
+                    <div class="info-box blue">
+                        <h3>Transformación Mecánica</h3>
+                        <p>Pasar de un Diagrama E-R a tablas es un proceso estructurado mediante reglas claras de cardinalidad.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="controls">
+        <button class="btn-nav" id="prevBtn" onclick="changeSlide(-1)" disabled>← Anterior</button>
+        <span class="slide-counter" id="slideCounter">Diapositiva 1 de 20</span>
+        <button class="btn-nav" id="nextBtn" onclick="changeSlide(1)">Siguiente →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const slideCounter = document.getElementById('slideCounter');
+        const progressBar = document.getElementById('progressBar');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            slideCounter.textContent = `Diapositiva ${currentSlide + 1} de ${totalSlides}`;
+            progressBar.style.width = `${((currentSlide + 1) / totalSlides) * 100}%`;
+            prevBtn.disabled = (currentSlide === 0);
+            nextBtn.textContent = (currentSlide === totalSlides - 1) ? 'Finalizar 🎉' : 'Siguiente →';
+        }
+
+        function changeSlide(dir) {
+            currentSlide = Math.max(0, Math.min(totalSlides - 1, currentSlide + dir));
+            updateSlide();
+        }
+
+        function toggleDetails(id) {
+            const el = document.getElementById(id);
+            el.style.display = (el.style.display === "block") ? "none" : "block";
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') { if (currentSlide < totalSlides - 1) changeSlide(1); }
+            else if (e.key === 'ArrowLeft') { if (currentSlide > 0) changeSlide(-1); }
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>

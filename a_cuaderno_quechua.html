@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUADERNO VIRTUAL QUECHUA</title>
+    <!-- Iconos de FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Libreria html2pdf para descargar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #333;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 950px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .author {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #555;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-success { background-color: #2ecc71; }
+        .btn-success:hover { background-color: #27ae60; }
+        .btn-warning { background-color: #f39c12; }
+        .btn-warning:hover { background-color: #d35400; }
+
+        .hidden { display: none !important; }
+
+        /* Formulario Inicial */
+        .form-group {
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        /* BANNER DE INFORMACIÓN (Fila Superior) */
+        .info-card {
+            background: #ffffff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #dcdde1;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-map {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 3px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 5px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .btn-map:hover {
+            background-color: #c0392b;
+        }
+
+        /* FILA DE BOTONES DE ACCESO RÁPIDO (GRID COMPACTA SIN DESLIZADOR) */
+        .quick-access-bar {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 4px;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .icon-btn {
+            width: 100%;
+            height: 65px;
+            background: #ffffff;
+            border: 1.5px solid var(--secondary-color);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 2px;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn i {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+        }
+
+        .icon-btn:hover {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .icon-btn:hover i {
+            color: white;
+        }
+
+        /* CONTROL DE VISTA COMPACTO */
+        .view-control {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .btn-view {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-view:hover {
+            background-color: #2980b9;
+        }
+
+        /* ÁREA DE TRABAJO PRINCIPAL (ORACIÓN) */
+        .editor-container {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .editor-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .editor-box label {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 0.95rem;
+        }
+
+        .editor-box textarea {
+            min-height: 180px;
+            resize: vertical;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            font-size: 1rem;
+        }
+
+        /* BOTONES DE ACCIÓN (ABAJO) */
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+
+        /* Ventana Emergente Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        .search-box {
+            margin-bottom: 12px;
+        }
+
+        /* Tablas del Modal */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .data-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Adaptación para pantallas móviles */
+        @media (max-width: 600px) {
+            .quick-access-bar {
+                gap: 2px;
+            }
+            .icon-btn {
+                height: 52px;
+                font-size: 0.55rem;
+                border-width: 1px;
+                border-radius: 5px;
+            }
+            .icon-btn i {
+                font-size: 0.85rem;
+            }
+            .editor-container {
+                flex-direction: column;
+            }
+            .action-bar {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <!-- VISTA INICIAL: CONFIGURACIÓN Y PARTICIPANTE -->
+        <div id="init-view">
+            <h1>CUADERNO VIRTUAL QUECHUA</h1>
+            
+            <div class="form-group">
+                <label for="participant-input">Nombre del Participante:</label>
+                <textarea id="participant-input" placeholder="Escriba aquí el nombre del participante..."></textarea>
+            </div>
+
+            <h3>Configuración de Apariencia del Área de Trabajo</h3>
+            <div class="config-grid">
+                <div>
+                    <label>Fondo Quechua:</label>
+                    <input type="color" id="bg-quechua" value="#ffffff">
+                </div>
+                <div>
+                    <label>Letra Quechua:</label>
+                    <input type="color" id="color-quechua" value="#2c3e50">
+                </div>
+                <div>
+                    <label>Fuente Quechua:</label>
+                    <select id="font-quechua">
+                        <option value="Segoe UI">Segoe UI</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Georgia">Georgia</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Tamaño Quechua (px):</label>
+                    <input type="number" id="size-quechua" value="16" min="12" max="32">
+                </div>
+
+                <div>
+                    <label>Fondo Castellano:</label>
+                    <input type="color" id="bg-castellano" value="#ffffff">
+                </div>
+                <div>
+                    <label>Letra Castellano:</label>
+                    <input type="color" id="color-castellano" value="#2c3e50">
+                </div>
+                <div>
+                    <label>Fuente Castellano:</label>
+                    <select id="font-castellano">
+                        <option value="Segoe UI">Segoe UI</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Georgia">Georgia</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Tamaño Castellano (px):</label>
+                    <input type="number" id="size-castellano" value="16" min="12" max="32">
+                </div>
+            </div>
+
+            <button class="btn btn-success" style="width: 100%;" onclick="startApp()">Ingresar al Cuaderno</button>
+            <div class="author">Yachachiq: M.Sc. Bladimir Arias Mejia</div>
+        </div>
+
+        <!-- VISTA PRINCIPAL DEL CUADERNO VIRTUAL -->
+        <div id="app-view" class="hidden">
+
+            <!-- 1. FILA SUPERIOR: Info del Participante, Fecha y Ubicación con Botón a Google Maps -->
+            <div class="info-card" id="export-header">
+                <div><strong>Participante:</strong> <span id="disp-participant">No especificado</span></div>
+                <div><strong>Fecha y Hora:</strong> <span id="disp-datetime">--/--/---- --:--</span></div>
+                <div>
+                    <strong>UBICACIÓN:</strong> <span id="disp-coords">Obteniendo ubicación...</span>
+                    <button id="btn-google-maps" class="btn-map hidden" onclick="openGoogleMaps()">
+                        <i class="fa-solid fa-map-location-dot"></i> Ver Mapa
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. FILA DE BOTONES DE ACCESO RÁPIDO (TODOS EN UNA FILA SIN DESLIZADOR EN MÓVIL) -->
+            <div class="quick-access-bar">
+                <button class="icon-btn" onclick="openModal('verbos')"><i class="fa-solid fa-running"></i> Verbos</button>
+                <button class="icon-btn" onclick="openModal('sufijos_nom')"><i class="fa-solid fa-link"></i> Suf. Nom.</button>
+                <button class="icon-btn" onclick="openModal('sustantivos')"><i class="fa-solid fa-cat"></i> Sustantivos</button>
+                <button class="icon-btn" onclick="openModal('sufijos_pos')"><i class="fa-solid fa-user-tag"></i> Suf. Pos.</button>
+                <button class="icon-btn" onclick="openModal('pronombres_pers')"><i class="fa-solid fa-users"></i> Pron. Pers.</button>
+                <button class="icon-btn" onclick="openModal('pronombres_interr')"><i class="fa-solid fa-question-circle"></i> Pron. Interr.</button>
+                <button class="icon-btn" onclick="openModal('sufijos_pres')"><i class="fa-solid fa-clock"></i> Suf. Pres.</button>
+                <button class="icon-btn" onclick="openModal('sufijos_pas')"><i class="fa-solid fa-history"></i> Suf. Pas.</button>
+                <button class="icon-btn" onclick="openModal('sufijos_fut')"><i class="fa-solid fa-hourglass-end"></i> Suf. Fut.</button>
+            </div>
+
+            <!-- BOTONES PEQUEÑOS DE VISUALIZACIÓN -->
+            <div class="view-control">
+                <button class="btn-view" onclick="setView('both')">Mostrar Ambos</button>
+                <button class="btn-view" onclick="setView('quechua')">Solo Quechua</button>
+                <button class="btn-view" onclick="setView('castellano')">Solo Castellano</button>
+            </div>
+
+            <!-- 3. ÁREA DE TRABAJO PRINCIPAL (ORACIÓN) -->
+            <div class="editor-container" id="editor-container">
+                <div class="editor-box" id="box-quechua">
+                    <label>Quechua:</label>
+                    <textarea id="text-quechua" placeholder="Qillqay kaypi..."></textarea>
+                </div>
+                <div class="editor-box" id="box-castellano">
+                    <label>Castellano:</label>
+                    <textarea id="text-castellano" placeholder="Escriba aquí..."></textarea>
+                </div>
+            </div>
+
+            <!-- 4. FILA DE BOTONES DE ACCIÓN (ABAJO) -->
+            <div class="action-bar">
+                <button class="btn btn-success" onclick="saveJSON()"><i class="fa-solid fa-floppy-disk"></i> Guardar (.json)</button>
+                <button class="btn btn-warning" onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-folder-open"></i> Abrir (.json)</button>
+                <input type="file" id="file-input" class="hidden" accept=".json" onchange="loadJSON(event)">
+                <button class="btn" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i> Descargar (PDF)</button>
+            </div>
+
+            <!-- FIRMA AUTOR -->
+            <div class="author">Yachachiq: M.Sc. Bladimir Arias Mejia</div>
+        </div>
+
+    </div>
+
+    <!-- VENTANA EMERGENTE (MODAL) -->
+    <div id="data-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h3 id="modal-title">Título</h3>
+            <div id="search-container" class="search-box hidden">
+                <input type="text" id="modal-search" placeholder="Buscar palabra (Quechua o Español)..." onkeyup="filterModalData()">
+            </div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- BASE DE DATOS ADJUNTA ---
+        const database = {
+            verbos: [
+    { q: "akay", e: "defecar" },
+    { q: "akllay", e: "escoger" },
+    { q: "aklluy", e: "tartamudear" },
+    { q: "allay", e: "cavar" },
+    { q: "amiy", e: "Empalagar,hastiar" },
+    { q: "apay", e: "llevar" },
+    { q: "aquy", e: "Recoger arena" },
+    { q: "aqhay", e: "elaborar chicha" },
+    { q: "arawiy", e: "componer versos" },
+    { q: "armay", e: "bañar" },
+    { q: "arqhiy", e: "respirar con dificultad" },
+    { q: "asiy", e: "reir" },
+    { q: "asnay", e: "heder, despedir mal olor" },
+    { q: "astay", e: "transportar" },
+    { q: "atiy", e: "poder" },
+    { q: "away", e: "tejer" },
+    { q: "awqay", e: "guerrear" },
+    { q: "ayñay", e: "ladrar" },
+    { q: "ayqiy", e: "huir" },
+    { q: "aysay", e: "jalar" },
+    { q: "aytiy", e: "enjuagar" },
+    { q: "aywiy", e: "pulupar" },
+    { q: "chakay", e: "cruzar" },
+    { q: "challpuy", e: "humedecer" },
+    { q: "chaqmay", e: "recolectar productos no recogidos" },
+    { q: "chaqnay", e: "cargar" },
+    { q: "chaqruy", e: "mezclar" },
+    { q: "chayay", e: "llegar" },
+    { q: "chimpay", e: "acercarse" },
+    { q: "chinkay", e: "perderse" },
+    { q: "chiqniy", e: "odiar" },
+    { q: "chiriy", e: "hacer frio" },
+    { q: "chukuy", e: "acuclillarse" },
+    { q: "chulluy", e: "remojar" },
+    { q: "chuqay", e: "arrojar piedras" },
+    { q: "churay", e: "poner" },
+    { q: "ch'allay", e: "brindar" },
+    { q: "ch'allpay", e: "salpicar" },
+    { q: "ch'anqay", e: "arrojar" },
+    { q: "ch'aqchuy", e: "rociar" },
+    { q: "ch'aqway", e: "hacer bulla" },
+    { q: "ch'arkiy", e: "hacer tasajo" },
+    { q: "ch'atay", e: "cerrar con candado" },
+    { q: "ch'away", e: "ordeñar" },
+    { q: "ch'ipay", e: "embalar" },
+    { q: "ch'iqtay", e: "rajar leña" },
+    { q: "ch'irmiy", e: "parpadear" },
+    { q: "ch'irway", e: "escurrir la ropa" },
+    { q: "ch'umay", e: "esprimir" },
+    { q: "ch'unqay", e: "chupar" },
+    { q: "ch'uskiy", e: "desollar" },
+    { q: "ch'utiy", e: "hacer carambola" },
+    { q: "chhapuy", e: "mezclar agua con harina" },
+    { q: "chhasay", e: "peer" },
+    { q: "chhukuy", e: "acunar" },
+    { q: "chhuruy", e: "picotear" },
+    { q: "chhusuy", e: "desinflarse" },
+    { q: "chhutuy", e: "picotear" },
+    { q: "ichhuy", e: "segar" },
+    { q: "illay", e: "brillar" },
+    { q: "inqhay", e: "atizar" },
+    { q: "iñiy", e: "creer, tener fé" },
+    { q: "ismuy", e: "podrirse" },
+    { q: "jak'uy", e: "moler harina" },
+    { q: "jallmay", e: "aporcar" },
+    { q: "jampiy", e: "curar" },
+    { q: "jamuy", e: "venir" },
+    { q: "jank'ay", e: "tostar maiz" },
+    { q: "janllay", e: "abrir la boca" },
+    { q: "jap'ay", e: "erupto" },
+    { q: "jap'iy", e: "agarrar" },
+    { q: "jark'ay", e: "atajar" },
+    { q: "jasp'iy", e: "arañar" },
+    { q: "jatariy", e: "levantarse" },
+    { q: "jawiy", e: "untar" },
+    { q: "jayt'ay", e: "patear" },
+    { q: "jayway", e: "alcanzar" },
+    { q: "jich'ay", e: "derramar, verter" },
+    { q: "jillpuy", e: "sangrar" },
+    { q: "jisp'ay", e: "orinar" },
+    { q: "jumpiy", e: "sudar" },
+    { q: "junt'ay", e: "llenar, cumplir una obligación" },
+    { q: "juqhariy", e: "levantar" },
+    { q: "jurqhuy", e: "sacar afuera" },
+    { q: "jutku'y", e: "agujerear" },
+    { q: "kachay", e: "enviar" },
+    { q: "kallchay", e: "segar" },
+    { q: "kallpay", e: "hacer fuerza" },
+    { q: "kanay", e: "hacer fogata" },
+    { q: "kankay", e: "asar" },
+    { q: "kawsay", e: "vivir" },
+    { q: "kaynay", e: "descansar" },
+    { q: "kichay", e: "abrir" },
+    { q: "killay", e: "alumbrar la luna" },
+    { q: "kuntuy", e: "perfumar" },
+    { q: "kutay", e: "moler" },
+    { q: "kutiy", e: "volver" },
+    { q: "kuyuy", e: "moverse" },
+    { q: "k'ajay", e: "hacer calor" },
+    { q: "k'amiy", e: "Reprender" },
+    { q: "k'anchay", e: "alumbrar" },
+    { q: "k'antiy", e: "torcer en rueca hilo de dos o mas ramales" },
+    { q: "k'aray", e: "doler fuerte" },
+    { q: "k'arkuy", e: "avinagrarse" },
+    { q: "k'askay", e: "adherir" },
+    { q: "k'illpiy", e: "marcar el ganado" },
+    { q: "k'iriy", e: "herir" },
+    { q: "k'iruy", e: "fajar" },
+    { q: "k'ichkiy", e: "apretujar" },
+    { q: "k'isñiy", e: "encajar" },
+    { q: "k'umpuy", e: "tapar" },
+    { q: "k'utuy", e: "cortar" },
+    { q: "khakay", e: "encajar" },
+    { q: "khallay", e: "abrir brecha" },
+    { q: "khamuy", e: "masticar" },
+    { q: "khaniy", e: "morder" },
+    { q: "khapay", e: "dar zancadas" },
+    { q: "khituy", e: "frotar" },
+    { q: "khiwiy", e: "envolver" },
+    { q: "khuchuy", e: "cortar" },
+    { q: "khuskiy", e: "examinar" },
+    { q: "khuyay", e: "compadecer, amar" },
+    { q: "khuyuy", e: "silvar" },
+    { q: "laqray", e: "rajarse" },
+    { q: "lat'ay", e: "caminar de 4 pies" },
+    { q: "lawray", e: "arder" },
+    { q: "llakiy", e: "entristecerse" },
+    { q: "llamiy", e: "probar" },
+    { q: "llamk'ay", e: "trabajar" },
+    { q: "llamt'ay", e: "rajar leña" },
+    { q: "llamkhay", e: "palpar" },
+    { q: "llaqhiy", e: "deshojar" },
+    { q: "llaqllay", e: "labrar la madera" },
+    { q: "llaqway", e: "lamer" },
+    { q: "llawsay", e: "babear" },
+    { q: "llik'iy", e: "desgarrar" },
+    { q: "llimp'iy", e: "pintar" },
+    { q: "lliqhuy", e: "mirar de soslayo" },
+    { q: "lluchk'ay", e: "resbalarse" },
+    { q: "lluch'uy", e: "despelar" },
+    { q: "lluk'iy", e: "traer debajo del brazo" },
+    { q: "llump'ay", e: "limpiar" },
+    { q: "llumk'iy", e: "pulir, lustrar" },
+    { q: "llunk'uy", e: "adular" },
+    { q: "lluq'ay", e: "trepar" },
+    { q: "lluqchiy", e: "palpar" },
+    { q: "lluqsiy", e: "salir afuera" },
+    { q: "llut'ay", e: "embadunar" },
+    { q: "machay", e: "emborracharse" },
+    { q: "mach'ay", e: "adherir" },
+    { q: "malliy", e: "degustar, catar" },
+    { q: "mallkiy", e: "plantar" },
+    { q: "manchay", e: "tener miedo" },
+    { q: "manuy", e: "fiar" },
+    { q: "mañay", e: "prestar" },
+    { q: "maqay", e: "pegar" },
+    { q: "maqch'iy", e: "enjuagar" },
+    { q: "marq'ay", e: "llevar en brazos" },
+    { q: "mask'ay", e: "buscar" },
+    { q: "mast'ay", e: "tender, extender" },
+    { q: "mat'iy", e: "apretar" },
+    { q: "mayllay", e: "lavar" },
+    { q: "mayt'uy", e: "envolver" },
+    { q: "michiy", e: "pastar el ganado" },
+    { q: "mikhuy", e: "comer" },
+    { q: "millpuy", e: "tragar" },
+    { q: "miray", e: "aumentar" },
+    { q: "misk'ay", e: "tropezar" },
+    { q: "mismiy", e: "filtrar" },
+    { q: "much'ay", e: "besar" },
+    { q: "muchuy", e: "sufrir" },
+    { q: "munay", e: "querer" },
+    { q: "muskhiy", e: "oler" },
+    { q: "musphay", e: "estar en error" },
+    { q: "musquy", e: "soñar" },
+    { q: "musyay", e: "sentir" },
+    { q: "muyuy", e: "dar vueltas" },
+    { q: "nanay", e: "doler" },
+    { q: "napay", e: "saludar" },
+    { q: "ñak'ay", e: "degollar" },
+    { q: "ñaqch'ay", e: "peinar" },
+    { q: "ñat'uy", e: "aplastar" },
+    { q: "ñit'iy", e: "apretar" },
+    { q: "ñiy", e: "decir" },
+    { q: "ñukñay", e: "engañar" },
+    { q: "ñuñuy", e: "lactar" },
+    { q: "ñut'uy", e: "machacar" },
+    { q: "pakay", e: "esconder" },
+    { q: "pallay", e: "recoger del suelo" },
+    { q: "pantay", e: "equivocarse" },
+    { q: "paray", e: "llover" },
+    { q: "pichay", e: "barrer" },
+    { q: "pikchuy", e: "masticar coca" },
+    { q: "piqtuy", e: "mezclar" },
+    { q: "pirqay", e: "construir paredes" },
+    { q: "pirway", e: "construir depósitos" },
+    { q: "pituy", e: "comer el maiz tostado y pulverizado" },
+    { q: "puchuy", e: "sobrar" },
+    { q: "pukllay", e: "jugar" },
+    { q: "punkiy", e: "hinchar" },
+    { q: "puñuy", e: "dormir" },
+    { q: "puquy", e: "madurar" },
+    { q: "puriy", e: "caminar" },
+    { q: "pusay", e: "conducir" },
+    { q: "p'akiy", e: "romper en pedazos" },
+    { q: "p'ampay", e: "enterrar" },
+    { q: "p'aspay", e: "secarse u agrietarse la piel" },
+    { q: "p'atay", e: "morder" },
+    { q: "p'inqay", e: "avergonzado" },
+    { q: "p'itay", e: "tejer" },
+    { q: "p'itiy", e: "arrancar" },
+    { q: "p'utuy", e: "germinar" },
+    { q: "phaskay", e: "soltar" },
+    { q: "phanchiy", e: "echar brotes" },
+    { q: "phaqchay", e: "caer el agua en cascada" },
+    { q: "pharpay", e: "batir las alas" },
+    { q: "phatay", e: "reventar" },
+    { q: "phaway", e: "volar" },
+    { q: "phinkiy", e: "saltar sobre un pie" },
+    { q: "phiriy", e: "preparar el phiri" },
+    { q: "phuchkay", e: "hilar" },
+    { q: "phukuy", e: "soplar" },
+    { q: "phullpuy", e: "hervir" },
+    { q: "phurmuy", e: "rebosar" },
+    { q: "phutiy", e: "estar triste" },
+    { q: "phuyuy", e: "anublarse" },
+    { q: "qallariy", e: "comenzar" },
+    { q: "qaray", e: "alimentar" },
+    { q: "qasay", e: "helar" },
+    { q: "qawiy", e: "asolear la oca" },
+    { q: "qayllay", e: "acercarse" },
+    { q: "qaywiy", e: "agitar, mover un líquido" },
+    { q: "qillqay", e: "escribir" },
+    { q: "qunqay", e: "olvidar" },
+    { q: "qurmay", e: "rodar" },
+    { q: "qutuy", e: "apilar, amontonar" },
+    { q: "quy", e: "dar" },
+    { q: "q'apay", e: "heder" },
+    { q: "q'apiy", e: "apretar la mano" },
+    { q: "q'aqchay", e: "dar de latigazos" },
+    { q: "q'asay", e: "desportillar" },
+    { q: "q'ichay", e: "evacuar diarrea" },
+    { q: "q'imiy", e: "apoyar" },
+    { q: "q'impiy", e: "enrollar" },
+    { q: "q'ipiy", e: "cargar" },
+    { q: "q'usniy", e: "humear" },
+    { q: "qhachqay", e: "roer" },
+    { q: "qhalliy", e: "echar un líquido" },
+    { q: "qhapariy", e: "gritar" },
+    { q: "qhaquy", e: "frotar" },
+    { q: "qharquy", e: "desterrar" },
+    { q: "qhatay", e: "cubrir" },
+    { q: "qhatiy", e: "seguir" },
+    { q: "qhatuy", e: "vender" },
+    { q: "qhaway", e: "ver" },
+    { q: "qhichuy", e: "quitar" },
+    { q: "qhipay", e: "quedarse" },
+    { q: "qhispiy", e: "salvarse" },
+    { q: "qhuray", e: "desherbar" },
+    { q: "qhurquy", e: "roncar" },
+    { q: "qhutuy", e: "sorber los mocos" },
+    { q: "rak'iy", e: "dividir" },
+    { q: "rantiy", e: "comprar" },
+    { q: "rikch'ariy", e: "despertar" },
+    { q: "rikuy", e: "ver" },
+    { q: "rimay", e: "hablar" },
+    { q: "riqsiy", e: "conocer" },
+    { q: "rit'iy", e: "nevar" },
+    { q: "riy", e: "ir" },
+    { q: "ruthuy", e: "cortar cabellos" },
+    { q: "ruway", e: "hacer" },
+    { q: "samay", e: "respirar, descansar" },
+    { q: "saqiy", e: "dejar" },
+    { q: "saqmay", e: "pegar con los puños" },
+    { q: "saqsay", e: "hartarse" },
+    { q: "saruy", e: "pisar" },
+    { q: "sat'iy", e: "abarrotar" },
+    { q: "saway", e: "enlazar, casar" },
+    { q: "sayay", e: "ponerse de pie" },
+    { q: "sayk'uy", e: "cansarse" },
+    { q: "sik'iy", e: "arrancar" },
+    { q: "silluy", e: "arañar" },
+    { q: "simp'ay", e: "trenzar" },
+    { q: "sinruy", e: "enfilar" },
+    { q: "sipiy", e: "asfixiar" },
+    { q: "sip'uy", e: "fruncir" },
+    { q: "siq'iy", e: "dibujar" },
+    { q: "siqsiy", e: "escocer" },
+    { q: "siray", e: "coser" },
+    { q: "siriy", e: "recostarse" },
+    { q: "suchuy", e: "recorrer" },
+    { q: "sunt'iy", e: "revolcarse" },
+    { q: "supiy", e: "peer" },
+    { q: "suruy", e: "chorrear" },
+    { q: "sut'uy", e: "gotear" },
+    { q: "suway", e: "robar" },
+    { q: "suyay", e: "esperar" },
+    { q: "suysuy", e: "cernir" },
+    { q: "takay", e: "golpear" },
+    { q: "takiy", e: "cantar" },
+    { q: "tanqay", e: "empujar" },
+    { q: "tapuy", e: "preguntar" },
+    { q: "tariy", e: "encontrar" },
+    { q: "tarpuy", e: "sembrar" },
+    { q: "tawqay", e: "amontonar" },
+    { q: "tikay", e: "hacer adobes" },
+    { q: "tikray", e: "colocar al revés" },
+    { q: "tinkuy", e: "encontrarse" },
+    { q: "tipiy", e: "cosechar maiz" },
+    { q: "tiyay", e: "sentarse" },
+    { q: "tukuy", e: "terminar" },
+    { q: "tunkiy", e: "dudar" },
+    { q: "tumpay", e: "acusar" },
+    { q: "tupuy", e: "medir, pesar" },
+    { q: "tuqtuy", e: "cloquear" },
+    { q: "tusuy", e: "bailar" },
+    { q: "tuytuy", e: "flotar" },
+    { q: "t'akay", e: "derramar" },
+    { q: "t'aqay", e: "separar" },
+    { q: "t'aqllay", e: "palmear" },
+    { q: "t'aqsay", e: "lavar" },
+    { q: "t'ikay", e: "florecer" },
+    { q: "t'impuy", e: "hervir" },
+    { q: "t'inkiy", e: "unir, aparear" },
+    { q: "t'ipay", e: "prender con el prendedor" },
+    { q: "t'ipiy", e: "arrancar (hilo)" },
+    { q: "t'iqiy", e: "embutir" },
+    { q: "t'iray", e: "arrancar" },
+    { q: "t'iqway", e: "descascarar" },
+    { q: "t'uqpiy", e: "hurgar, remover el fuego" },
+    { q: "t'uqsiy", e: "pinchar" },
+    { q: "t'uqyay", e: "reventar" },
+    { q: "thamay", e: "caminar sin rumbo" },
+    { q: "thantay", e: "envejecer, raer la ropa usándola" },
+    { q: "thañiy", e: "cesar amainar" },
+    { q: "thasnuy", e: "apagar" },
+    { q: "thatay", e: "beber en demasía" },
+    { q: "thatkiy", e: "andar" },
+    { q: "thawtiy", e: "disparatar" },
+    { q: "thunkuy", e: "saltar en un pie" },
+    { q: "thuñiy", e: "derribar" },
+    { q: "thuqay", e: "escupir" },
+    { q: "thutay", e: "apolillarse" },
+    { q: "unquy", e: "enfermarse" },
+    { q: "upyay", e: "beber" },
+    { q: "upiy", e: "beber a sorbos" },
+    { q: "uqllay", e: "empollar, calentar con el cuerpo" },
+    { q: "urmay", e: "caerse" },
+    { q: "usuy", e: "desperdiciarse" },
+    { q: "utqhay", e: "apresurarse" },
+    { q: "uyway", e: "criar" },
+    { q: "wachay", e: "parir" },
+    { q: "wach'iy", e: "picar los insectos" },
+    { q: "wamp'uy", e: "navegar" },
+    { q: "wanay", e: "escarmentar" },
+    { q: "wantuy", e: "conducir en litera" },
+    { q: "wanuy", e: "abonar" },
+    { q: "wañuy", e: "morir" },
+    { q: "waqay", e: "llorar" },
+    { q: "waqtay", e: "golpear" },
+    { q: "waqyay", e: "llamar" },
+    { q: "warkhuy", e: "colgar" },
+    { q: "watay", e: "amarrar" },
+    { q: "watuy", e: "adivinar" },
+    { q: "wayk'uy", e: "cocinar" },
+    { q: "waylluy", e: "amar, acariciar" },
+    { q: "wayt'ay", e: "nadar" },
+    { q: "wichq'ay", e: "cerrar" },
+    { q: "wikch'uy", e: "echar lejos" },
+    { q: "willay", e: "avisar" },
+    { q: "winay", e: "llenar" },
+    { q: "wiñay", e: "crecer" },
+    { q: "wisiy", e: "sacar agua con un jarro" },
+    { q: "yachay", e: "saber" },
+    { q: "yapay", e: "añadir" },
+    { q: "yarqay", e: "tener hambre" },
+    { q: "yaykuy", e: "entrar" },
+    { q: "yupay", e: "contar" },
+    { q: "yuyay", e: "pensar, recordar" },
+    { q: "kay", e: "ser" },
+    { q: "ñawiriy", e: "leer" },
+    { q: "kutichiy", e: "responder" },
+    { q: "Yachachiy", e: "enseñar" },
+    { q: "yachakuy", e: "aprender" }
+],
+            sustantivos: [
+    { q: "misi", e: "🐈 gato" }, 
+    { q: "warmi", e: "👩 mujer" }, 
+    { q: "allqu", e: "🐶 perro" }, 
+    { q: "runtu", e: "🥚 huevo" }, 
+    { q: "sik'imira", e: "🐜 hormiga" }, 
+    { q: "atuq", e: "🦊 zorro" }, 
+    { q: "wallpa", e: "🐔 gallina" }, 
+    { q: "chaki", e: "🦶 pie" }, 
+    { q: "maki", e: "✋ mano" }, 
+    { q: "katari", e: "🐍 serpiente" }, 
+    { q: "lachiwana", e: "🐝 abeja" }, 
+    { q: "punku", e: "🚪 puerta" }, 
+    { q: "manka", e: "🍲 olla" }, 
+    { q: "inti", e: "☀️ sol" }, 
+    { q: "killa", e: "🌕 luna" }, 
+    { q: "qhari", e: "👨 hombre" }, 
+    { q: "ñawi", e: "👀 ojo" }, 
+    { q: "ninri", e: "👂 oreja" }, 
+    { q: "sinqa", e: "nose nariz" }, 
+    { q: "kiru", e: "🦷 diente" }, 
+    { q: "t'anta", e: "🍞 pan" }, 
+    { q: "wawa", e: "👶 bebé" }, 
+    { q: "papa", e: "🥔 patata" }, 
+    { q: "juk'ucha", e: "🐭 ratón" }, 
+    { q: "khuchi", e: "🐖 cerdo" }, 
+    { q: "yuthu", e: "perdiz" }, 
+    { q: "chillwi", e: "🐤 pollito" }, 
+    { q: "jamp'atu", e: "sapo" }, 
+    { q: "chawlla", e: "🐟 pez" }, 
+    { q: "waka", e: "🐄 vaca" }, 
+    { q: "uwija", e: "🐑 oveja" }, 
+    { q: "pili", e: "🦆 pato" }, 
+    { q: "llama", e: "🦙 llama" }, 
+    { q: "kuntur", e: "🦅 cóndor" }, 
+    { q: "jukumari", e: "🐻 oso" }, 
+    { q: "charapa", e: "🐢 tortuga" }, 
+    { q: "k'usillu", e: "🐒 mono" }, 
+    { q: "kirkinchu", e: "erizo" }, 
+    { q: "p'isqu", e: "🐦 pájaro" }, 
+    { q: "urpi", e: "🕊️ paloma" }, 
+    { q: "ararankha", e: "lagartija" }, 
+    { q: "ch'uspi", e: "mosca" }, 
+    { q: "wayruru", e: "🕸️ araña" }, 
+    { q: "piki", e: "🦠 pulga" }, 
+    { q: "ñuqtu", e: "cerebro" }, 
+    { q: "tullu", e: "hueso" }, 
+    { q: "angula", e: "🐰 conejo" }, 
+    { q: "khuru", e: "gusano" }, 
+    { q: "ch'uru", e: "🐌 caracol" }, 
+    { q: "kawallu", e: "🐴 caballo" }, 
+    { q: "karwa", e: "🐐 cabra" }, 
+    { q: "sach'a", e: "🌳 árbol" }, 
+    { q: "mansana", e: "🍎 manzana" }, 
+    { q: "platanu", e: "🍌 plátano" }, 
+    { q: "awaranku", e: "🍍 piña" }, 
+    { q: "sara", e: "🌽 maíz" }, 
+    { q: "sanawrya", e: "🥕 zanahoria" }, 
+    { q: "kumputarura", e: "💻 portátil" }, 
+    { q: "inti watana", e: "⌚ reloj" }, 
+    { q: "tiyana", e: "🪑 silla" }, 
+    { q: "puñuna", e: "🛏️ cama" }, 
+    { q: "awtu", e: "🚗 coche" }, 
+    { q: "abiyon", e: "✈️ avión" }, 
+    { q: "wiksilita", e: "🚲 bicicleta" }, 
+    { q: "phuyu", e: "☁️ nube" }, 
+    { q: "ch'aska", e: "🌟 estrella" }, 
+    { q: "wasi", e: "🏠 casa" }, 
+    { q: "iglisia", e: "⛪ iglesia" }, 
+    { q: "tata", e: "👨‍👧 padre" }, 
+    { q: "mama", e: "👩‍👧‍👦 mama" }, 
+    { q: "pachi", e: "🙏 gracias" }, 
+    { q: "tinkunakama", e: "hasta luego" }, 
+    { q: "imilla", e: "chica" }, 
+    { q: "lluqalla", e: "chico" }, 
+    { q: "ch'iti", e: "chanco" }, 
+    { q: "sipas", e: "jovencita" }, 
+    { q: "wayna", e: "joven" }, 
+    { q: "jampiq", e: "👩‍⚕️ enfermera" }, 
+    { q: "yachachiq", e: "👨‍🏫 profesor" }, 
+    { q: "yachakuq", e: "🧑‍🎓 estudiante" } , 
+    { q: "runa", e: "👨‍👧 persona" }
+                
+],
+            sufijos_nom: [
+                { q: "-man", e: "A / Hacia" },
+                { q: "-wan", e: "Con" },
+                { q: "-paq", e: "Para" },
+                { q: "-pi", e: "En / Sobre" },
+                { q: "-jina", e: "Como / Parecido a" },
+                { q: "-rayku", e: "Por / A causa de" },
+                { q: "-manta", e: "De / Desde" },
+                { q: "-kama", e: "Hasta" }
+            ],
+            sufijos_pos: [
+                { p: "Ñuqa", s: "-y" },
+                { p: "Qam", s: "-yki" },
+                { p: "Pay", s: "-n" },
+                { p: "Ñuqanchik", s: "-nchik" },
+                { p: "Ñuqayku", s: "-yku" },
+                { p: "Qamkuna", s: "-ykichik" },
+                { p: "Paykuna", s: "-nku" }
+            ],
+            pronombres_pers: [
+                { q: "Ñuqa", e: "Yo" },
+                { q: "Qam", e: "Tú" },
+                { q: "Pay", e: "Él / Ella" },
+                { q: "Ñuqanchik", e: "Nosotros (Inclusivo)" },
+                { q: "Ñuqayku", e: "Nosotros (Exclusivo)" },
+                { q: "Qamkuna", e: "Ustedes" },
+                { q: "Paykuna", e: "Ellos / Ellas" }
+            ],
+            pronombres_interr: [
+                { q: "Ima", e: "Qué" },
+                { q: "Pi", e: "Quién" },
+                { q: "May", e: "Dónde" },
+                { q: "Mayqin", e: "Cuál" },
+                { q: "Mayk'aq  / Jayk'aq", e: "Cuándo" },
+                { q: "Machkha", e: "Cuánto / Cuántos" },
+                { q: "Imayna", e: "Cómo" }
+            ],
+            sufijos_pres: {
+                simple: [
+                    { p: "Primera persona singular", s: "-ni" },
+                    { p: "Segunda persona singular", s: "-nki" },
+                    { p: "Tercera persona singular", s: "-n" },
+                    { p: "Primera persona plural (inclusivo)", s: "-nchik" },
+                    { p: "Primera persona plural (exclusivo)", s: "-yku" },
+                    { p: "Segunda persona plural", s: "-nkichik" },
+                    { p: "Tercera persona plural", s: "-nku" }
+                ],
+                continuo: [
+                    { p: "Ñuqa", s1: "-ni", s2: "-chka-ni" },
+                    { p: "Qam", s1: "-nki", s2: "-chka-nki" },
+                    { p: "Pay", s1: "-n", s2: "-chka-n" },
+                    { p: "Ñuqanchik", s1: "-nchik", s2: "-chka-nchik" },
+                    { p: "Ñuqayku", s1: "-yku", s2: "-chka-yku" },
+                    { p: "Qamkuna", s1: "-nkichik", s2: "-chka-nkichik" },
+                    { p: "Paykuna", s1: "-nku", s2: "-chka-nku" }
+                ]
+            },
+            sufijos_pas: {
+                perfecto: [
+                    { p: "Ñuqa", s1: "-ni", s2: "-rqa-ni" },
+                    { p: "Qam", s1: "-nki", s2: "-rqa-nki" },
+                    { p: "Pay", s1: "-n", s2: "-rqa" },
+                    { p: "Ñuqanchik", s1: "-nchik", s2: "-rqa-nchik" },
+                    { p: "Ñuqayku", s1: "-yku", s2: "-rqa-yku" },
+                    { p: "Qamkuna", s1: "-nkichik", s2: "-rqa-nkichik" },
+                    { p: "Paykuna", s1: "-nku", s2: "-rqa-nku" }
+                ],
+                imperfecto: [
+                    { p: "Ñuqa", s1: "-ni", s2: "-sqa-ni" },
+                    { p: "Qam", s1: "-nki", s2: "-sqa-nki" },
+                    { p: "Pay", s1: "-n", s2: "-sqa" },
+                    { p: "Ñuqanchik", s1: "-nchik", s2: "-sqa-nchik" },
+                    { p: "Ñuqayku", s1: "-yku", s2: "-sqa-yku" },
+                    { p: "Qamkuna", s1: "-nkichik", s2: "-sqa-nkichik" },
+                    { p: "Paykuna", s1: "-nku", s2: "-sqa-nku" }
+                ]
+            },
+            sufijos_fut: {
+                simple: [
+                    { p: "Primera persona singular", s: "saq" },
+                    { p: "Segunda persona singular", s: "nki" },
+                    { p: "Tercera persona singular", s: "nqa" },
+                    { p: "Primera persona plural (inclusivo)", s: "sunchik o sun" },
+                    { p: "Primera persona plural (exclusivo)", s: "sayku o sayqu" },
+                    { p: "Segunda persona plural", s: "nkichik" },
+                    { p: "Tercera persona plural", s: "nqanku" }
+                ],
+                continuo: [
+                    { p: "Ñuqa", s1: "saq", s2: "-chka-saq" },
+                    { p: "Qam", s1: "nki", s2: "-chka-nki" },
+                    { p: "Pay", s1: "nqa", s2: "-chka-nqa" },
+                    { p: "Ñuqanchik", s1: "sunchik", s2: "-chka-sunchik o -chka-sun" },
+                    { p: "Ñuqayku", s1: "sayku", s2: "-chka-sayku" },
+                    { p: "Qamkuna", s1: "nkichik", s2: "-chka-nkichik" },
+                    { p: "Paykuna", s1: "nqanku", s2: "-chka-nqanku" }
+                ]
+            }
+        };
+
+        let currentModalCategory = "";
+        let userLat = null;
+        let userLon = null;
+
+        // --- INICIALIZACIÓN ---
+        function startApp() {
+            let participant = document.getElementById('participant-input').value.trim();
+            if (!participant) {
+                participant = "No especificado";
+            }
+            document.getElementById('disp-participant').innerText = participant;
+
+            const now = new Date();
+            document.getElementById('disp-datetime').innerText = now.toLocaleString('es-ES');
+
+            // Obtener Ubicación GPS
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        userLat = pos.coords.latitude.toFixed(5);
+                        userLon = pos.coords.longitude.toFixed(5);
+                        document.getElementById('disp-coords').innerText = `Lat: ${userLat}, Lon: ${userLon}`;
+                        document.getElementById('btn-google-maps').classList.remove('hidden');
+                    },
+                    err => {
+                        document.getElementById('disp-coords').innerText = "No disponible";
+                    }
+                );
+            } else {
+                document.getElementById('disp-coords').innerText = "No soportada";
+            }
+
+            const txtQ = document.getElementById('text-quechua');
+            txtQ.style.backgroundColor = document.getElementById('bg-quechua').value;
+            txtQ.style.color = document.getElementById('color-quechua').value;
+            txtQ.style.fontFamily = document.getElementById('font-quechua').value;
+            txtQ.style.fontSize = document.getElementById('size-quechua').value + "px";
+
+            const txtC = document.getElementById('text-castellano');
+            txtC.style.backgroundColor = document.getElementById('bg-castellano').value;
+            txtC.style.color = document.getElementById('color-castellano').value;
+            txtC.style.fontFamily = document.getElementById('font-castellano').value;
+            txtC.style.fontSize = document.getElementById('size-castellano').value + "px";
+
+            document.getElementById('init-view').classList.add('hidden');
+            document.getElementById('app-view').classList.remove('hidden');
+        }
+
+        // --- ABRIR MAPA EN GOOGLE MAPS ---
+        function openGoogleMaps() {
+            if (userLat && userLon) {
+                const mapUrl = `https://www.google.com/maps?q=${userLat},${userLon}`;
+                window.open(mapUrl, '_blank');
+            } else {
+                alert("No se tienen coordenadas disponibles para mostrar el mapa.");
+            }
+        }
+
+        // --- CONTROL DE VISTAS ---
+        function setView(mode) {
+            const boxQ = document.getElementById('box-quechua');
+            const boxC = document.getElementById('box-castellano');
+
+            if (mode === 'both') {
+                boxQ.classList.remove('hidden');
+                boxC.classList.remove('hidden');
+            } else if (mode === 'quechua') {
+                boxQ.classList.remove('hidden');
+                boxC.classList.add('hidden');
+            } else if (mode === 'castellano') {
+                boxQ.classList.add('hidden');
+                boxC.classList.remove('hidden');
+            }
+        }
+
+        // --- VENTANA EMERGENTE (MODAL) Y BUSCADOR ---
+        function openModal(category) {
+            currentModalCategory = category;
+            const modal = document.getElementById('data-modal');
+            const title = document.getElementById('modal-title');
+            const searchContainer = document.getElementById('search-container');
+            const searchInput = document.getElementById('modal-search');
+
+            searchInput.value = "";
+            modal.classList.remove('hidden');
+
+            if (category === 'verbos' || category === 'sustantivos') {
+                searchContainer.classList.remove('hidden');
+            } else {
+                searchContainer.classList.add('hidden');
+            }
+
+            let categoryNames = {
+                verbos: "Verbos",
+                sustantivos: "Sustantivos",
+                sufijos_nom: "Sufijos Nominales",
+                sufijos_pos: "Sufijos Posesivos",
+                pronombres_pers: "Pronombres Personales",
+                pronombres_interr: "Pronombres Interrogativos",
+                sufijos_pres: "Sufijos del Presente",
+                sufijos_pas: "Sufijos del Pasado",
+                sufijos_fut: "Sufijos del Futuro"
+            };
+
+            title.innerText = categoryNames[category] || "Información";
+            renderModalData(category, "");
+        }
+
+        function closeModal() {
+            document.getElementById('data-modal').classList.add('hidden');
+        }
+
+        function filterModalData() {
+            const query = document.getElementById('modal-search').value.toLowerCase();
+            renderModalData(currentModalCategory, query);
+        }
+
+        function renderModalData(category, filter) {
+            const body = document.getElementById('modal-body');
+            let html = "";
+
+            if (category === 'verbos' || category === 'sustantivos' || category === 'sufijos_nom' || category === 'pronombres_pers' || category === 'pronombres_interr') {
+                let data = database[category];
+                if (filter) {
+                    data = data.filter(item => item.q.toLowerCase().includes(filter) || item.e.toLowerCase().includes(filter));
+                }
+                html = `<table class="data-table"><thead><tr><th>Quechua</th><th>Español</th></tr></thead><tbody>`;
+                data.forEach(item => {
+                    html += `<tr><td>${item.q}</td><td>${item.e}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+            } else if (category === 'sufijos_pos') {
+                html = `<table class="data-table"><thead><tr><th>Pronombre</th><th>Sufijo</th></tr></thead><tbody>`;
+                database.sufijos_pos.forEach(item => {
+                    html += `<tr><td>${item.p}</td><td>${item.s}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+            } else if (category === 'sufijos_pres') {
+                html += `<h4>Presente Simple</h4><table class="data-table"><thead><tr><th>Persona</th><th>Sufijo</th></tr></thead><tbody>`;
+                database.sufijos_pres.simple.forEach(i => html += `<tr><td>${i.p}</td><td>${i.s}</td></tr>`);
+                html += `</tbody></table><br><h4>Presente Continuo</h4><table class="data-table"><thead><tr><th>Persona</th><th>Simple</th><th>Continuo</th></tr></thead><tbody>`;
+                database.sufijos_pres.continuo.forEach(i => html += `<tr><td>${i.p}</td><td>${i.s1}</td><td>${i.s2}</td></tr>`);
+                html += `</tbody></table>`;
+            } else if (category === 'sufijos_pas') {
+                html += `<h4>Pretérito Perfecto</h4><table class="data-table"><thead><tr><th>Persona</th><th>Simple</th><th>Perfecto</th></tr></thead><tbody>`;
+                database.sufijos_pas.perfecto.forEach(i => html += `<tr><td>${i.p}</td><td>${i.s1}</td><td>${i.s2}</td></tr>`);
+                html += `</tbody></table><br><h4>Pretérito Imperfecto</h4><table class="data-table"><thead><tr><th>Persona</th><th>Simple</th><th>Imperfecto</th></tr></thead><tbody>`;
+                database.sufijos_pas.imperfecto.forEach(i => html += `<tr><td>${i.p}</td><td>${i.s1}</td><td>${i.s2}</td></tr>`);
+                html += `</tbody></table>`;
+            } else if (category === 'sufijos_fut') {
+                html += `<h4>Futuro Simple</h4><table class="data-table"><thead><tr><th>Persona</th><th>Sufijo</th></tr></thead><tbody>`;
+                database.sufijos_fut.simple.forEach(i => html += `<tr><td>${i.p}</td><td>${i.s}</td></tr>`);
+                html += `</tbody></table><br><h4>Futuro Continuo</h4><table class="data-table"><thead><tr><th>Persona</th><th>Simple</th><th>Continuo</th></tr></thead><tbody>`;
+                database.sufijos_fut.continuo.forEach(i => html += `<tr><td>${i.p}</td><td>${i.s1}</td><td>${i.s2}</td></tr>`);
+                html += `</tbody></table>`;
+            }
+
+            body.innerHTML = html;
+        }
+
+        // --- GUARDAR Y ABRIR JSON ---
+        function saveJSON() {
+            const data = {
+                participante: document.getElementById('disp-participant').innerText,
+                fechaHora: document.getElementById('disp-datetime').innerText,
+                ubicacion: document.getElementById('disp-coords').innerText,
+                oracionQuechua: document.getElementById('text-quechua').value,
+                oracionCastellano: document.getElementById('text-castellano').value
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "oracion_quechua.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function loadJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.oracionQuechua !== undefined) document.getElementById('text-quechua').value = data.oracionQuechua;
+                    if (data.oracionCastellano !== undefined) document.getElementById('text-castellano').value = data.oracionCastellano;
+                    if (data.participante) document.getElementById('disp-participant').innerText = data.participante;
+                    alert("Archivo cargado con éxito.");
+                } catch (err) {
+                    alert("Error al leer el archivo JSON.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- EXPORTAR A PDF ---
+        function downloadPDF() {
+            const element = document.createElement('div');
+            element.style.padding = "20px";
+            element.style.fontFamily = "Arial, sans-serif";
+
+            const participant = document.getElementById('disp-participant').innerText;
+            const datetime = document.getElementById('disp-datetime').innerText;
+            const location = document.getElementById('disp-coords').innerText;
+            const quechuaText = document.getElementById('text-quechua').value;
+            const castellanoText = document.getElementById('text-castellano').value;
+
+            let pdfContent = `
+                <h2 style="text-align:center; color:#2c3e50;">CUADERNO VIRTUAL QUECHUA</h2>
+                <hr><br>
+                <div style="background:#f8f9fa; padding:15px; border-radius:6px; margin-bottom:20px;">
+                    <p><strong>Participante:</strong> ${participant}</p>
+                    <p><strong>Fecha y Hora:</strong> ${datetime}</p>
+                    <p><strong>UBICACIÓN:</strong> ${location}</p>
+                </div>
+                <h3>Oración:</h3>
+            `;
+
+            if (quechuaText.trim() !== "") {
+                pdfContent += `<div style="margin-bottom:15px;"><strong>Quechua:</strong><p style="background:#eef2f5; padding:10px; border-radius:5px;">${quechuaText}</p></div>`;
+            }
+
+            if (castellanoText.trim() !== "") {
+                pdfContent += `<div style="margin-bottom:15px;"><strong>Castellano / Español:</strong><p style="background:#eef2f5; padding:10px; border-radius:5px;">${castellanoText}</p></div>`;
+            }
+
+            pdfContent += `<br><hr><p style="text-align:center; font-size:12px; color:#7f8c8d; margin-top:15px;">Yachachiq: M.Sc. Bladimir Arias Mejia</p>`;
+
+            element.innerHTML = pdfContent;
+
+            const opt = {
+                margin:       10,
+                filename:     'cuaderno_quechua.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
+</body>
+</html>

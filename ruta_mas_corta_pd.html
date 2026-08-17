@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruta Más Corta - Programación Dinámica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #818cf8;
+            --accent-success: #34d399;
+            --accent-warning: #fbbf24;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Grid Layout */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.8rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--accent-primary);
+        }
+
+        /* Formula Box */
+        .formula-box {
+            background: rgba(15, 23, 42, 0.6);
+            border-left: 4px solid var(--accent-secondary);
+            padding: 1.2rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        /* SVG Graph Canvas */
+        .graph-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px dashed var(--border-color);
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            max-width: 450px;
+        }
+
+        /* Interactive Controls */
+        .step-nav {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-step {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-step:hover, .btn-step.active {
+            background: var(--accent-primary);
+            color: var(--bg-dark);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Data Tables */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            margin-top: 0.5rem;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--accent-primary);
+            padding: 0.8rem 1rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        tr.highlight-row {
+            background: rgba(56, 189, 248, 0.1);
+            font-weight: 600;
+        }
+
+        .tag-optimal {
+            background: rgba(52, 211, 153, 0.2);
+            color: var(--accent-success);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* Key Metrics Callout */
+        .summary-card {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(129, 140, 248, 0.1));
+            border: 1px solid var(--accent-primary);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-success);
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* SVG Graph Animation Nodes */
+        .node {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .node circle {
+            fill: var(--bg-card);
+            stroke: var(--accent-primary);
+            stroke-width: 3;
+            transition: all 0.3s ease;
+        }
+
+        .node text {
+            fill: var(--text-main);
+            font-weight: bold;
+            font-size: 16px;
+            text-anchor: middle;
+            dominant-baseline: central;
+        }
+
+        .edge {
+            stroke: var(--border-color);
+            stroke-width: 2.5;
+            transition: all 0.3s ease;
+        }
+
+        .edge-weight {
+            fill: var(--accent-warning);
+            font-size: 14px;
+            font-weight: 600;
+            text-anchor: middle;
+        }
+
+        /* Highlight states */
+        .edge.active-path {
+            stroke: var(--accent-success);
+            stroke-width: 4;
+            filter: drop-shadow(0 0 6px var(--accent-success));
+        }
+
+        .node.active-node circle {
+            fill: var(--accent-primary);
+            stroke: #fff;
+            filter: drop-shadow(0 0 10px var(--accent-primary));
+        }
+
+        .node.active-node text {
+            fill: var(--bg-dark);
+        }
+
+        .node.optimal-path circle {
+            fill: var(--accent-success);
+            stroke: #fff;
+            filter: drop-shadow(0 0 10px var(--accent-success));
+        }
+
+        .node.optimal-path text {
+            fill: var(--bg-dark);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="badge"><i class="fa-solid fa-code-branch"></i> Algoritmos de Optimización</span>
+        <h1>Programación Dinámica Retrocedente</h1>
+        <p>Resolución del Problema de la Ruta Más Corta Etapa por Etapa</p>
+    </header>
+
+    <!-- Top Row: Graph + Dynamic Programming Model -->
+    <div class="grid-layout">
+        <!-- Interactive Graph Card -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-network-wired"></i> Red de Transiciones
+            </div>
+            <div class="graph-container">
+                <svg viewBox="0 0 400 240">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+                        </marker>
+                        <marker id="arrow-active" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#34d399"/>
+                        </marker>
+                    </defs>
+
+                    <!-- Edges -->
+                    <!-- A -> B -->
+                    <line id="edge-A-B" class="edge" x1="60" y1="120" x2="170" y2="50" marker-end="url(#arrow)"/>
+                    <text x="105" y="70" class="edge-weight">2</text>
+
+                    <!-- A -> C -->
+                    <line id="edge-A-C" class="edge" x1="60" y1="120" x2="170" y2="190" marker-end="url(#arrow)"/>
+                    <text x="105" y="170" class="edge-weight">5</text>
+
+                    <!-- B -> C -->
+                    <line id="edge-B-C" class="edge" x1="170" y1="50" x2="170" y2="190" marker-end="url(#arrow)"/>
+                    <text x="180" y="120" class="edge-weight">1</text>
+
+                    <!-- B -> D -->
+                    <line id="edge-B-D" class="edge" x1="170" y1="50" x2="330" y2="120" marker-end="url(#arrow)"/>
+                    <text x="260" y="70" class="edge-weight">7</text>
+
+                    <!-- C -> D -->
+                    <line id="edge-C-D" class="edge" x1="170" y1="190" x2="330" y2="120" marker-end="url(#arrow)"/>
+                    <text x="260" y="170" class="edge-weight">3</text>
+
+                    <!-- Nodes -->
+                    <g id="node-A" class="node"><circle cx="60" cy="120" r="20"/><text x="60" y="120">A</text></g>
+                    <g id="node-B" class="node"><circle cx="170" cy="50" r="20"/><text x="170" y="50">B</text></g>
+                    <g id="node-C" class="node"><circle cx="170" cy="190" r="20"/><text x="170" y="190">C</text></g>
+                    <g id="node-D" class="node"><circle cx="330" cy="120" r="20"/><text x="330" y="120">D</text></g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Model Details Card -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-square-root-variable"></i> Ecuación de Bellman
+            </div>
+            <div class="formula-box">
+                $$f_n^*(s) = \min_{x} \left\{ c_{s, x} + f_{n+1}^*(x) ight\}$$
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+                Donde calculamos desde el destino final ($D$) hacia el origen ($A$):
+            </p>
+            <ul style="list-style: none; color: var(--text-muted); font-size: 0.9rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <li><i class="fa-solid fa-angle-right" style="color: var(--accent-primary);"></i> <strong>$s$:</strong> Estado / Nodo actual.</li>
+                <li><i class="fa-solid fa-angle-right" style="color: var(--accent-primary);"></i> <strong>$x$:</strong> Decisión / Siguiente nodo a visitar.</li>
+                <li><i class="fa-solid fa-angle-right" style="color: var(--accent-primary);"></i> <strong>$c_{s,x}$:</strong> Costo o peso directo del arco $(s, x)$.</li>
+                <li><i class="fa-solid fa-angle-right" style="color: var(--accent-primary);"></i> <strong>$f_{n+1}^*(x)$:</strong> Distancia acumulada óptima futura.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Navigation & Tables Section -->
+    <div class="card">
+        <div class="card-title" style="justify-content: space-between;">
+            <span><i class="fa-solid fa-table-list"></i> Tablas de Decisión por Etapa</span>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Selecciona una etapa para inspeccionar</span>
+        </div>
+
+        <div class="step-nav">
+            <button class="btn-step active" onclick="showStep(3)">Etapa 3 (Hacia D)</button>
+            <button class="btn-step" onclick="showStep(2)">Etapa 2 (Nodos B y C)</button>
+            <button class="btn-step" onclick="showStep(1)">Etapa 1 (Origen A)</button>
+            <button class="btn-step" onclick="showStep(0)">Ruta Óptima Completa</button>
+        </div>
+
+        <!-- Dynamic Table Container -->
+        <div class="table-wrapper" id="table-container">
+            <!-- Table rendered via JavaScript -->
+        </div>
+    </div>
+
+    <!-- Metrics Summary -->
+    <div class="summary-card">
+        <div>
+            <div class="metric-label">Ruta Mas Corta</div>
+            <div class="metric-value" style="color: var(--accent-primary);">A &rarr; B &rarr; C &rarr; D</div>
+        </div>
+        <div style="width: 1px; height: 40px; background: var(--border-color);"></div>
+        <div>
+            <div class="metric-label">Costo / Distancia Mínima Total</div>
+            <div class="metric-value">6</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const stepData = {
+        3: {
+            title: "Etapa 3: Evaluación de nodos adyacentes al destino final D",
+            description: "Calculamos la distancia directa desde los nodos B y C hacia la meta D. Asumimos $f_4^*(D) = 0$.",
+            headers: ["Nodo Inicio ($s$)", "Nodo Destino ($x$)", "Costo Directo ($c_{s,x}$)", "Función Óptima $f_3^*(s)$", "Destino Óptimo ($x^*$)"],
+            rows: [
+                ["B", "D", "7", "<span class='tag-optimal'>7</span>", "D"],
+                ["C", "D", "3", "<span class='tag-optimal'>3</span>", "D"]
+            ],
+            highlightNodes: ["node-B", "node-C", "node-D"],
+            highlightEdges: ["edge-B-D", "edge-C-D"]
+        },
+        2: {
+            title: "Etapa 2: Elección de caminos desde B y C",
+            description: "Para B comparamos ir directamente a D ($7+0=7$) vs ir pasando por C ($1+f_3^*(C) = 1+3=4$). C va directo a D.",
+            headers: ["Nodo Inicio ($s$)", "Nodo Destino ($x$)", "Costo Total $c_{s,x} + f_3^*(x)$", "Función Óptima $f_2^*(s)$", "Destino Óptimo ($x^*$)"],
+            rows: [
+                ["B", "D", "7 + 0 = 7", "", ""],
+                ["B", "C", "1 + 3 = 4", "<span class='tag-optimal'>4</span>", "C"],
+                ["C", "D", "3 + 0 = 3", "<span class='tag-optimal'>3</span>", "D"]
+            ],
+            highlightNodes: ["node-B", "node-C"],
+            highlightEdges: ["edge-B-C", "edge-C-D"]
+        },
+        1: {
+            title: "Etapa 1: Evaluación desde el Nodo Origen A",
+            description: "Evaluamos salir desde A hacia B ($2 + f_2^*(B) = 2 + 4 = 6$) o hacia C ($5 + f_2^*(C) = 5 + 3 = 8$). El mínimo es 6.",
+            headers: ["Nodo Inicio ($s$)", "Nodo Destino ($x$)", "Costo Total $c_{A,x} + f_2^*(x)$", "Función Óptima $f_1^*(A)$", "Destino Óptimo ($x^*$)"],
+            rows: [
+                ["A", "B", "2 + 4 = 6", "<span class='tag-optimal'>6</span>", "B"],
+                ["A", "C", "5 + 3 = 8", "", ""]
+            ],
+            highlightNodes: ["node-A", "node-B"],
+            highlightEdges: ["edge-A-B"]
+        },
+        0: {
+            title: "Solución Final: Ruta Óptima Identificada",
+            description: "Rastreando las mejores decisiones: A &rarr; B (Costo 2), B &rarr; C (Costo 1), C &rarr; D (Costo 3). Total = 6.",
+            headers: ["Paso", "Origen ($s$)", "Destino ($x^*$)", "Costo del Arco", "Acumulado"],
+            rows: [
+                ["1", "A", "B", "2", "2"],
+                ["2", "B", "C", "1", "3"],
+                ["3", "C", "D", "3", "6"]
+            ],
+            optimalPathNodes: ["node-A", "node-B", "node-C", "node-D"],
+            optimalPathEdges: ["edge-A-B", "edge-B-C", "edge-C-D"]
+        }
+    };
+
+    function showStep(stepNum) {
+        // Update Buttons
+        const buttons = document.querySelectorAll('.btn-step');
+        buttons.forEach((btn, idx) => {
+            btn.classList.remove('active');
+        });
+        
+        // Find click index
+        const indexMap = {3: 0, 2: 1, 1: 2, 0: 3};
+        buttons[indexMap[stepNum]].classList.add('active');
+
+        // Render Table
+        const data = stepData[stepNum];
+        let html = `<p style="margin-bottom: 1rem; color: var(--text-muted);">${data.description}</p>`;
+        html += `<table><thead><tr>`;
+        data.headers.forEach(h => { html += `<th>${h}</th>`; });
+        html += `</tr></thead><tbody>`;
+        
+        data.rows.forEach(r => {
+            const isOpt = r.some(cell => cell.includes('tag-optimal') || stepNum === 0);
+            html += `<tr class="${isOpt ? 'highlight-row' : ''}">`;
+            r.forEach(c => { html += `<td>${c}</td>`; });
+            html += `</tr>`;
+        });
+        html += `</tbody></table>`;
+
+        document.getElementById('table-container').innerHTML = html;
+
+        // Reset SVG Highlights
+        document.querySelectorAll('.node').forEach(n => {
+            n.classList.remove('active-node', 'optimal-path');
+        });
+        document.querySelectorAll('.edge').forEach(e => {
+            e.classList.remove('active-path');
+            e.setAttribute('marker-end', 'url(#arrow)');
+        });
+
+        // Apply new Highlights
+        if (stepNum === 0) {
+            data.optimalPathNodes.forEach(id => {
+                document.getElementById(id).classList.add('optimal-path');
+            });
+            data.optimalPathEdges.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('active-path');
+                el.setAttribute('marker-end', 'url(#arrow-active)');
+            });
+        } else {
+            data.highlightNodes.forEach(id => {
+                document.getElementById(id).classList.add('active-node');
+            });
+            data.highlightEdges.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('active-path');
+                el.setAttribute('marker-end', 'url(#arrow-active)');
+            });
+        }
+
+        // Re-render MathJax formula if needed
+        if (window.MathJax) {
+            MathJax.typesetPromise();
+        }
+    }
+
+    // Initialize Page on Step 3
+    window.onload = () => {
+        showStep(3);
+    };
+</script>
+
+</body>
+</html>

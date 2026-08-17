@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Didáctica de GitHub para Base de Datos</title>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --primary-dark: #1e3a8a;
+            --accent: #0284c7;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-muted: #475569;
+            --border: #e2e8f0;
+            --code-bg: #0f172a;
+            --code-text: #f8fafc;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --success-text: #166534;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        header {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 24px;
+            margin-bottom: 35px;
+        }
+
+        .header-tag {
+            background-color: #dbeafe;
+            color: var(--primary-dark);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.15rem;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .section-card:hover {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.15rem;
+            color: var(--text);
+            margin: 18px 0 8px 0;
+        }
+
+        p {
+            margin-bottom: 14px;
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 16px;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        li strong {
+            color: var(--text);
+        }
+
+        /* ÁRBOL DE DIRECTORIOS */
+        .file-tree {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 24px;
+            border-radius: 10px;
+            font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+            font-size: 0.92rem;
+            white-space: pre;
+            overflow-x: auto;
+            line-height: 1.5;
+            margin: 20px 0;
+            border-left: 4px solid var(--primary-light);
+        }
+
+        .file-tree .folder { color: #38bdf8; font-weight: bold; }
+        .file-tree .file { color: #f1f5f9; }
+        .file-tree .comment { color: #94a3b8; font-style: italic; }
+
+        /* TABLAS */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .badge {
+            background: #dbeafe;
+            color: var(--primary-dark);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-green {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-purple {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        .callout {
+            background-color: var(--success-bg);
+            border: 1px solid var(--success-border);
+            color: var(--success-text);
+            padding: 16px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.95rem;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <span class="header-tag">Guía Didáctica para Docentes</span>
+        <h1>Estrategias de Uso de GitHub en Base de Datos</h1>
+        <p class="subtitle">Guía integral con actividades, flujo colaborativo y estructura estándar de proyecto.</p>
+    </header>
+
+    <!-- SECCIÓN 1 -->
+    <section class="section-card">
+        <h2>📌 1. Gestión de Proyectos de Base de Datos (Trabajos Integradores)</h2>
+        <p>Los estudiantes documentan y versionan todo el ciclo de vida de un sistema de base de datos dentro de un repositorio estructurado:</p>
+        <ul>
+            <li><strong>Diagramas ER y Relacionales:</strong> Modelos conceptuales y lógicos en formato de imagen o mediante código incrustado en Markdown con <code>Mermaid.js</code>.</li>
+            <li><strong>Scripts DDL y DML:</strong> Organización secuencial de scripts para creación de esquemas, cargas de datos de prueba, vistas e índices.</li>
+            <li><strong>Diccionario de Datos:</strong> Documentación detallada en un archivo <code>README.md</code> sobre tablas, tipos de datos, llaves primarias/foráneas e integridad referencial.</li>
+        </ul>
+
+        <h3>📁 Estructura Estándar del Repositorio</h3>
+        <p>Estructura recomendada que los estudiantes deben mantener en su proyecto final:</p>
+        
+        <div class="file-tree">
+<span class="folder">📁 mi-proyecto-bd/</span>
+├── <span class="file">📄 README.md</span>                 <span class="comment"><-- Alcance del proyecto, modelo ER y guía de ejecución</span>
+├── <span class="folder">📁 modelo/</span>
+│   ├── <span class="file">diagrama_er.png</span>          <span class="comment"><-- Imagen o exportación del modelo Entidad-Relación</span>
+│   └── <span class="file">diccionario_datos.md</span>    <span class="comment"><-- Descripción técnica de tablas, campos y restricciones</span>
+├── <span class="folder">📁 sql/</span>
+│   ├── <span class="file">01_crear_tablas.sql</span>     <span class="comment"><-- DDL: CREATE TABLE, PK, FK, CHECK, UNIQUE</span>
+│   ├── <span class="file">02_insertar_datos.sql</span>   <span class="comment"><-- DML: INSERT INTO (semillas / datos de prueba)</span>
+│   ├── <span class="file">03_consultas.sql</span>        <span class="comment"><-- DML: Consultas SELECT, JOINs, agregaciones y reportes</span>
+│   └── <span class="file">04_procedimientos.sql</span>   <span class="comment"><-- Vistas, Triggers, Stored Procedures y Funciones</span>
+└── <span class="folder">📁 reportes/</span>
+    └── <span class="file">optimizacion_indices.md</span>  <span class="comment"><-- Análisis de rendimiento (EXPLAIN / EXPLAIN ANALYZE)</span>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Carpeta / Archivo</th>
+                    <th>Tipo de Contenido</th>
+                    <th>Propósito Pedagógico</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>README.md</code></td>
+                    <td><span class="badge">Documentación</span></td>
+                    <td>Portada general del sistema, requisitos y guía de despliegue.</td>
+                </tr>
+                <tr>
+                    <td><code>modelo/</code></td>
+                    <td><span class="badge">Diseño</span></td>
+                    <td>Validación de la normalización (1FN, 2FN, 3FN) y diagramas lógicos.</td>
+                </tr>
+                <tr>
+                    <td><code>sql/</code></td>
+                    <td><span class="badge badge-purple">Código SQL</span></td>
+                    <td>Garantiza la ejecución limpia y ordenada en cualquier SGDB.</td>
+                </tr>
+                <tr>
+                    <td><code>reportes/</code></td>
+                    <td><span class="badge badge-green">Análisis</span></td>
+                    <td>Demuestra la optimización mediante índices y análisis de ejecución.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- SECCIÓN 2 -->
+    <section class="section-card">
+        <h2>⚡ 2. Automatización y Calificación con GitHub Classroom</h2>
+        <p>Facilita la distribución y evaluación continua de prácticas de laboratorio:</p>
+        <ul>
+            <li><strong>Asignación automática:</strong> Generación de repositorios individuales o grupales a partir de una plantilla docente.</li>
+            <li><strong>Autograding (Calificación Automatizada):</strong> Configuración de <i>GitHub Actions</i> con contenedores Docker (PostgreSQL, MySQL o SQLite) para ejecutar pruebas automáticas sobre las consultas SQL del alumno.</li>
+        </ul>
+    </section>
+
+    <!-- SECCIÓN 3 -->
+    <section class="section-card">
+        <h2>🗃️ 3. Banco de Problemas y Datasets (Cátedra Abierta)</h2>
+        <p>Central de recursos centralizada en un repositorio público del curso:</p>
+        <ul>
+            <li><strong>Datasets Reales:</strong> Publicación de archivos <code>.sql</code> o <code>.csv</code> con volúmenes de datos reales (e-commerce, hospitales, finanzas) para prácticas de <i>Fork</i>/<i>Clone</i>.</li>
+            <li><strong>Jupyter Notebooks con Kernel SQL:</strong> Guías interactivas clasificadas por nivel (JOINs, Subconsultas, Agregaciones, Transacciones) ejecutables directamente en GitHub.</li>
+        </ul>
+    </section>
+
+    <!-- SECCIÓN 4 -->
+    <section class="section-card">
+        <h2>👥 4. Simulación de Trabajo en Equipo (Flujo de Trabajo Real)</h2>
+        <p>Implementación de metodologías ágiles y control de versiones en equipo:</p>
+        <ul>
+            <li><strong>Gestión con Issues y GitHub Projects:</strong> Creación de tableros Kanban para asignar tareas (ej. "Crear trigger de auditoría", "Optimizar consulta X").</li>
+            <li><strong>Pull Requests y Code Review:</strong> Prohibición de commits directos a <code>main</code>. Obliga a revisiones de código SQL entre compañeros antes de la integración.</li>
+        </ul>
+    </section>
+
+    <!-- SECCIÓN 5 -->
+    <section class="section-card">
+        <h2>🌐 5. Publicación y Web (GitHub Pages)</h2>
+        <p>Aprovechamiento del servicio de hosting estático gratuito para la materia:</p>
+        <ul>
+            <li><strong>Portal de la Asignatura:</strong> Publicación de cronogramas, sílabo, guías de laboratorios y recursos.</li>
+            <li><strong>Documentación Interactiva:</strong> Portal web de modelos de datos utilizando generadores de sitios estáticos como MkDocs o Docusaurus.</li>
+        </ul>
+
+        <div class="callout">
+            💡 <strong>Sugerencia Docente:</strong> Exigir el enlace de GitHub Pages en el <code>README.md</code> para revisar la documentación de los proyectos finales de forma interactiva.
+        </div>
+    </section>
+
+    <footer>
+        <p>Materia: Base de Datos | Documento de Cátedra Universitario</p>
+    </footer>
+</div>
+
+</body>
+</html>

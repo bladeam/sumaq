@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Juego de Arrastrar y Soltar - Sufijos  </title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --primary: #2563eb;
+      --text: #0f172a;
+      --border: #cbd5e1;
+      --danger: #dc2626;
+      --success: #16a34a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      touch-action: manipulation;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 1024px;
+      padding: 20px;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: #1e3a8a;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    p.subtitle {
+      font-size: 0.85rem;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    /* Pantalla de inicio */
+    .form-group {
+      max-width: 400px;
+      margin: 0 auto 16px auto;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+
+    .btn-main {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 400px;
+      display: block;
+      margin: 10px auto 0 auto;
+    }
+
+    .btn-main:active {
+      transform: scale(0.98);
+    }
+
+    /* Layout del Juego: 20% Izquierda, 80% Derecha */
+    .game-layout {
+      display: flex;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .words-sidebar {
+      width: 20%;
+      min-width: 130px;
+      background: #f1f5f9;
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .sentence-board {
+      width: 80%;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      line-height: 2.3;
+      font-size: 1.1rem;
+      text-align: justify;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    /* Palabras arrastrables */
+    .draggable-word {
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      color: white;
+      text-align: center;
+      cursor: grab;
+      user-select: none;
+      font-size: 0.95rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      touch-action: none;
+    }
+
+    .draggable-word.dragging {
+      opacity: 0.5;
+    }
+
+    /* Zonas de soltado (Espacios en blanco) */
+    .drop-zone {
+      display: inline-block;
+      min-width: 80px;
+      height: 34px;
+      border-bottom: 2px solid #0f172a;
+      background: #f8fafc;
+      vertical-align: middle;
+      margin: 0 4px;
+      border-radius: 4px;
+      text-align: center;
+      line-height: 32px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .drop-zone.hovered {
+      background: #dbeafe;
+      border-color: var(--primary);
+    }
+
+    .drop-zone.correct-zone {
+      border-bottom-color: var(--success);
+      background-color: #f0fdf4;
+    }
+
+    .drop-zone .draggable-word {
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      line-height: normal;
+      cursor: pointer;
+    }
+
+    /* Asignación de Colores por Pares */
+    .pair-0 { background-color: #ef4444; } /* Rojo */
+    .pair-1 { background-color: #f97316; } /* Naranja */
+    .pair-2 { background-color: #84cc16; } /* Lima */
+    .pair-3 { background-color: #10b981; } /* Esmeralda */
+    .pair-4 { background-color: #06b6d4; } /* Cian */
+    .pair-5 { background-color: #6366f1; } /* Índigo */
+    .pair-6 { background-color: #a855f7; } /* Púrpura */
+    .pair-7 { background-color: #ec4899; } /* Rosa */
+
+    /* Cartel Grande de Alerta (MANA ALLINCHU) */
+    .alert-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      background-color: var(--danger);
+      color: white;
+      padding: 20px 40px;
+      border-radius: 16px;
+      font-size: 2.2rem;
+      font-weight: 900;
+      box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 100;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .alert-overlay.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* Pantalla de Resultados */
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+
+    .results-table th, .results-table td {
+      padding: 10px;
+      border: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .results-table th {
+      background: #f1f5f9;
+    }
+
+    /* Responsividad */
+    @media (max-width: 600px) {
+      .game-layout {
+        flex-direction: column;
+      }
+
+      .words-sidebar {
+        width: 100%;
+        min-width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        max-height: 160px;
+      }
+
+      .sentence-board {
+        width: 100%;
+        font-size: 0.98rem;
+        line-height: 2.3;
+      }
+
+      .draggable-word {
+        font-size: 0.85rem;
+        padding: 6px 8px;
+      }
+
+      .alert-overlay {
+        font-size: 1.6rem;
+        padding: 15px 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Mensaje de Error Emergente -->
+    <div id="error-alert" class="alert-overlay">MANA ALLINCHU</div>
+
+    <!-- PANTALLA 1: Inicio -->
+    <div id="start-screen" class="screen active">
+      <h1>Completar Oración  </h1>
+      <p class="subtitle">Arrastra las palabras hacia sus espacios correspondientes en la oración.</p>
+      
+      <div class="form-group">
+        <label for="player-name">Nombre del Participante:</label>
+        <input type="text" id="player-name" placeholder="Escribe tu nombre..." required>
+      </div>
+
+      <button class="btn-main" onclick="startGame()">Comenzar Juego</button>
+    </div>
+
+    <!-- PANTALLA 2: Juego -->
+    <div id="game-screen" class="screen">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span id="player-display" style="font-weight: bold; color: var(--primary);"></span>
+        <button class="btn-main" style="width: auto; margin:0; padding: 8px 16px;" onclick="finishGame()">Finalizar y Evaluar</button>
+      </div>
+
+      <div class="game-layout">
+        <!-- Bloque Izquierdo (20%) -->
+        <div class="words-sidebar" id="words-container"></div>
+
+        <!-- Bloque Derecho (80%) -->
+      <div class="sentence-board" id="sentence-container">
+  Imagina a un hombre <div class="drop-zone" data-answer="MAN"></div> (-man) corriendo desesperado <div class="drop-zone" data-answer="HACIA"></div> una puerta que le traslada a El Prado en pleno centro de Cochabamba, que va de la mano <div class="drop-zone" data-answer="CON"></div> su amigo <div class="drop-zone" data-answer="WAN"></div> (-wan). Llevan un <div class="drop-zone" data-answer="PAQ"></div>quete (-paq) de pique macho de regalo <div class="drop-zone" data-answer="PARA"></div> la suegra, pero tropiezan cerca de La Cancha y caen <div class="drop-zone" data-answer="EN"></div> el <div class="drop-zone" data-answer="PI"></div>so (-pi). El hombre pega un grito <div class="drop-zone" data-answer="COMO"></div> la tía <div class="drop-zone" data-answer="JINA"></div> (-jina); todo este desastre ocurrió <div class="drop-zone" data-answer="POR"></div> / A CAUSA DE un <div class="drop-zone" data-answer="RAYO"></div> (-rayku) que cayó desde el Tunari, haciéndolos salir huyendo <div class="drop-zone" data-answer="DESDE"></div> la casa envueltos en una <div class="drop-zone" data-answer="MANTA"></div> (-manta), <div class="drop-zone" data-answer="HASTA"></div> llegar a una <div class="drop-zone" data-answer="CAMA"></div> (-kama) cerca del Cristo de la Concordia donde se duermen de cansancio abrazaditos.
+</div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 3: Resultados e Historial -->
+    <div id="results-screen" class="screen">
+      <h1>Resultados del Juego</h1>
+      
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Participante</th>
+            <th>Puntaje (%)</th>
+            <th>Aciertos</th>
+            <th>Tiempo</th>
+            <th>Fecha</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+          </tr>
+        </thead>
+        <tbody id="results-body"></tbody>
+      </table>
+
+      <button class="btn-main" onclick="resetGame()">Nuevo Juego</button>
+    </div>
+
+  </div>
+
+  <script>
+    // Palabras emparejadas por color con el texto exacto
+    const wordPairs = [
+      { pairId: 0, words: ["MAN", "HACIA"] },
+      { pairId: 1, words: ["CON", "WAN"] },
+      { pairId: 2, words: ["PAQ", "PARA"] },
+      { pairId: 3, words: ["EN", "PI"] },
+      { pairId: 4, words: ["COMO", "JINA"] },
+      { pairId: 5, words: ["POR", "RAYO"] },
+      { pairId: 6, words: ["DESDE", "MANTA"] },
+      { pairId: 7, words: ["HASTA", "CAMA"] }
+    ];
+
+    let playerName = "";
+    let startTime, endTime;
+    let draggedElement = null;
+    let alertTimeout = null;
+
+    // Generador de Efectos de Sonido con Web Audio API
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'success') {
+        // Tono de Éxito
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2); // A5
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } else if (type === 'error') {
+        // Tono de Error
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+        osc.frequency.setValueAtTime(146.83, audioCtx.currentTime + 0.15); // D3
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.35);
+      }
+    }
+
+    // Mostrar Alerta "MANA ALLINCHU"
+    function showErrorAlert() {
+      const alertEl = document.getElementById('error-alert');
+      alertEl.classList.add('show');
+      playSound('error');
+
+      if (alertTimeout) clearTimeout(alertTimeout);
+      alertTimeout = setTimeout(() => {
+        alertEl.classList.remove('show');
+      }, 1200);
+    }
+
+    // Iniciar Juego
+    function startGame() {
+      const input = document.getElementById('player-name');
+      if (!input.value.trim()) {
+        alert("Por favor, ingresa tu nombre.");
+        return;
+      }
+      playerName = input.value.trim();
+      document.getElementById('player-display').innerText = `Jugador: ${playerName}`;
+
+      startTime = new Date();
+
+      document.getElementById('start-screen').classList.remove('active');
+      document.getElementById('game-screen').classList.add('active');
+
+      renderWords();
+      setupDragAndDrop();
+    }
+
+    // Renderizar las palabras desordenadas en la columna izquierda
+    function renderWords() {
+      const sidebar = document.getElementById('words-container');
+      sidebar.innerHTML = '';
+
+      let allWords = [];
+      wordPairs.forEach(pair => {
+        pair.words.forEach(word => {
+          allWords.push({ word: word, pairId: pair.pairId });
+        });
+      });
+
+      // Desordenar
+      allWords.sort(() => Math.random() - 0.5);
+
+      allWords.forEach((item, index) => {
+        const wordEl = document.createElement('div');
+        wordEl.classList.add('draggable-word', `pair-${item.pairId}`);
+        wordEl.setAttribute('draggable', 'true');
+        wordEl.setAttribute('id', `word-${index}`);
+        wordEl.setAttribute('data-word', item.word);
+        wordEl.innerText = item.word;
+
+        sidebar.appendChild(wordEl);
+      });
+    }
+
+    // Validar colocación en la zona
+    function handleDropInZone(zone, element) {
+      const expected = zone.getAttribute('data-answer');
+      const placed = element.getAttribute('data-word');
+
+      const sidebar = document.getElementById('words-container');
+
+      // Si la zona ya contenía una palabra, la devuelve al panel lateral
+      if (zone.children.length > 0) {
+        sidebar.appendChild(zone.children[0]);
+      }
+
+      zone.appendChild(element);
+
+      if (placed === expected) {
+        playSound('success');
+        zone.classList.add('correct-zone');
+      } else {
+        zone.classList.remove('correct-zone');
+        showErrorAlert();
+      }
+    }
+
+    // Configurar Drag & Drop
+    function setupDragAndDrop() {
+      const draggables = document.querySelectorAll('.draggable-word');
+      const dropZones = document.querySelectorAll('.drop-zone');
+      const sidebar = document.getElementById('words-container');
+
+      draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', (e) => {
+          draggedElement = draggable;
+          draggable.classList.add('dragging');
+        });
+
+        draggable.addEventListener('dragend', () => {
+          draggable.classList.remove('dragging');
+          draggedElement = null;
+        });
+
+        // Soporte Touch (Celulares)
+        draggable.addEventListener('touchstart', touchStart, { passive: false });
+        draggable.addEventListener('touchmove', touchMove, { passive: false });
+        draggable.addEventListener('touchend', touchEnd, { passive: false });
+      });
+
+      dropZones.forEach(zone => {
+        zone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          zone.classList.add('hovered');
+        });
+
+        zone.addEventListener('dragleave', () => {
+          zone.classList.remove('hovered');
+        });
+
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('hovered');
+          if (draggedElement) {
+            handleDropInZone(zone, draggedElement);
+          }
+        });
+      });
+
+      sidebar.addEventListener('dragover', (e) => e.preventDefault());
+      sidebar.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (draggedElement) {
+          if (draggedElement.parentElement && draggedElement.parentElement.classList.contains('drop-zone')) {
+            draggedElement.parentElement.classList.remove('correct-zone');
+          }
+          sidebar.appendChild(draggedElement);
+        }
+      });
+    }
+
+    // Control Touch para Dispositivos Móviles
+    let touchOffset = { x: 0, y: 0 };
+    let initialParent = null;
+
+    function touchStart(e) {
+      draggedElement = e.currentTarget;
+      initialParent = draggedElement.parentElement;
+      const touch = e.touches[0];
+
+      touchOffset.x = touch.clientX - draggedElement.getBoundingClientRect().left;
+      touchOffset.y = touch.clientY - draggedElement.getBoundingClientRect().top;
+
+      draggedElement.style.position = 'fixed';
+      draggedElement.style.zIndex = '1000';
+      draggedElement.style.width = '100px';
+      moveAt(touch.clientX, touch.clientY);
+    }
+
+    function touchMove(e) {
+      if (!draggedElement) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      moveAt(touch.clientX, touch.clientY);
+    }
+
+    function moveAt(pageX, pageY) {
+      draggedElement.style.left = pageX - touchOffset.x + 'px';
+      draggedElement.style.top = pageY - touchOffset.y + 'px';
+    }
+
+    function touchEnd(e) {
+      if (!draggedElement) return;
+
+      draggedElement.style.position = 'static';
+      draggedElement.style.zIndex = 'default';
+      draggedElement.style.width = 'auto';
+
+      const touch = e.changedTouches[0];
+      draggedElement.style.display = 'none';
+      let elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      draggedElement.style.display = 'inline-block';
+
+      if (elemBelow) {
+        let dropZone = elemBelow.closest('.drop-zone');
+        let sidebar = elemBelow.closest('.words-sidebar');
+
+        if (dropZone) {
+          handleDropInZone(dropZone, draggedElement);
+        } else if (sidebar) {
+          if (initialParent && initialParent.classList.contains('drop-zone')) {
+            initialParent.classList.remove('correct-zone');
+          }
+          sidebar.appendChild(draggedElement);
+        } else {
+          initialParent.appendChild(draggedElement);
+        }
+      } else {
+        initialParent.appendChild(draggedElement);
+      }
+
+      draggedElement = null;
+    }
+
+    // Evaluar y Mostrar Resultados
+    function finishGame() {
+      endTime = new Date();
+      const dropZones = document.querySelectorAll('.drop-zone');
+      let total = dropZones.length;
+      let correct = 0;
+
+      dropZones.forEach(zone => {
+        const expected = zone.getAttribute('data-answer');
+        if (zone.children.length > 0) {
+          const placed = zone.children[0].getAttribute('data-word');
+          if (placed === expected) {
+            correct++;
+          }
+        }
+      });
+
+      const percentage = Math.round((correct / total) * 100);
+      const durationSeconds = Math.round((endTime - startTime) / 1000);
+
+      const tbody = document.getElementById('results-body');
+      tbody.innerHTML = `
+        <tr>
+          <td><strong>${playerName}</strong></td>
+          <td><strong>${percentage}%</strong></td>
+          <td>${correct} / ${total}</td>
+          <td>${durationSeconds}s</td>
+          <td>${startTime.toLocaleDateString()}</td>
+          <td>${startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}</td>
+          <td>${endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}</td>
+        </tr>
+      `;
+
+      document.getElementById('game-screen').classList.remove('active');
+      document.getElementById('results-screen').classList.add('active');
+    }
+
+    // Reiniciar
+    function resetGame() {
+      document.getElementById('player-name').value = '';
+      document.getElementById('results-screen').classList.remove('active');
+      document.getElementById('start-screen').classList.add('active');
+    }
+  </script>
+</body>
+</html>

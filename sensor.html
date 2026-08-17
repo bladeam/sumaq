@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Movimiento en Quechua</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f8ff;
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4a90e2;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .config-section {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        .btn-simular {
+            background-color: #6c757d;
+            font-size: 13px;
+            padding: 8px;
+            margin-top: 15px;
+        }
+
+        .game-section {
+            display: none;
+            text-align: center;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .quechua-word {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 20px 0 10px 0;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border-radius: 8px;
+        }
+
+        .instruction {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 35px;
+        }
+
+        .correct {
+            color: #2ecc71;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .meta-info {
+            background-color: #e8f4f8;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #4a90e2;
+            color: white;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .history-item.correct {
+            background-color: #e8f8f0;
+        }
+
+        .author {
+            text-align: center;
+            margin-top: 20px;
+            font-style: italic;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Yachachina: Dirección y Sensores</h1>
+            <p>Mueve el celular según la dirección en Quechua</p>
+        </header>
+
+        <!-- Configuración Inicial -->
+        <section class="config-section" id="configSection">
+            <div class="form-group">
+                <label for="students">Participantes (un nombre por fila):</label>
+                <!-- Comentario HTML de lista de participantes por defecto:
+                Juan
+                María
+                Pedro
+                -->
+                <textarea id="students" rows="4" placeholder="Juan&#10;María&#10;Pedro">Juan&#10;María</textarea>
+            </div>
+            <div class="form-group">
+                <label for="questionsPerStudent">Preguntas por participante (Máx 30 total):</label>
+                <input type="number" id="questionsPerStudent" min="1" max="30" value="3">
+            </div>
+            <div class="form-group">
+                <label for="delayTime">Tiempo de espera tras responder (segundos):</label>
+                <input type="number" id="delayTime" min="1" max="5" value="2">
+            </div>
+            <button id="startGameBtn">Comenzar Juego</button>
+        </section>
+
+        <!-- Área de Juego -->
+        <section class="game-section" id="gameSection">
+            <div class="game-info">
+                <div>Estudiante: <strong id="currentPlayer">-</strong></div>
+                <div>Pregunta: <span id="questionNumber">0</span>/<span id="totalQuestions">0</span></div>
+            </div>
+
+            <div class="quechua-word" id="quechuaWord">---</div>
+            <div class="instruction" id="actionInstruction">Realiza el movimiento con el celular</div>
+
+            <div class="message" id="message"></div>
+
+            <!-- Botón de respaldo por si el navegador bloquea los sensores físicos -->
+            <button class="btn-simular" id="btnSimular">Simular movimiento correcto (Prueba)</button>
+        </section>
+
+        <!-- Resultados Finales -->
+        <section class="results" id="resultsSection">
+            <h2>Resultados Finales</h2>
+            
+            <div class="meta-info">
+                <p><strong>Fecha:</strong> <span id="resDate"></span></p>
+                <p><strong>Hora Inicio:</strong> <span id="resStart"></span></p>
+                <p><strong>Hora Fin:</strong> <span id="resEnd"></span></p>
+                <p><strong>Tiempo Total de Juego:</strong> <span id="resTotalTime"></span></p>
+            </div>
+
+            <h3>Puntaje por Participante</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Aciertos</th>
+                        <th>Atendidas</th>
+                        <th>Porcentaje (%)</th>
+                    </tr>
+                </thead>
+                <tbody id="studentStatsBody"></tbody>
+            </table>
+
+            <h3>Historial de Movimientos</h3>
+            <div id="gameHistory"></div>
+
+            <button id="restartBtn" style="margin-top: 15px;">Nuevo Juego</button>
+        </section>
+
+        <div class="author">
+            M.Sc. Bladimir Arias Mejia 2025
+        </div>
+    </div>
+
+    <script>
+        // Base de datos de direcciones en Quechua y su equivalente de movimiento
+        const database = [
+            { base: "ñawpaq", suffix: "man", word: "ñawpaqman", action: "ADELANTE", mean: "Hacia adelante" },
+            { base: "qhipa", suffix: "man", word: "qhipaman", action: "ATRAS", mean: "Hacia atrás" },
+            { base: "pata", suffix: "man", word: "pataman", action: "ARRIBA", mean: "Hacia arriba" },
+            { base: "ura", suffix: "man", word: "uraman", action: "ABAJO", mean: "Hacia abajo" },
+            { base: "lluq'i", suffix: "man", word: "lluq'iman", action: "IZQUIERDA", mean: "Hacia la izquierda" },
+            { base: "paña", suffix: "man", word: "pañaman", action: "PAÑA", mean: "Hacia la derecha" }
+        ];
+
+        // Sensibilidad de los sensores
+        const UMBRAL_ACELERACION = 8;
+        const UMBRAL_INCLINACION = 20;
+
+        // Variables de estado
+        let players = [];
+        let currentPlayerIndex = 0;
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let delaySeconds = 2;
+        let sensorActivo = false;
+        let playerStats = {};
+        let gameHistory = [];
+
+        // Tiempos y referencia de sensores
+        let startTimeObj = null;
+        let endTimeObj = null;
+        let initialGamma = null;
+        let initialBeta = null;
+
+        document.getElementById('startGameBtn').addEventListener('click', iniciarJuego);
+        document.getElementById('restartBtn').addEventListener('click', reiniciarJuego);
+        document.getElementById('btnSimular').addEventListener('click', () => validarRespuesta(true));
+
+        async function iniciarJuego() {
+            const studentsInput = document.getElementById('students').value;
+            const qPerStudent = parseInt(document.getElementById('questionsPerStudent').value) || 3;
+            delaySeconds = parseInt(document.getElementById('delayTime').value) || 2;
+
+            // Obtener participantes por fila
+            players = studentsInput.split('\n').map(name => name.trim()).filter(name => name !== '');
+            if (players.length === 0) players = ['Estudiante 1'];
+
+            // Calcular total de preguntas (máximo 30)
+            let calculatedTotal = players.length * qPerStudent;
+            let totalQuestions = Math.min(calculatedTotal, 30);
+
+            // Inicializar estadísticas por jugador
+            playerStats = {};
+            players.forEach(p => {
+                playerStats[p] = { aciertos: 0, total: 0 };
+            });
+
+            // Generar preguntas aleatorias
+            questions = [];
+            for (let i = 0; i < totalQuestions; i++) {
+                const randomItem = database[Math.floor(Math.random() * database.length)];
+                questions.push(randomItem);
+            }
+
+            startTimeObj = new Date();
+            currentPlayerIndex = 0;
+            currentQuestionIndex = 0;
+            gameHistory = [];
+
+            // Solicitar permisos explícitos para iOS / Navegadores estrictos
+            try {
+                if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                    await DeviceMotionEvent.requestPermission();
+                }
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    await DeviceOrientationEvent.requestPermission();
+                }
+            } catch (e) {
+                console.log("Permisos de sensor no requeridos o denegados:", e);
+            }
+
+            comenzarFaseJuego();
+        }
+
+        function comenzarFaseJuego() {
+            document.getElementById('configSection').style.display = 'none';
+            document.getElementById('gameSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+
+            activarSensores();
+            mostrarPregunta();
+        }
+
+        function activarSensores() {
+            sensorActivo = true;
+            window.addEventListener('devicemotion', procesarAceleracion, true);
+            window.addEventListener('deviceorientation', procesarOrientacion, true);
+        }
+
+        function desactivarSensores() {
+            sensorActivo = false;
+            window.removeEventListener('devicemotion', procesarAceleracion, true);
+            window.removeEventListener('deviceorientation', procesarOrientacion, true);
+        }
+
+        function mostrarPregunta() {
+            if (currentQuestionIndex >= questions.length) {
+                finalizarJuego();
+                return;
+            }
+
+            const currentPlayer = players[currentPlayerIndex];
+            const currentQ = questions[currentQuestionIndex];
+
+            document.getElementById('currentPlayer').textContent = currentPlayer;
+            document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
+            document.getElementById('totalQuestions').textContent = questions.length;
+            document.getElementById('quechuaWord').textContent = currentQ.word;
+            document.getElementById('message').textContent = "Esperando movimiento...";
+            document.getElementById('message').className = "message";
+
+            initialBeta = null;
+            initialGamma = null;
+            sensorActivo = true;
+        }
+
+        function procesarAceleracion(event) {
+            if (!sensorActivo) return;
+
+            let accZ = 0;
+            let accY = 0;
+
+            if (event.acceleration && (event.acceleration.z !== null || event.acceleration.y !== null)) {
+                accZ = event.acceleration.z || 0;
+                accY = event.acceleration.y || 0;
+            } else if (event.accelerationIncludingGravity) {
+                accZ = event.accelerationIncludingGravity.z || 0;
+                accY = event.accelerationIncludingGravity.y || 0;
+            }
+
+            const currentQ = questions[currentQuestionIndex];
+
+            // 1. ADELANTE
+            if (currentQ.action === "ADELANTE" && Math.abs(accZ) > UMBRAL_ACELERACION) {
+                validarRespuesta(true);
+            }
+            // 2. ATRÁS
+            else if (currentQ.action === "ATRAS" && Math.abs(accZ) > UMBRAL_ACELERACION) {
+                validarRespuesta(true);
+            }
+            // 3. ARRIBA
+            else if (currentQ.action === "ARRIBA" && Math.abs(accY) > UMBRAL_ACELERACION) {
+                validarRespuesta(true);
+            }
+            // 4. ABAJO
+            else if (currentQ.action === "ABAJO" && Math.abs(accY) > UMBRAL_ACELERACION) {
+                validarRespuesta(true);
+            }
+        }
+
+        function procesarOrientacion(event) {
+            if (!sensorActivo) return;
+
+            let beta = event.beta;   // Inclinación eje X
+            let gamma = event.gamma; // Inclinación eje Y
+
+            if (beta === null || gamma === null) return;
+
+            if (initialBeta === null) initialBeta = beta;
+            if (initialGamma === null) initialGamma = gamma;
+
+            const currentQ = questions[currentQuestionIndex];
+            let diffGamma = gamma - initialGamma;
+
+            // 5. IZQUIERDA
+            if (currentQ.action === "IZQUIERDA" && diffGamma < -UMBRAL_INCLINACION) {
+                validarRespuesta(true);
+            }
+            // 6. DERECHA
+            else if (currentQ.action === "PAÑA" && diffGamma > UMBRAL_INCLINACION) {
+                validarRespuesta(true);
+            }
+        }
+
+        function validarRespuesta(esCorrecto) {
+            if (!sensorActivo) return;
+            sensorActivo = false;
+
+            const currentPlayer = players[currentPlayerIndex];
+            const currentQ = questions[currentQuestionIndex];
+
+            playerStats[currentPlayer].total++;
+            if (esCorrecto) {
+                playerStats[currentPlayer].aciertos++;
+            }
+
+            const msgDiv = document.getElementById('message');
+            msgDiv.textContent = "¡ALLIN! 🎉";
+            msgDiv.className = "message correct";
+
+            gameHistory.push({
+                player: currentPlayer,
+                word: currentQ.word,
+                mean: currentQ.mean,
+                correct: esCorrecto
+            });
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+                mostrarPregunta();
+            }, delaySeconds * 1000);
+        }
+
+        function finalizarJuego() {
+            desactivarSensores();
+            endTimeObj = new Date();
+
+            document.getElementById('gameSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+
+            const diffMs = endTimeObj - startTimeObj;
+            const totalSecs = Math.floor(diffMs / 1000);
+            const mins = Math.floor(totalSecs / 60);
+            const secs = totalSecs % 60;
+
+            document.getElementById('resDate').textContent = startTimeObj.toLocaleDateString();
+            document.getElementById('resStart').textContent = startTimeObj.toLocaleTimeString();
+            document.getElementById('resEnd').textContent = endTimeObj.toLocaleTimeString();
+            document.getElementById('resTotalTime').textContent = `${mins}m ${secs}s`;
+
+            const tbody = document.getElementById('studentStatsBody');
+            tbody.innerHTML = '';
+            players.forEach(p => {
+                const stats = playerStats[p];
+                const percentage = stats.total > 0 ? ((stats.aciertos / stats.total) * 100).toFixed(1) : "0.0";
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${p}</strong></td>
+                    <td>${stats.aciertos}</td>
+                    <td>${stats.total}</td>
+                    <td><strong>${percentage}%</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const historyDiv = document.getElementById('gameHistory');
+            historyDiv.innerHTML = '';
+            gameHistory.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = "history-item correct";
+                div.innerHTML = `
+                    <p><strong>Pregunta ${idx + 1} (${item.player}):</strong> ${item.word} (${item.mean})</p>
+                    <p>Resultado: <strong>ALLIN</strong></p>
+                `;
+                historyDiv.appendChild(div);
+            });
+        }
+
+        function reiniciarJuego() {
+            document.getElementById('configSection').style.display = 'block';
+            document.getElementById('gameSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
