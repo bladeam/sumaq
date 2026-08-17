@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grabadora de Voz</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .recorder-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 320px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #btnRecord {
+            background-color: #e63946;
+            color: white;
+        }
+
+        #btnStop {
+            background-color: #457b9d;
+            color: white;
+        }
+
+        button:disabled {
+            background-color: #cccccc !important;
+            cursor: not-allowed;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .download-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 15px;
+            background-color: #2a9d8f;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="recorder-card">
+        <h2>Grabadora de Voz</h2>
+
+        <div class="controls">
+            <button id="btnRecord">Grabar</button>
+            <button id="btnStop" disabled>Detener</button>
+        </div>
+
+        <audio id="audioPreview" controls class="hidden"></audio>
+        <a id="downloadBtn" class="download-link hidden">Descargar Grabación</a>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        const btnRecord = document.getElementById('btnRecord');
+        const btnStop = document.getElementById('btnStop');
+        const audioPreview = document.getElementById('audioPreview');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        btnRecord.addEventListener('click', async () => {
+            try {
+                // Solicitar acceso al micrófono
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+
+                audioChunks = [];
+
+                // Ir guardando los fragmentos de audio
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                // Cuando se detenga la grabación, generar el enlace de descarga
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+
+                    audioPreview.src = audioUrl;
+                    audioPreview.classList.remove('hidden');
+
+                    downloadBtn.href = audioUrl;
+                    downloadBtn.download = `grabacion_${Date.now()}.webm`;
+                    downloadBtn.classList.remove('hidden');
+
+                    // Detener el uso del micrófono
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                btnRecord.disabled = true;
+                btnStop.disabled = false;
+
+            } catch (err) {
+                alert('No se pudo acceder al micrófono: ' + err.message);
+            }
+        });
+
+        btnStop.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                btnRecord.disabled = false;
+                btnStop.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>

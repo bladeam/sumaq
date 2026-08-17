@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grabadora de Voz Pro - Garantizada</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #6366f1;
+            --danger: #ef4444;
+            --success: #10b981;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .studio-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 440px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 20px;
+        }
+
+        /* VUMETRO NATIVO DE VOLUMEN */
+        .volume-meter-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .volume-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+            transition: width 0.05s ease-out;
+        }
+
+        /* CRONÓMETRO */
+        .timer-display {
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-family: monospace;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        /* BOTONES */
+        .controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-record { background-color: var(--danger); }
+        .btn-record:hover { background-color: #dc2626; }
+
+        .btn-stop { background-color: #475569; }
+        .btn-stop:hover { background-color: #334155; }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .recording-pulse {
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.5; }
+            100% { transform: scale(0.95); opacity: 1; }
+        }
+
+        /* REPRODUCTOR Y DESCARGA */
+        .player-section {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 18px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        audio {
+            width: 100%;
+            height: 40px;
+        }
+
+        .btn-download {
+            background-color: var(--success);
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+            display: block;
+        }
+
+        .btn-download:hover { background-color: #059669; }
+
+        .status-msg {
+            font-size: 0.8rem;
+            color: var(--primary);
+            margin-top: 5px;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="studio-card">
+        <h2>Grabadora de Voz Pro</h2>
+        <p class="subtitle">Captura audio con detección de volumen en tiempo real</p>
+
+        <!-- Indicador de volumen de micrófono -->
+        <div class="volume-meter-container">
+            <div id="volumeBar" class="volume-bar"></div>
+        </div>
+
+        <!-- Cronómetro -->
+        <div class="timer-display" id="timer">00:00</div>
+
+        <!-- Botones -->
+        <div class="controls">
+            <button id="btnRecord" class="btn btn-record">
+                <span id="recordDot"></span> Grabar
+            </button>
+            <button id="btnStop" class="btn btn-stop" disabled>Detener</button>
+        </div>
+
+        <p id="statusMsg" class="status-msg"></p>
+
+        <!-- Sección Reproducción y Descarga -->
+        <div id="playerSection" class="player-section hidden">
+            <audio id="audioPreview" controls preload="auto"></audio>
+            <a id="downloadBtn" class="btn-download">Descargar Audio</a>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioStream;
+        let timerInterval;
+        let secondsElapsed = 0;
+        let audioCtx;
+        let analyser;
+        let animFrame;
+
+        const btnRecord = document.getElementById('btnRecord');
+        const btnStop = document.getElementById('btnStop');
+        const recordDot = document.getElementById('recordDot');
+        const timerDisplay = document.getElementById('timer');
+        const volumeBar = document.getElementById('volumeBar');
+        const playerSection = document.getElementById('playerSection');
+        const audioPreview = document.getElementById('audioPreview');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const statusMsg = document.getElementById('statusMsg');
+
+        // Seleccionar automáticamente el tipo MIME soportado
+        function getMimeType() {
+            const types = [
+                'audio/webm',
+                'audio/webm;codecs=opus',
+                'audio/mp4',
+                'audio/ogg',
+                'audio/aac'
+            ];
+            for (let type of types) {
+                if (MediaRecorder.isTypeSupported(type)) return type;
+            }
+            return '';
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        // Medidor de volumen en tiempo real
+        function trackVolume(stream) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioCtx.createAnalyser();
+            const source = audioCtx.createMediaStreamSource(stream);
+            source.connect(analyser);
+            analyser.fftSize = 256;
+
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+            function updateVolume() {
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    sum += dataArray[i];
+                }
+                let average = sum / dataArray.length;
+                let volumePercent = Math.min(100, Math.round((average / 128) * 100));
+                volumeBar.style.width = volumePercent + '%';
+
+                animFrame = requestAnimationFrame(updateVolume);
+            }
+            updateVolume();
+        }
+
+        btnRecord.addEventListener('click', async () => {
+            try {
+                // Solicitar micrófono
+                audioStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    }
+                });
+
+                audioChunks = [];
+                const mimeType = getMimeType();
+                
+                mediaRecorder = mimeType ? new MediaRecorder(audioStream, { mimeType }) : new MediaRecorder(audioStream);
+
+                // Capturar trozos de audio continuamente cada 200 milisegundos
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) {
+                        audioChunks.push(e.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const type = mediaRecorder.mimeType || 'audio/webm';
+                    const audioBlob = new Blob(audioChunks, { type: type });
+                    
+                    if (audioBlob.size === 0) {
+                        alert("No se capturaron datos de audio. Revisa los permisos de tu micrófono.");
+                        return;
+                    }
+
+                    const audioUrl = URL.createObjectURL(audioBlob);
+
+                    // Cargar audio en el reproductor de forma explícita
+                    audioPreview.src = audioUrl;
+                    audioPreview.load();
+
+                    // Ajustar extensión de descarga
+                    const ext = type.includes('mp4') ? 'mp4' : type.includes('ogg') ? 'ogg' : 'webm';
+                    downloadBtn.href = audioUrl;
+                    downloadBtn.download = `audio_${Date.now()}.${ext}`;
+
+                    playerSection.classList.remove('hidden');
+                    statusMsg.textContent = "¡Grabación lista para reproducir y descargar!";
+                };
+
+                // Iniciar proceso
+                mediaRecorder.start(200); // Genera un chunk cada 200ms
+                trackVolume(audioStream);
+
+                // Timer
+                secondsElapsed = 0;
+                timerDisplay.textContent = '00:00';
+                timerInterval = setInterval(() => {
+                    secondsElapsed++;
+                    timerDisplay.textContent = formatTime(secondsElapsed);
+                }, 1000);
+
+                // Estado interfaz
+                recordDot.classList.add('recording-pulse');
+                btnRecord.disabled = true;
+                btnStop.disabled = false;
+                playerSection.classList.add('hidden');
+                statusMsg.textContent = "Grabando... habla hacia el micrófono";
+
+            } catch (err) {
+                alert('Error al acceder al micrófono: ' + err.message);
+            }
+        });
+
+        btnStop.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+
+                // Detener micrófono
+                audioStream.getTracks().forEach(track => track.stop());
+
+                // Detener temporizador y VÚmetro
+                clearInterval(timerInterval);
+                cancelAnimationFrame(animFrame);
+                if (audioCtx) audioCtx.close();
+                volumeBar.style.width = '0%';
+
+                // Estado interfaz
+                recordDot.classList.remove('recording-pulse');
+                btnRecord.disabled = false;
+                btnStop.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>
