@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Convertidor de Imágenes a PDF</title>
+  
+  <!-- Librería jsPDF desde CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 24px;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-select {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .btn-select:hover {
+      background-color: #0056b3;
+    }
+
+    .btn-download {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .btn-download:hover {
+      background-color: #218838;
+    }
+
+    .btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    .preview-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 2px dashed #ddd;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .preview-container img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .empty-message {
+      grid-column: 1 / -1;
+      color: #888;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Convertir Imágenes a PDF</h1>
+    
+    <div class="controls">
+      <label for="imageInput" class="btn btn-select">Seleccionar imágenes</label>
+      <input type="file" id="imageInput" accept="image/*" multiple />
+      
+      <button id="pdfBtn" class="btn btn-download" disabled>Descargar PDF</button>
+    </div>
+
+    <div class="preview-container" id="preview">
+      <p class="empty-message">No se han seleccionado imágenes.</p>
+    </div>
+  </div>
+
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const previewContainer = document.getElementById('preview');
+    const pdfBtn = document.getElementById('pdfBtn');
+
+    let loadedFiles = [];
+
+    // Cargar y previsualizar imágenes seleccionadas
+    imageInput.addEventListener('change', (event) => {
+      const files = Array.from(event.target.files);
+      if (files.length === 0) return;
+
+      loadedFiles = files;
+      previewContainer.innerHTML = ''; // Limpiar vista previa previa
+
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          previewContainer.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      pdfBtn.disabled = false;
+    });
+
+    // Generar y descargar el PDF
+    pdfBtn.addEventListener('click', async () => {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+
+      pdfBtn.disabled = true;
+      pdfBtn.textContent = 'Generando...';
+
+      for (let i = 0; i < loadedFiles.length; i++) {
+        const file = loadedFiles[i];
+        const imageDataUrl = await readFileAsDataURL(file);
+        const dimensions = await getImageDimensions(imageDataUrl);
+
+        // Crear una nueva página por cada imagen después de la primera
+        if (i > 0) {
+          pdf.addPage();
+        }
+
+        // Obtener dimensiones del PDF (Formato A4 por defecto)
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+
+        // Escalar la imagen manteniendo la proporción para ajustar a la página
+        const ratio = Math.min(pageWidth / dimensions.width, pageHeight / dimensions.height);
+        const imgWidth = dimensions.width * ratio;
+        const imgHeight = dimensions.height * ratio;
+
+        // Centrar la imagen en la página
+        const xPos = (pageWidth - imgWidth) / 2;
+        const yPos = (pageHeight - imgHeight) / 2;
+
+        pdf.addImage(imageDataUrl, getImageFormat(file.type), xPos, yPos, imgWidth, imgHeight);
+      }
+
+      pdf.save('imagenes.pdf');
+
+      pdfBtn.disabled = false;
+      pdfBtn.textContent = 'Descargar PDF';
+    });
+
+    // Convierte el archivo a Data URL
+    function readFileAsDataURL(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Obtiene las dimensiones originales de la imagen
+    function getImageDimensions(dataUrl) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve({ width: img.width, height: img.height });
+        img.src = dataUrl;
+      });
+    }
+
+    // Obtiene el formato compatible para jsPDF
+    function getImageFormat(mimeType) {
+      if (mimeType === 'image/png') return 'PNG';
+      if (mimeType === 'image/webp') return 'WEBP';
+      return 'JPEG';
+    }
+  </script>
+
+</body>
+</html>
