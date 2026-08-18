@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convertidor de Audio a MP3</title>
+    
+    <style>
+        :root {
+            --primary-color: #0b2545;
+            --accent-color: #134074;
+            --bg-color: #eef4f8;
+            --panel-bg: #ffffff;
+            --text-color: #1d2d44;
+            --success-color: #28a745;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--panel-bg);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 30px 15px;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone:hover {
+            border-color: var(--accent-color);
+            background: #f0f4f8;
+        }
+
+        .drop-zone p {
+            font-size: 0.95rem;
+            color: #4a5568;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-info {
+            font-size: 0.85rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 10px;
+        }
+
+        .btn-convert {
+            background-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(19, 64, 116, 0.2);
+        }
+
+        .btn-convert:hover:not(:disabled) {
+            background-color: var(--primary-color);
+        }
+
+        .btn-download {
+            background-color: var(--success-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+            display: none;
+        }
+
+        .btn-download:hover {
+            background-color: #218838;
+        }
+
+        .btn:disabled {
+            background-color: #cbd5e0;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .status {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #718096;
+            min-height: 20px;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Convertidor de Audio a MP3</h1>
+
+        <div class="drop-zone" onclick="document.getElementById('audioInput').click()">
+            <p>Haz clic o arrastra tu archivo de audio aquí (.webm, .wav, .ogg, etc.)</p>
+            <div class="file-info" id="fileName"></div>
+        </div>
+        
+        <input type="file" id="audioInput" accept="audio/*" onchange="handleFileSelect(event)">
+
+        <button class="btn btn-convert" id="convertBtn" onclick="convertAudio()" disabled>Convertir a MP3</button>
+        
+        <audio id="audioPreview" controls></audio>
+        
+        <a id="downloadLink" style="text-decoration: none;">
+            <button class="btn btn-download" id="downloadBtn">Descargar MP3</button>
+        </a>
+
+        <div class="status" id="statusText">Selecciona un archivo para comenzar</div>
+    </div>
+
+    <!-- Librería ultraligera para codificación nativa en MP3 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+
+    <script>
+        let selectedFile = null;
+
+        const convertBtn = document.getElementById('convertBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadLink = document.getElementById('downloadLink');
+        const statusText = document.getElementById('statusText');
+        const fileNameDiv = document.getElementById('fileName');
+        const audioPreview = document.getElementById('audioPreview');
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+
+            selectedFile = files[0];
+            fileNameDiv.innerText = `Archivo seleccionado: ${selectedFile.name}`;
+            
+            downloadBtn.style.display = 'none';
+            audioPreview.style.display = 'none';
+            convertBtn.disabled = false;
+            statusText.innerText = "Archivo listo para la conversión.";
+        }
+
+        async function convertAudio() {
+            if (!selectedFile) return;
+
+            convertBtn.disabled = true;
+            downloadBtn.style.display = 'none';
+            audioPreview.style.display = 'none';
+            statusText.innerText = "Leyendo y decodificando el archivo...";
+
+            try {
+                // 1. Leer archivo mediante FileReader
+                const arrayBuffer = await selectedFile.arrayBuffer();
+
+                // 2. Decodificar audio usando Web Audio API del navegador
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                statusText.innerText = "Procesando canales de audio...";
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+                // 3. Codificar a MP3 usando lamejs
+                statusText.innerText = "Convirtiendo a formato MP3...";
+                const mp3Blob = await encodeMp3(audioBuffer);
+
+                // 4. Generar URL de descarga y reproducción
+                const audioUrl = URL.createObjectURL(mp3Blob);
+
+                audioPreview.src = audioUrl;
+                audioPreview.style.display = 'block';
+
+                const originalName = selectedFile.name.substring(0, selectedFile.name.lastIndexOf('.')) || 'audio';
+                downloadLink.download = `${originalName}.mp3`;
+                downloadLink.href = audioUrl;
+                downloadBtn.style.display = 'block';
+
+                statusText.innerText = "¡Conversión completada con éxito!";
+
+            } catch (error) {
+                console.error(error);
+                statusText.innerText = "Error al procesar el archivo. Asegúrate de que el formato sea válido.";
+            } finally {
+                convertBtn.disabled = false;
+            }
+        }
+
+        function encodeMp3(audioBuffer) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const channels = audioBuffer.numberOfChannels;
+                    const sampleRate = audioBuffer.sampleRate;
+                    const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128); // 128 kbps
+                    const mp3Data = [];
+
+                    const samplesL = audioBuffer.getChannelData(0);
+                    const samplesR = channels > 1 ? audioBuffer.getChannelData(1) : samplesL;
+
+                    // Convertir Float32Array a Int16Array
+                    const sampleBlockSize = 1152;
+                    const length = samplesL.length;
+
+                    for (let i = 0; i < length; i += sampleBlockSize) {
+                        const leftChunk = convertFloat32ToInt16(samplesL.subarray(i, i + sampleBlockSize));
+                        const rightChunk = channels > 1 ? convertFloat32ToInt16(samplesR.subarray(i, i + sampleBlockSize)) : leftChunk;
+
+                        let mp3buf;
+                        if (channels === 2) {
+                            mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+                        } else {
+                            mp3buf = mp3encoder.encodeBuffer(leftChunk);
+                        }
+
+                        if (mp3buf.length > 0) {
+                            mp3Data.push(mp3buf);
+                        }
+                    }
+
+                    const endBuf = mp3encoder.flush();
+                    if (endBuf.length > 0) {
+                        mp3Data.push(endBuf);
+                    }
+
+                    const blob = new Blob(mp3Data, { type: 'audio/mp3' });
+                    resolve(blob);
+                }, 10);
+            });
+        }
+
+        function convertFloat32ToInt16(buffer) {
+            let l = buffer.length;
+            const buf = new Int16Array(l);
+            while (l--) {
+                const s = Math.max(-1, Math.min(1, buffer[l]));
+                buf[l] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+            }
+            return buf;
+        }
+    </script>
+</body>
+</html>
