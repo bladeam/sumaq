@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario Interactivo de Recolección de Datos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --accent: #06b6d4;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --correct: #10b981;
+            --wrong: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        h1, h2, h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #a5b4fc, #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+
+        /* Setup Screen */
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            margin-top: 15px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: none;
+        }
+
+        /* Quiz Screen Header */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .badge {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .timer {
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Options */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 25px 0;
+        }
+
+        .option-item {
+            padding: 16px 20px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: var(--primary);
+        }
+
+        .option-item.selected {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* History Table */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .history-table th, .history-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .history-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .score-pill {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        .score-high { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .score-mid { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .score-low { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        .hidden {
+            display: none;
+        }
+
+        .results-summary {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.1);
+            border: 4px solid var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px auto;
+            font-size: 28px;
+            font-weight: 700;
+            color: #a5b4fc;
+        }
+
+        .review-box {
+            max-height: 250px;
+            overflow-y: auto;
+            margin: 20px 0;
+            padding-right: 5px;
+            text-align: left;
+        }
+
+        .review-item {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .review-item.correct { background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--correct); }
+        .review-item.wrong { background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--wrong); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Pantalla 1: Configuración -->
+    <div id="setup-screen">
+        <h1>Cuestionario Interactivo</h1>
+        <p class="subtitle">Evaluación de Metodología: Encuestas, Observación y Entrevistas</p>
+        
+        <div class="input-group">
+            <label for="participant-name">Nombre del Participante</label>
+            <input type="text" id="participant-name" placeholder="Ej. Juan Pérez" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+            <label for="num-questions">Número de Preguntas (Máximo 60)</label>
+            <input type="number" id="num-questions" min="1" max="60" value="10">
+        </div>
+
+        <button class="btn" onclick="startQuiz()">Iniciar Cuestionario</button>
+        <button class="btn btn-secondary" onclick="showHistoryScreen()">Ver Historial General</button>
+    </div>
+
+    <!-- Pantalla 2: Preguntas -->
+    <div id="quiz-screen" class="hidden">
+        <div class="quiz-header">
+            <span class="badge" id="user-display">Usuario</span>
+            <span class="badge timer" id="timer-display">Tiempo: 00:00</span>
+            <span class="badge" id="counter-display">Pregunta 1/10</span>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <h3 id="question-text" style="-webkit-text-fill-color: initial; color: #f8fafc; text-align: left;">Cargando pregunta...</h3>
+
+        <div class="options-list" id="options-container"></div>
+
+        <button class="btn" id="next-btn" onclick="nextQuestion()" disabled>Siguiente Pregunta</button>
+    </div>
+
+    <!-- Pantalla 3: Resultados -->
+    <div id="result-screen" class="hidden">
+        <h2>¡Cuestionario Finalizado!</h2>
+        <p class="subtitle" id="result-user-name"></p>
+
+        <div class="results-summary">
+            <div class="score-circle" id="percentage-circle">0%</div>
+            <p id="time-summary" style="color: var(--text-muted);"></p>
+        </div>
+
+        <h4 style="margin-bottom: 10px; color: #cbd5e1;">Desglose de Respuestas:</h4>
+        <div class="review-box" id="review-container"></div>
+
+        <button class="btn" onclick="showSetupScreen()">Realizar Otro Cuestionario</button>
+        <button class="btn btn-secondary" onclick="showHistoryScreen()">Ver Historial General</button>
+    </div>
+
+    <!-- Pantalla 4: Historial -->
+    <div id="history-screen" class="hidden">
+        <h2>Historial de Intentos</h2>
+        <p class="subtitle">Registros guardados localmente</p>
+
+        <div style="overflow-x: auto;">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Nombre</th>
+                        <th>Preguntas</th>
+                        <th>Tiempo</th>
+                        <th>Puntaje</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body"></tbody>
+            </table>
+        </div>
+
+        <button class="btn" style="margin-top: 25px;" onclick="showSetupScreen()">Volver al Inicio</button>
+        <button class="btn btn-secondary" onclick="clearHistory()">Borrar Historial</button>
+    </div>
+</div>
+
+<script>
+    const allQuestions = [{"q": "1. \u00bfQu\u00e9 es una encuesta seg\u00fan el material de estudio?", "a": ["Una entrevista informal sin estructura previa.", "Un m\u00e9todo de investigaci\u00f3n que usa un cuestionario para reunir datos y opiniones.", "Una t\u00e9cnica de observaci\u00f3n no estructurada en laboratorio.", "Un an\u00e1lisis estad\u00edstico exclusivo de documentos antiguos.", "Un experimento controlado de ingenier\u00eda civil."], "c": 1}, {"q": "2. \u00bfCu\u00e1l es el objetivo principal de realizar una encuesta?", "a": ["Recopilar datos directamente de un grupo de personas para tomar decisiones informadas.", "Reemplazar la observaci\u00f3n cient\u00edfica por completo.", "Evaluar \u00fanicamente el estado de paredes y techos en obras.", "Evitar el uso de cuestionarios escritos.", "Reducir el tama\u00f1o de la poblaci\u00f3n estudiada a una sola persona."], "c": 0}, {"q": "3. \u00bfQu\u00e9 tipo de encuesta se clasifica seg\u00fan su objetivo?", "a": ["Encuesta telef\u00f3nica.", "Encuesta descriptiva.", "Encuesta longitudinal.", "Encuesta online.", "Encuesta por correo."], "c": 1}, {"q": "4. \u00bfCu\u00e1l de los siguientes es un tipo de encuesta seg\u00fan la frecuencia de aplicaci\u00f3n?", "a": ["Encuesta anal\u00edtica.", "Encuesta en persona.", "Encuesta transversal.", "Encuesta de respuesta abierta.", "Encuesta de respuesta cerrada."], "c": 2}, {"q": "5. \u00bfCu\u00e1l es la primera etapa en el proceso de desarrollo de una encuesta?", "a": ["Trabajo de campo.", "Definici\u00f3n de objetivos.", "Selecci\u00f3n de la muestra.", "An\u00e1lisis de datos.", "Dise\u00f1o del cuestionario."], "c": 1}, {"q": "6. Es una ventaja destacada de la encuesta:", "a": ["Exclusi\u00f3n de personas que no saben leer y escribir.", "Riesgo de recepci\u00f3n tard\u00eda de cuestionarios.", "Someter a interrogatorio a un mayor n\u00famero de personas con menor costo y tiempo.", "Dependencia total de la memoria del entrevistador.", "Imposibilidad de mantener el anonimato."], "c": 2}, {"q": "7. \u00bfCu\u00e1l de las siguientes es una desventaja de las encuestas?", "a": ["Disminuci\u00f3n del riesgo de distorsi\u00f3n por la presencia del entrevistador.", "Posibilidad de altos \u00edndices de cuestionarios incompletos o sin respuesta.", "Mayor libertad de expresi\u00f3n en las respuestas escritas.", "Menores gastos en el adiestramiento de personal.", "Capacidad de abarcar \u00e1reas geogr\u00e1ficas muy amplias."], "c": 1}, {"q": "8. \u00bfEn qu\u00e9 consiste la t\u00e9cnica de la observaci\u00f3n en la recolecci\u00f3n de datos?", "a": ["En hacer preguntas cerradas mediante un cuestionario telef\u00f3nico.", "En mirar con un objetivo cient\u00edfico para obtener datos ordenados y \u00fatiles.", "En realizar grabaciones de audio de forma improvisada.", "En enviar formularios por correo postal.", "En consultar \u00fanicamente registros de peri\u00f3dicos antiguos."], "c": 1}, {"q": "9. \u00bfQu\u00e9 define a la 'unidad estad\u00edstica de observaci\u00f3n'?", "a": ["Es el conjunto total de elementos a estudiar.", "Es el instrumento o ficha que se utiliza para medir.", "Es aquello que se va a observar individualmente (persona, familia, obra, etc.).", "Es el guion que indica qu\u00e9 aspectos evaluar.", "Es el resultado final del an\u00e1lisis de datos."], "c": 2}, {"q": "10. Si en un estudio investigamos 500 viviendas de una zona, las 500 viviendas representan:", "a": ["La unidad estad\u00edstica de observaci\u00f3n.", "La poblaci\u00f3n observada.", "La observaci\u00f3n circunstancial.", "La observaci\u00f3n de laboratorio.", "El guion de observaci\u00f3n."], "c": 1}, {"q": "11. El elemento de la observaci\u00f3n que indica qu\u00e9 aspectos espec\u00edficos evaluar para evitar desviaciones se llama:", "a": ["Muestra.", "Guion.", "Entrevista no estructurada.", "Unidad de an\u00e1lisis.", "Sesgo de respuesta."], "c": 1}, {"q": "12. \u00bfQu\u00e9 caracteriza a la observaci\u00f3n indirecta?", "a": ["El investigador est\u00e1 presente y observa el hecho directamente.", "Se utiliza informaci\u00f3n registrada por otras personas o en documentos.", "Se realiza de manera continua durante todo un periodo sin interrupci\u00f3n.", "No requiere ning\u00fan tipo de registro ni metodolog\u00eda.", "Se aplica exclusivamente en un ambiente de laboratorio."], "c": 1}, {"q": "13. La observaci\u00f3n realizada en una situaci\u00f3n espec\u00edfica y no durante todo el periodo se denomina:", "a": ["Observaci\u00f3n continua.", "Observaci\u00f3n circunstancial.", "Observaci\u00f3n participante.", "Observaci\u00f3n exhaustiva.", "Observaci\u00f3n sistem\u00e1tica."], "c": 1}, {"q": "14. \u00bfQu\u00e9 diferencia a la observaci\u00f3n exhaustiva de la parcial?", "a": ["La exhaustiva usa laboratorios y la parcial se hace en la vida real.", "La exhaustiva observa a toda la poblaci\u00f3n y la parcial solo a una parte.", "La exhaustiva no utiliza guion y la parcial s\u00ed.", "La exhaustiva la realiza una persona y la parcial un equipo.", "La exhaustiva dura a\u00f1os y la parcial solo unos minutos."], "c": 1}, {"q": "15. \u00bfC\u00f3mo se conoce tambi\u00e9n a la observaci\u00f3n no estructurada?", "a": ["Observaci\u00f3n sistem\u00e1tica.", "Observaci\u00f3n ordinaria, libre, simple o vulgar.", "Observaci\u00f3n por correo.", "Observaci\u00f3n de laboratorio.", "Observaci\u00f3n anal\u00edtica."], "c": 1}, {"q": "16. \u00bfCu\u00e1l es el prop\u00f3sito principal de la observaci\u00f3n no estructurada?", "a": ["Aplicar escalas y cuadros de medici\u00f3n de alta precisi\u00f3n.", "Tomar el primer contacto con la realidad y formular hip\u00f3tesis.", "Sustituir el trabajo de campo de las encuestas.", "Medir variables num\u00e9ricas con instrumentos avanzados.", "Garantizar el anonimato estricto de los participantes."], "c": 1}, {"q": "17. En la observaci\u00f3n participante:", "a": ["El observador se mantiene totalmente ajeno a la comunidad.", "El observador se integra y participa en la vida de la poblaci\u00f3n estudiada.", "Solo se utilizan instrumentos electr\u00f3nicos de medici\u00f3n.", "Se examinan exclusivamente documentos hist\u00f3ricos.", "No se permite el registro de datos en fichas."], "c": 1}, {"q": "18. Es una ventaja propia de la t\u00e9cnica de la observaci\u00f3n:", "a": ["Ser la t\u00e9cnica m\u00e1s econ\u00f3mica para poblaciones muy numerosas.", "Que la informaci\u00f3n recopilada es independiente del deseo o veracidad del sujeto.", "La facilidad para no distorsionar jam\u00e1s los datos recopilados.", "La ausencia de necesidad de planificar un guion previo.", "La rapidez inmediata frente a las encuestas online."], "c": 1}, {"q": "19. \u00bfQu\u00e9 define a una entrevista estructurada?", "a": ["Se realiza con preguntas abiertas y respuesta libre.", "Se basa en un formulario o cuestionario elaborado previamente.", "El entrevistador improvisa el orden y tipo de interrogantes.", "No utiliza ning\u00fan tipo de soporte o registro.", "Ocurre de forma casual sin planeaci\u00f3n docente."], "c": 1}, {"q": "20. \u00bfCu\u00e1les son los actores principales que intervienen en una entrevista?", "a": ["El encuestador y la muestra estad\u00edstica.", "El observador y la unidad de an\u00e1lisis.", "El entrevistador y el entrevistado.", "El docente y la poblaci\u00f3n observada.", "El analista de datos y el software estad\u00edstico."], "c": 2}, {"q": "21. La entrevista no estructurada o abierta se caracteriza por:", "a": ["Un marco fijo de preguntas preestablecidas.", "Dar la posibilidad de responder con total libertad y sin limitaciones predeterminadas.", "Usar \u00fanicamente opciones de selecci\u00f3n m\u00faltiple.", "Aplicarse solo a grandes grupos de personas simult\u00e1neamente.", "No requerir la presencia de un entrevistador."], "c": 1}, {"q": "22. \u00bfEn qu\u00e9 consiste la t\u00e9cnica de la entrevista focalizada?", "a": ["En estudiar una amplia variedad de temas generales.", "En profundizar sobre un tema muy espec\u00edfico y previamente analizado por el investigador.", "En realizar observaciones en un entorno de laboratorio cerrado.", "En enviar cuestionarios impresos por correo ordinario.", "En entrevistar \u00fanicamente a ni\u00f1os y adolescentes."], "c": 1}, {"q": "23. \u00bfQu\u00e9 aspecto es fundamental durante la fase de preparaci\u00f3n de una entrevista?", "a": ["Iniciar el di\u00e1logo de forma abrupta y directa.", "Definir los objetivos de la investigaci\u00f3n y elaborar una gu\u00eda o pauta.", "Redactar de inmediato el informe final.", "Aplicar un examen escrito al entrevistado.", "Limitar la duraci\u00f3n de la entrevista a un m\u00e1ximo de un minuto."], "c": 1}, {"q": "24. El clima de confianza y empat\u00eda que se busca generar al inicio de una entrevista se conoce como:", "a": ["Sesgo de observaci\u00f3n.", "Rapport.", "Muestra representativa.", "Guion de campo.", "Registro anecd\u00f3tico."], "c": 1}, {"q": "25. \u00bfCu\u00e1l es una ventaja principal de la entrevista en comparaci\u00f3n con la encuesta por cuestionario escrito?", "a": ["Permite captar lenguaje no verbal y aclarar dudas en tiempo real.", "Es siempre mucho m\u00e1s r\u00e1pida de aplicar a miles de personas.", "Elimina por completo la influencia del entrevistador.", "No requiere ning\u00fan proceso de transcripci\u00f3n posterior.", "Garantiza el anonimato total del entrevistado."], "c": 0}, {"q": "26. Una desventaja frecuente de la t\u00e9cnica de la entrevista es:", "a": ["La imposibilidad de hacer preguntas abiertas.", "El mayor costo en tiempo y recursos por cada sujeto evaluado.", "La falta de contacto directo con los participantes.", "La incapacidad de abordar temas complejos.", "El uso obligatorio de laboratorios cient\u00edficos."], "c": 1}, {"q": "27. \u00bfQu\u00e9 tipo de pregunta en una encuesta obliga al encuestado a elegir entre opciones fijas?", "a": ["Pregunta de respuesta abierta.", "Pregunta de respuesta cerrada.", "Pregunta exploratoria libre.", "Pregunta no estructurada.", "Pregunta anecd\u00f3tica."], "c": 1}, {"q": "28. \u00bfQu\u00e9 ventaja ofrecen las preguntas abiertas en un cuestionario?", "a": ["Facilitan el procesamiento cuantitativo autom\u00e1tico.", "Permiten obtener respuestas m\u00e1s ricas y detalladas con matices propios del encuestado.", "Eliminan el riesgo de respuestas irrelevantes.", "Son m\u00e1s f\u00e1ciles y r\u00e1pidas de codificar que las cerradas.", "Garantizan que todos los encuestados elijan la misma opci\u00f3n."], "c": 1}, {"q": "29. \u00bfQu\u00e9 define a una encuesta longitudinal?", "a": ["Aquella que recolecta datos en un solo momento en el tiempo.", "Aquella que realiza mediciones a lo largo del tiempo para analizar cambios o tendencias.", "La que se aplica exclusivamente de manera telef\u00f3nica.", "La que eval\u00faa \u00fanicamente estructuras f\u00edsicas en obras.", "La que no utiliza cuestionarios ni preguntas."], "c": 1}, {"q": "30. Una encuesta aplicada en un \u00fanico momento del tiempo para describir una situaci\u00f3n actual es:", "a": ["Encuesta longitudinal.", "Encuesta transversal.", "Encuesta no estructurada.", "Observaci\u00f3n participante.", "Entrevista en profundidad."], "c": 1}, {"q": "31. \u00bfQu\u00e9 se entiende por 'poblaci\u00f3n' en el contexto de una investigaci\u00f3n?", "a": ["El subconjunto de personas seleccionadas para responder una prueba.", "El conjunto completo de elementos o individuos que comparten caracter\u00edsticas de inter\u00e9s.", "\u00danicamente los habitantes de una ciudad espec\u00edfica.", "El grupo de entrevistadores encargados del campo.", "Las herramientas y materiales empleados en la observaci\u00f3n."], "c": 1}, {"q": "32. \u00bfQu\u00e9 es una 'muestra' en un estudio estad\u00edstico?", "a": ["La totalidad de la poblaci\u00f3n estudiada.", "Una parte representativa seleccionada de la poblaci\u00f3n para realizar el estudio.", "El formulario final enviado por correo.", "El lugar de laboratorio donde se realiza el experimento.", "El informe de conclusiones presentado al docente."], "c": 1}, {"q": "33. \u00bfQu\u00e9 caracteriza a la observaci\u00f3n de laboratorio?", "a": ["Se realiza en el entorno natural de los sujetos sin control previo.", "Se lleva a cabo en un ambiente controlado donde se pueden aislar variables.", "Se basa \u00fanicamente en la revisi\u00f3n de registros impresos antiguos.", "Se hace de forma espont\u00e1nea y sin preparaci\u00f3n previa.", "No requiere la presencia de un investigador."], "c": 1}, {"q": "34. \u00bfQu\u00e9 es la observaci\u00f3n de campo?", "a": ["Aquella que se realiza en el medio o lugar habitual donde ocurren los hechos.", "Aquella que se realiza exclusivamente en aulas cerradas.", "La que se limita al an\u00e1lisis de documentos digitales.", "La que solo mide materiales de construcci\u00f3n.", "La que carece de cualquier objetivo cient\u00edfico."], "c": 0}, {"q": "35. \u00bfCu\u00e1l es la funci\u00f3n del registro de datos en la observaci\u00f3n?", "a": ["Reemplazar la necesidad de observar directamente.", "Anotar y documentar de forma sistem\u00e1tica la informaci\u00f3n obtenida durante la observaci\u00f3n.", "Obligar al sujeto observado a responder un cuestionario escrito.", "Evaluar el presupuesto financiero de la investigaci\u00f3n.", "Facilitar la publicaci\u00f3n inmediata de encuestas por internet."], "c": 1}, {"q": "36. Un riesgo o sesgo de la observaci\u00f3n participante es que:", "a": ["El investigador nunca interact\u00faa con la comunidad.", "La presencia del investigador altere la conducta habitual de las personas observadas.", "No se puedan usar cuadernos de notas ni fichas.", "Sea imposible aplicar la observaci\u00f3n a seres humanos.", "Se obtengan \u00fanicamente datos matem\u00e1ticos cerrados."], "c": 1}, {"q": "37. La entrevista semiestructurada se caracteriza por:", "a": ["Seguir un guion r\u00edgido sin posibilidad de salirse de las preguntas fijas.", "Combinar preguntas preestablecidas con la libertad de explorar aspectos emergentes.", "Ser un interrogatorio judicial estricto.", "No definir previamente ning\u00fan tema ni objetivo.", "Realizarse mediante sistemas automatizados sin intervenci\u00f3n humana."], "c": 1}, {"q": "38. \u00bfQu\u00e9 se recomienda al formular preguntas en un cuestionario de encuesta?", "a": ["Usar un lenguaje ambiguo y t\u00e9cnico muy complejo.", "Redactar preguntas claras, neutrales y comprensibles para la poblaci\u00f3n objetivo.", "Incluir dos o tres preguntas en un solo enunciado para ahorrar espacio.", "Guiar o sugerir abiertamente la respuesta deseada.", "Evitar cualquier tipo de orden l\u00f3gico en las preguntas."], "c": 1}, {"q": "39. \u00bfQu\u00e9 rol cumple la 'prueba piloto' en una encuesta?", "a": ["Publicar los resultados definitivos en medios de comunicaci\u00f3n.", "Probar el cuestionario en un grupo peque\u00f1o para detectar y corregir errores antes del estudio final.", "Seleccionar al personal encargado de la limpieza del laboratorio.", "Analizar estad\u00edsticamente la base de datos completa de la poblaci\u00f3n.", "Sustituir el dise\u00f1o de objetivos de la investigaci\u00f3n."], "c": 1}, {"q": "40. \u00bfCu\u00e1l de los siguientes es un m\u00e9todo com\u00fan de administraci\u00f3n de encuestas?", "a": ["Observaci\u00f3n ordinaria simple.", "Encuesta autoadministrada en l\u00ednea (online).", "Entrevista cl\u00ednica en profundidad.", "Ficha de registro anecd\u00f3tico.", "Experimento de laboratorio cerrado."], "c": 1}, {"q": "41. \u00bfQu\u00e9 es una encuesta anal\u00edtica?", "a": ["Una encuesta orientada a describir situaciones sin buscar explicaciones causa-efecto.", "Una encuesta que busca probar hip\u00f3tesis y explicar las relaciones de causa y efecto entre variables.", "Un instrumento exclusivo para la recolecci\u00f3n de muestras biol\u00f3gicas.", "Una entrevista informal no estructurada.", "Un registro gr\u00e1fico de observaciones de campo."], "c": 1}, {"q": "42. \u00bfCu\u00e1l es el canal de aplicaci\u00f3n de una encuesta telef\u00f3nica?", "a": ["Correo postal.", "Comunicaci\u00f3n por llamada telef\u00f3nica entre encuestador y encuestado.", "Formularios impresos entregados en mano.", "Observaci\u00f3n directa en espacios p\u00fablicos.", "Plataformas de mensajer\u00eda automatizada sin voz."], "c": 1}, {"q": "43. Una desventaja espec\u00edfica de las encuestas en l\u00ednea o por internet es:", "a": ["El alto costo de impresi\u00f3n y distribuci\u00f3n de papel.", "El posible sesgo de selecci\u00f3n al excluir a personas sin acceso a internet o tecnolog\u00eda.", "La lentitud en la recolecci\u00f3n de los datos.", "La presencia constante del entrevistador que genera presi\u00f3n.", "La imposibilidad de usar preguntas cerradas."], "c": 1}, {"q": "44. \u00bfQu\u00e9 ventaja ofrece la encuesta autoadministrada por correo o en papel?", "a": ["Permite al encuestado responder a su propio ritmo y con mayor sensaci\u00f3n de privacidad.", "Garantiza un 100% de tasa de respuesta inmediata.", "Permite aclarar dudas complejas en tiempo real mediante el investigador.", "Evita que el encuestado omita preguntas por error.", "No requiere proceso previo de dise\u00f1o del cuestionario."], "c": 0}, {"q": "45. \u00bfEn qu\u00e9 consiste el 'sesgo de respuesta' en una encuesta?", "a": ["En seleccionar una muestra demasiado grande.", "En la tendencia de los encuestados a responder de forma inexacta o no veraz.", "En la falta de presupuesto para imprimir cuestionarios.", "En el uso de gr\u00e1ficos estad\u00edsticos en el informe final.", "En la correcta calibraci\u00f3n de los instrumentos de medici\u00f3n de laboratorio."], "c": 1}, {"q": "46. \u00bfQu\u00e9 funci\u00f3n cumple la introducci\u00f3n o encabezado de un cuestionario de encuesta?", "a": ["Presentar las conclusiones generales del estudio.", "Explicar el prop\u00f3sito del estudio, garantizar la confidencialidad y motivar la participaci\u00f3n.", "Registrar los datos cualitativos del observador.", "Mostrar la lista completa de la poblaci\u00f3n estudiada.", "Definir la escala cuantitativa de an\u00e1lisis estad\u00edstico."], "c": 1}, {"q": "47. \u00bfQu\u00e9 es una pregunta de escala Likert en un cuestionario?", "a": ["Una pregunta de respuesta abierta donde el participante redacta un p\u00e1rrafo libre.", "Una pregunta que mide el nivel de acuerdo o desacuerdo con una afirmaci\u00f3n mediante una escala graduada.", "Un tipo de observaci\u00f3n no estructurada.", "Un guion de entrevista cl\u00ednica en profundidad.", "Una categor\u00eda exclusiva de la observaci\u00f3n participante."], "c": 1}, {"q": "48. \u00bfCu\u00e1l es el prop\u00f3sito del an\u00e1lisis de datos en una encuesta?", "a": ["Dise\u00f1ar las preguntas del cuestionario preliminar.", "Procesar e interpretar la informaci\u00f3n recopilada para extraer conclusiones pertinentes.", "Seleccionar a los entrevistadores que saldr\u00e1n a campo.", "Definir la muestra probabil\u00edstica inicial.", "Construir laboratorios de experimentaci\u00f3n."], "c": 1}, {"q": "49. La observaci\u00f3n cient\u00edfica se diferencia de la observaci\u00f3n ordinaria en que:", "a": ["La cient\u00edfica es espont\u00e1nea y carece de objetivos previos.", "La cient\u00edfica es planificada, sistem\u00e1tica y guiada por un objetivo de investigaci\u00f3n.", "La ordinaria requiere herramientas de alta precisi\u00f3n de laboratorio.", "La cient\u00edfica no necesita registrar ning\u00fan tipo de dato.", "La ordinaria solo se utiliza en la ingenier\u00eda civil."], "c": 1}, {"q": "50. \u00bfQu\u00e9 se entiende por observaci\u00f3n sistem\u00e1tica o estructurada?", "a": ["Aquella que no utiliza ning\u00fan instrumento ni gu\u00eda de observaci\u00f3n.", "Aquella que utiliza categor\u00edas precisas, pautas fijas e instrumentos estandarizados de registro.", "Aquella que ocurre de forma imprevista en la calle.", "Un tipo de entrevista informal abierta.", "Una encuesta telef\u00f3nica automatizada."], "c": 1}, {"q": "51. La ficha de observaci\u00f3n es:", "a": ["Un documento para anotar sistem\u00e1ticamente las variables y aspectos observados durante el estudio.", "El contrato de trabajo de los encuestadores de campo.", "La transcripci\u00f3n literal de una entrevista focalizada.", "El certificado de validez de una muestra de poblaci\u00f3n.", "Un resumen estad\u00edstico de gr\u00e1ficos de barras."], "c": 0}, {"q": "52. \u00bfQu\u00e9 ventaja tiene la observaci\u00f3n no participante?", "a": ["Involucra emocionalmente al observador con el grupo estudiado.", "Permite mantener una postura de neutralidad e imparcialidad al no intervenir en la escena.", "Reemplaza la necesidad de usar un guion o lista de cotejo.", "Es m\u00e1s r\u00e1pida que enviar cuestionarios en l\u00ednea.", "Oculta por completo la finalidad cient\u00edfica del proyecto."], "c": 1}, {"q": "53. \u00bfQu\u00e9 caracteriza a la observaci\u00f3n individual?", "a": ["Es realizada por un equipo multidisciplinario de cient\u00edficos.", "Es realizada por una sola persona encargada de registrar los datos.", "Consiste en observar a un solo sujeto dentro de una poblaci\u00f3n masiva.", "Se hace sin utilizar sentidos como la vista ni el o\u00eddo.", "Es equivalente a aplicar una encuesta por correo postal."], "c": 1}, {"q": "54. La observaci\u00f3n en equipo o de grupo se utiliza para:", "a": ["Reducir el costo financiero al m\u00ednimo absoluto.", "Abarcar diferentes \u00e1ngulos de un fen\u00f3meno o contrastar observaciones para mayor objetividad.", "Evitar la redacci\u00f3n de informes finales.", "Reemplazar la recolecci\u00f3n de datos cuantitativos.", "Aplicar cuestionarios de preguntas cerradas simult\u00e1neamente."], "c": 1}, {"q": "55. \u00bfCu\u00e1l es la principal Limitaci\u00f3n t\u00e9cnica de la observaci\u00f3n como m\u00e9todo de recolecci\u00f3n?", "a": ["Que no permite captar hechos en el momento exacto en que ocurren.", "Que no se pueden observar directamente los procesos mentales internos o estados de \u00e1nimo no manifestados.", "Que exige siempre la entrega de un cuestionario impreso.", "Que solo sirve para medir materiales de construcci\u00f3n.", "Que no se puede combinar con otras t\u00e9cnicas como la entrevista."], "c": 1}, {"q": "56. \u00bfQu\u00e9 es el 'cuaderno de campo' en la observaci\u00f3n?", "a": ["Un libro de texto te\u00f3rico sobre metodolog\u00eda de la investigaci\u00f3n.", "Un diario o libreta donde el investigador anota impresiones, hechos y detalles del entorno observado.", "La lista de personas seleccionadas en el muestreo estad\u00edstico.", "El cuestionario de preguntas m\u00faltiples enviado a los encuestados.", "El acta oficial de cierre de una entrevista no estructurada."], "c": 1}, {"q": "57. En la t\u00e9cnica de la entrevista, el t\u00e9rmino 'guion de entrevista' se refiere a:", "a": ["El documento legal que autoriza la grabaci\u00f3n de audio.", "El esquema o lista ordenada de temas y preguntas que orientar\u00e1n la conversaci\u00f3n.", "La transcripci\u00f3n paso a paso de lo que respondi\u00f3 el entrevistado.", "La base de datos procesada cuantitativamente.", "El perfil psicol\u00f3gico del encuestador."], "c": 1}, {"q": "58. La entrevista en profundidad busca fundamentalmente:", "a": ["Recopilar datos cuantitativos r\u00e1pidos de una gran masa de personas.", "Comprender las perspectivas, experiencias y significados personales del entrevistado sobre un tema espec\u00edfico.", "Aplicar un cuestionario estandarizado de opci\u00f3n m\u00faltiple.", "Evaluar el rendimiento acad\u00e9mico mediante preguntas objetivas.", "Realizar observaciones de campo en entornos abiertos."], "c": 1}, {"q": "59. Una regla b\u00e1sica de actitud para el entrevistador durante la sesi\u00f3n es:", "a": ["Interrumpir constantemente para corregir las opiniones del entrevistado.", "Escuchar de forma activa, manteniendo una postura neutral y respetuosa sin juzgar.", "Imponer su propio punto de vista sobre las preguntas planteadas.", "Responder las preguntas del formulario \u00e9l mismo para avanzar m\u00e1s r\u00e1pido.", "Apurar al entrevistado para terminar en menos de cinco minutos."], "c": 1}, {"q": "60. \u00bfQu\u00e9 se debe hacer con la informaci\u00f3n obtenida tras finalizar una entrevista?", "a": ["Desechar las notas si se cuenta con la grabaci\u00f3n de audio.", "Organizar, transcribir y analizar el contenido registrado para extraer categor\u00edas y hallazgos claves.", "Guardar los audios sin clasificarlos ni interpretarlos.", "Publicarla de inmediato sin revisar ni contrastar.", "Convertirla obligatoriamente en un gr\u00e1fico de barras."], "c": 1}];
+
+    let activeQuestions = [];
+    let currentQuestionIndex = 0;
+    let selectedOptionIndex = null;
+    let userAnswers = [];
+    let participantName = "";
+    let startTime = null;
+    let timerInterval = null;
+    let elapsedTimeSeconds = 0;
+
+    function showSetupScreen() {
+        hideAllScreens();
+        document.getElementById('setup-screen').classList.remove('hidden');
+    }
+
+    function showHistoryScreen() {
+        hideAllScreens();
+        renderHistory();
+        document.getElementById('history-screen').classList.remove('hidden');
+    }
+
+    function hideAllScreens() {
+        document.getElementById('setup-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('history-screen').classList.add('hidden');
+    }
+
+    function startQuiz() {
+        const nameInput = document.getElementById('participant-name').value.trim();
+        const numInput = parseInt(document.getElementById('num-questions').value);
+
+        if (!nameInput) {
+            alert('Por favor, ingresa el nombre del participante.');
+            return;
+        }
+
+        if (isNaN(numInput) || numInput < 1 || numInput > allQuestions.length) {
+            alert(`Por favor, ingresa un número válido de preguntas (entre 1 y ${allQuestions.length}).`);
+            return;
+        }
+
+        participantName = nameInput;
+        // Shuffle questions copy and select specified amount
+        const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+        activeQuestions = shuffled.slice(0, numInput);
+
+        currentQuestionIndex = 0;
+        userAnswers = [];
+        elapsedTimeSeconds = 0;
+
+        document.getElementById('user-display').innerText = participantName;
+        
+        hideAllScreens();
+        document.getElementById('quiz-screen').classList.remove('hidden');
+
+        startTimer();
+        loadQuestion();
+    }
+
+    function startTimer() {
+        startTime = Date.now();
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            elapsedTimeSeconds++;
+            const mins = Math.floor(elapsedTimeSeconds / 60).toString().padStart(2, '0');
+            const secs = (elapsedTimeSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `Tiempo: ${mins}:${secs}`;
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
+
+    function loadQuestion() {
+        selectedOptionIndex = null;
+        const qData = activeQuestions[currentQuestionIndex];
+        
+        document.getElementById('counter-display').innerText = `Pregunta ${currentQuestionIndex + 1}/${activeQuestions.length}`;
+        document.getElementById('question-text').innerText = qData.q;
+        
+        const progressPct = ((currentQuestionIndex) / activeQuestions.length) * 100;
+        document.getElementById('progress-fill').style.width = `${progressPct}%`;
+
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        qData.a.forEach((optText, idx) => {
+            const div = document.createElement('div');
+            div.className = 'option-item';
+            div.innerText = optText;
+            div.onclick = () => selectOption(idx, div);
+            optionsContainer.appendChild(div);
+        });
+
+        const nextBtn = document.getElementById('next-btn');
+        nextBtn.disabled = true;
+        nextBtn.innerText = (currentQuestionIndex === activeQuestions.length - 1) ? 'Finalizar Cuestionario' : 'Siguiente Pregunta';
+    }
+
+    function selectOption(index, element) {
+        selectedOptionIndex = index;
+        const items = document.querySelectorAll('.option-item');
+        items.forEach(item => item.classList.remove('selected'));
+        element.classList.add('selected');
+        document.getElementById('next-btn').disabled = false;
+    }
+
+    function nextQuestion() {
+        if (selectedOptionIndex === null) return;
+
+        userAnswers.push({
+            question: activeQuestions[currentQuestionIndex].q,
+            selected: selectedOptionIndex,
+            correct: activeQuestions[currentQuestionIndex].c,
+            options: activeQuestions[currentQuestionIndex].a
+        });
+
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < activeQuestions.length) {
+            loadQuestion();
+        } else {
+            finishQuiz();
+        }
+    }
+
+    function finishQuiz() {
+        stopTimer();
+        
+        let correctCount = 0;
+        userAnswers.forEach(ans => {
+            if (ans.selected === ans.correct) correctCount++;
+        });
+
+        const percentage = Math.round((correctCount / activeQuestions.length) * 100);
+        const mins = Math.floor(elapsedTimeSeconds / 60).toString().padStart(2, '0');
+        const secs = (elapsedTimeSeconds % 60).toString().padStart(2, '0');
+        const timeFormatted = `${mins}:${secs}`;
+        const dateFormatted = new Date().toLocaleString();
+
+        // Save to LocalStorage
+        saveHistory({
+            date: dateFormatted,
+            name: participantName,
+            total: activeQuestions.length,
+            correct: correctCount,
+            percentage: percentage,
+            time: timeFormatted
+        });
+
+        // Render Results
+        document.getElementById('result-user-name').innerText = `Resultado de ${participantName}`;
+        document.getElementById('percentage-circle').innerText = `${percentage}%`;
+        document.getElementById('time-summary').innerText = `Tiempo total: ${timeFormatted} | Correctas: ${correctCount} de ${activeQuestions.length}`;
+
+        const reviewContainer = document.getElementById('review-container');
+        reviewContainer.innerHTML = '';
+        
+        userAnswers.forEach((ans, idx) => {
+            const isCorrect = ans.selected === ans.correct;
+            const div = document.createElement('div');
+            div.className = `review-item ${isCorrect ? 'correct' : 'wrong'}`;
+            div.innerHTML = `
+                <strong>${idx + 1}. ${ans.question}</strong><br>
+                Tu respuesta: ${ans.options[ans.selected]}<br>
+                ${!isCorrect ? `<span style="color:#10b981;">Correcta: ${ans.options[ans.correct]}</span>` : ''}
+            `;
+            reviewContainer.appendChild(div);
+        });
+
+        hideAllScreens();
+        document.getElementById('result-screen').classList.remove('hidden');
+    }
+
+    function saveHistory(record) {
+        let history = JSON.parse(localStorage.getItem('quiz_history') || '[]');
+        history.unshift(record);
+        localStorage.setItem('quiz_history', JSON.stringify(history));
+    }
+
+    function renderHistory() {
+        const history = JSON.parse(localStorage.getItem('quiz_history') || '[]');
+        const tbody = document.getElementById('history-body');
+        tbody.innerHTML = '';
+
+        if (history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="color: var(--text-muted);">No hay intentos registrados</td></tr>';
+            return;
+        }
+
+        history.forEach(item => {
+            let scoreClass = 'score-low';
+            if (item.percentage >= 80) scoreClass = 'score-high';
+            else if (item.percentage >= 51) scoreClass = 'score-mid';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.date}</td>
+                <td><strong>${item.name}</strong></td>
+                <td>${item.correct}/${item.total}</td>
+                <td>${item.time}</td>
+                <td><span class="score-pill ${scoreClass}">${item.percentage}%</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function clearHistory() {
+        if (confirm('¿Estás seguro de que deseas borrar todo el historial?')) {
+            localStorage.removeItem('quiz_history');
+            renderHistory();
+        }
+    }
+</script>
+
+</body>
+</html>
