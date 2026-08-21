@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío Matemático: Clasificación de Números</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-primary: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            /* Conjuntos Colors */
+            --c-nat: #f59e0b; /* N - Amarillo */
+            --c-ent: #10b981; /* Z - Verde */
+            --c-rac: #3b82f6; /* Q - Azul */
+            --c-irr: #ec4899; /* I - Rosado */
+            --c-rea: #8b5cf6; /* R - Morado */
+            --c-img: #06b6d4; /* Im - Cyan */
+            --c-com: #f43f5e; /* C - Rojo */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Fredoka One', cursive;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        /* Pantallas */
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* INICIO */
+        .start-card {
+            max-width: 480px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .start-card h1 {
+            font-size: 2.2rem;
+            color: #818cf8;
+            margin-bottom: 10px;
+        }
+
+        .start-card p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 2px solid #334155;
+            background: #0f172a;
+            color: #fff;
+            font-size: 1.05rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(79, 70, 229, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        /* JUEGO layout grid */
+        .game-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Header Info Game */
+        .game-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0f172a;
+            padding: 15px 25px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+            border: 1px solid #334155;
+        }
+
+        .player-info {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #818cf8;
+        }
+
+        .stats-pills {
+            display: flex;
+            gap: 15px;
+        }
+
+        .pill {
+            background: #1e293b;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: 1px solid #334155;
+        }
+
+        /* Sidebar Pregunta */
+        .question-card {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 18px;
+            border: 1px solid #334155;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .question-card h3 {
+            color: var(--text-muted);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .number-box {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.8rem;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 15px 25px;
+            border-radius: 16px;
+            border: 2px dashed #38bdf8;
+            margin: 15px 0;
+            width: 100%;
+            word-break: break-all;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .instruction {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-top: 5px;
+            line-height: 1.4;
+        }
+
+        /* Feedback Toast */
+        .feedback-msg {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            width: 100%;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feedback-msg.show { opacity: 1; }
+        .feedback-msg.correct { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+        .feedback-msg.error { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
+        /* VENN DIAGRAM CONTAINER */
+        .diagram-container {
+            background: #0f172a;
+            border-radius: 18px;
+            padding: 15px;
+            border: 1px solid #334155;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 480px;
+        }
+
+        .venn-svg {
+            width: 100%;
+            max-width: 650px;
+            height: auto;
+            max-height: 460px;
+        }
+
+        .set-region {
+            cursor: pointer;
+            transition: all 0.25s ease;
+            stroke-width: 2.5;
+            opacity: 0.75;
+        }
+
+        .set-region:hover {
+            opacity: 0.95;
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.4));
+            stroke-width: 4;
+        }
+
+        .set-label {
+            font-family: 'Fredoka One', cursive;
+            font-size: 16px;
+            fill: #ffffff;
+            pointer-events: none;
+            text-anchor: middle;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+
+        /* Placement Labels for Correct Numbers */
+        .placed-number {
+            font-family: 'Fredoka One', cursive;
+            fill: #ffffff;
+            font-size: 13px;
+            pointer-events: none;
+            text-anchor: middle;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); transform-origin: center; }
+            to { transform: scale(1); transform-origin: center; }
+        }
+
+        /* RESULTADOS SCREEN */
+        .results-card {
+            text-align: center;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .results-header {
+            margin-bottom: 25px;
+        }
+
+        .score-badge {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
+        }
+
+        .score-badge .percent {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: #fff;
+        }
+
+        .score-badge .label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #e0e7ff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 14px;
+            border: 1px solid #334155;
+        }
+
+        .stat-box .val {
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #38bdf8;
+        }
+
+        .stat-box .lbl {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .history-title {
+            text-align: left;
+            margin: 20px 0 10px 0;
+            color: #cbd5e1;
+            font-size: 1.1rem;
+        }
+
+        .history-table-wrapper {
+            max-height: 220px;
+            overflow-y: auto;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            background: #0f172a;
+            color: #94a3b8;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            background: #1e293b;
+        }
+
+        .status-tag {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .status-tag.correct { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .status-tag.incorrect { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        /* Tooltip Leyenda Leyendas */
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            padding: 10px;
+            background: #0f172a;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 1. PANTALLA INICIAL -->
+    <div id="screen-start" class="screen active">
+        <div class="start-card">
+            <h1>Clasificación Numérica</h1>
+            <p>Acepta el reto y ubica los números en el Diagrama de Venn interactivo.</p>
+            
+            <div class="form-group">
+                <label for="player-name">Nombre del Participante</label>
+                <input type="text" id="player-name" placeholder="Ej. Bladimir Arias" autocomplete="off" value="Estudiante">
+            </div>
+
+            <div class="form-group">
+                <label for="total-questions">Número de Preguntas</label>
+                <input type="number" id="total-questions" min="3" max="25" value="7">
+            </div>
+
+            <button class="btn" onclick="startGame()">¡Comenzar Desafío!</button>
+        </div>
+    </div>
+
+    <!-- 2. PANTALLA DEL JUEGO -->
+    <div id="screen-game" class="screen">
+        <div class="game-header">
+            <div class="player-info">👤 <span id="display-name">Jugador</span></div>
+            <div class="stats-pills">
+                <div class="pill">📋 Pregunta: <span id="current-q">1</span>/<span id="max-q">10</span></div>
+                <div class="pill">⏱️ Tiempo: <span id="timer">00:00</span></div>
+            </div>
+        </div>
+
+        <div class="game-layout">
+            <!-- Columna Izquierda: Pregunta -->
+            <div class="question-card">
+                <h3>Analiza el Número</h3>
+                <div class="number-box" id="target-number">?</div>
+                <p class="instruction">Haz clic en la <strong>región exacta</strong> del diagrama a la que pertenece este número.</p>
+                <div id="feedback" class="feedback-msg"></div>
+            </div>
+
+            <!-- Columna Derecha: Diagrama de Venn interactivo -->
+            <div class="diagram-container">
+                <svg class="venn-svg" viewBox="0 0 650 450" id="venn-svg">
+                    <!-- FONDOS Y ZONAS -->
+                    
+                    <!-- Complejos (C) - Fondo Contenedor Global -->
+                    <rect x="10" y="10" width="630" height="430" rx="25" 
+                          fill="#f43f5e" fill-opacity="0.12" stroke="#f43f5e" stroke-width="2"
+                          class="set-region" data-region="C" onclick="handleRegionClick('C')"/>
+                    <text x="35" y="40" class="set-label" fill="#f43f5e">Complejos (C)</text>
+
+                    <!-- Imaginarios puros (Im) - Óvalo en C (Izquierda) -->
+                    <ellipse cx="140" cy="235" rx="105" ry="165" 
+                             fill="#06b6d4" fill-opacity="0.25" stroke="#06b6d4" 
+                             class="set-region" data-region="Im" onclick="handleRegionClick('Im')"/>
+                    <text x="140" y="100" class="set-label">Imaginarios (Im)</text>
+
+                    <!-- Reales (R) - Óvalo en C (Derecha) -->
+                    <ellipse cx="420" cy="235" rx="195" ry="175" 
+                             fill="#8b5cf6" fill-opacity="0.25" stroke="#8b5cf6" 
+                             class="set-region" data-region="R" onclick="handleRegionClick('R')"/>
+                    <text x="540" y="100" class="set-label">Reales (R)</text>
+
+                    <!-- Irracionales (I) - Óvalo dentro de R (Izquierda interior) -->
+                    <ellipse cx="305" cy="245" rx="70" ry="140" 
+                             fill="#ec4899" fill-opacity="0.35" stroke="#ec4899" 
+                             class="set-region" data-region="I" onclick="handleRegionClick('I')"/>
+                    <text x="305" y="130" class="set-label">Irracionales (I)</text>
+
+                    <!-- Racionales (Q) - Óvalo dentro de R (Derecha interior) -->
+                    <ellipse cx="480" cy="245" rx="115" ry="140" 
+                             fill="#3b82f6" fill-opacity="0.3" stroke="#3b82f6" 
+                             class="set-region" data-region="Q" onclick="handleRegionClick('Q')"/>
+                    <text x="540" y="150" class="set-label">Racionales (Q)</text>
+
+                    <!-- Enteros (Z) - Óvalo dentro de Q -->
+                    <ellipse cx="470" cy="265" rx="85" ry="105" 
+                             fill="#10b981" fill-opacity="0.4" stroke="#10b981" 
+                             class="set-region" data-region="Z" onclick="handleRegionClick('Z')"/>
+                    <text x="500" y="190" class="set-label">Enteros (Z)</text>
+
+                    <!-- Naturales (N) - Óvalo dentro de Z -->
+                    <ellipse cx="460" cy="290" rx="55" ry="65" 
+                             fill="#f59e0b" fill-opacity="0.55" stroke="#f59e0b" 
+                             class="set-region" data-region="N" onclick="handleRegionClick('N')"/>
+                    <text x="460" y="275" class="set-label">Naturales (N)</text>
+
+                    <!-- GRUPO PARA NÚMEROS ACEPTADOS/COLOCADOS -->
+                    <g id="placed-numbers-group"></g>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="legend-bar">
+            <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Naturales (N)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Enteros (Z)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Racionales (Q)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ec4899"></div>Irracionales (I)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>Reales (R)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div>Imaginarios (Im)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#f43f5e"></div>Complejos (C)</div>
+        </div>
+    </div>
+
+    <!-- 3. PANTALLA DE RESULTADOS -->
+    <div id="screen-results" class="screen">
+        <div class="results-card">
+            <div class="results-header">
+                <h2>¡Desafío Finalizado!</h2>
+                <p id="res-congrats" style="color:var(--text-muted); margin-top:5px;">Excelente esfuerzo</p>
+            </div>
+
+            <div class="score-badge">
+                <span class="percent" id="res-score-percent">0%</span>
+                <span class="label">Puntaje</span>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="val" id="res-player">-</div>
+                    <div class="lbl">Estudiante</div>
+                </div>
+                <div class="stat-box">
+                    <div class="val" id="res-time">00:00</div>
+                    <div class="lbl">Tiempo Total</div>
+                </div>
+                <div class="stat-box">
+                    <div class="val" id="res-date">--/--/----</div>
+                    <div class="lbl">Fecha</div>
+                </div>
+            </div>
+
+            <h3 class="history-title">Historial de Respuestas</h3>
+            <div class="history-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Número</th>
+                            <th>Región Correcta</th>
+                            <th>Tu Respuesta</th>
+                            <th>Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <!-- Filas dinámicas -->
+                    </tbody>
+                </table>
+            </div>
+
+            <button class="btn" onclick="resetApp()">Jugar de Nuevo</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // BASE DE DATOS DE NÚMEROS Y SUS REGIONES MÁS ESPECÍFICAS
+    // Regiones válidas: N, Z, Q, I, R, Im, C
+    const NUMBER_DATABASE = [
+        // Naturales (N)
+        { display: "7", region: "N", label: "7 (N)" },
+        { display: "15", region: "N", label: "15 (N)" },
+        { display: "√25", region: "N", label: "√25=5 (N)" },
+        { display: "100", region: "N", label: "100 (N)" },
+
+        // Enteros (Z) - Excluyendo N
+        { display: "-8", region: "Z", label: "-8 (Z)" },
+        { display: "-12", region: "Z", label: "-12 (Z)" },
+        { display: "0", region: "Z", label: "0 (Z)" },
+        { display: "-√49", region: "Z", label: "-√49=-7 (Z)" },
+
+        // Racionales (Q) - Excluyendo Z
+        { display: "3/4", region: "Q", label: "3/4 (Q)" },
+        { display: "-0.75", region: "Q", label: "-0.75 (Q)" },
+        { display: "2.333...", region: "Q", label: "2.33... (Q)" },
+        { display: "-5/2", region: "Q", label: "-5/2 (Q)" },
+
+        // Irracionales (I)
+        { display: "π", region: "I", label: "π (I)" },
+        { display: "e", region: "I", label: "e (I)" },
+        { display: "√2", region: "I", label: "√2 (I)" },
+        { display: "1 + √5", region: "I", label: "1+√5 (I)" },
+        { display: "-√3", region: "I", label: "-√3 (I)" },
+
+        // Imaginarios Puros (Im)
+        { display: "3i", region: "Im", label: "3i (Im)" },
+        { display: "-5i", region: "Im", label: "-5i (Im)" },
+        { display: "i√2", region: "Im", label: "i√2 (Im)" },
+        { display: "√(-16)", region: "Im", label: "√(-16)=4i (Im)" },
+
+        // Complejos Generales (C) - Parte Real + Imaginaria
+        { display: "2 + 3i", region: "C", label: "2+3i (C)" },
+        { display: "-1 - 4i", region: "C", label: "-1-4i (C)" },
+        { display: "0.5 - 2i", region: "C", label: "0.5-2i (C)" },
+        { display: "-3 + i√5", region: "C", label: "-3+i√5 (C)" }
+    ];
+
+    // Nombres descriptivos para feedback
+    const REGION_NAMES = {
+        'N': 'Naturales (N)',
+        'Z': 'Enteros no naturales (Z)',
+        'Q': 'Racionales no enteros (Q)',
+        'I': 'Irracionales (I)',
+        'R': 'Reales (R)',
+        'Im': 'Imaginarios puros (Im)',
+        'C': 'Complejos (C)'
+    };
+
+    // Coordenadas aproximadas dentro del SVG para renderizar el número si acertó
+    const REGION_COORDS = {
+        'N': [ {x: 460, y: 300}, {x: 440, y: 310}, {x: 470, y: 315} ],
+        'Z': [ {x: 420, y: 220}, {x: 510, y: 220}, {x: 410, y: 250} ],
+        'Q': [ {x: 430, y: 140}, {x: 530, y: 140}, {x: 560, y: 260} ],
+        'I': [ {x: 305, y: 190}, {x: 305, y: 260}, {x: 305, y: 320} ],
+        'R': [ {x: 360, y: 90},  {x: 430, y: 85},  {x: 480, y: 90}  ],
+        'Im': [ {x: 140, y: 160}, {x: 140, y: 230}, {x: 140, y: 300} ],
+        'C': [ {x: 80, y: 390}, {x: 250, y: 390}, {x: 500, y: 390} ]
+    };
+
+    // Estado de la aplicación
+    let playerName = "";
+    let totalQuestions = 5;
+    let currentQuestionIndex = 0;
+    let questionsList = [];
+    let history = [];
+    let timerInterval = null;
+    let secondsElapsed = 0;
+    let regionPlacementCounts = { N:0, Z:0, Q:0, I:0, R:0, Im:0, C:0 };
+
+    // Elementos DOM
+    const screenStart = document.getElementById('screen-start');
+    const screenGame = document.getElementById('screen-game');
+    const screenResults = document.getElementById('screen-results');
+
+    const feedbackEl = document.getElementById('feedback');
+
+    // Funciones de Control de Pantallas
+    function showScreen(screen) {
+        [screenStart, screenGame, screenResults].forEach(s => s.classList.remove('active'));
+        screen.classList.add('active');
+    }
+
+    // Iniciar Juego
+    function startGame() {
+        const nameInput = document.getElementById('player-name').value.trim();
+        const numInput = parseInt(document.getElementById('total-questions').value);
+
+        playerName = nameInput || "Estudiante";
+        totalQuestions = Math.min(Math.max(numInput || 5, 3), 25);
+
+        // Seleccionar preguntas aleatorias
+        const shuffled = [...NUMBER_DATABASE].sort(() => 0.5 - Math.random());
+        questionsList = shuffled.slice(0, totalQuestions);
+
+        // Reiniciar variables de estado
+        currentQuestionIndex = 0;
+        history = [];
+        secondsElapsed = 0;
+        regionPlacementCounts = { N:0, Z:0, Q:0, I:0, R:0, Im:0, C:0 };
+        document.getElementById('placed-numbers-group').innerHTML = '';
+
+        // UI Header
+        document.getElementById('display-name').textContent = playerName;
+        document.getElementById('max-q').textContent = totalQuestions;
+
+        // Iniciar Cronómetro
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsElapsed++;
+            const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+            const secs = String(secondsElapsed % 60).padStart(2, '0');
+            document.getElementById('timer').textContent = `${mins}:${secs}`;
+        }, 1000);
+
+        showScreen(screenGame);
+        loadQuestion();
+    }
+
+    // Cargar Pregunta Actual
+    function loadQuestion() {
+        feedbackEl.className = 'feedback-msg';
+        feedbackEl.textContent = '';
+        
+        document.getElementById('current-q').textContent = currentQuestionIndex + 1;
+        const currentItem = questionsList[currentQuestionIndex];
+        document.getElementById('target-number').textContent = currentItem.display;
+    }
+
+    // Manejar Clic en las Regiones del SVG
+    function handleRegionClick(selectedRegion) {
+        const currentItem = questionsList[currentQuestionIndex];
+        const isCorrect = (selectedRegion === currentItem.region);
+
+        // Registro de historial
+        history.push({
+            number: currentItem.display,
+            correctRegion: currentItem.region,
+            selectedRegion: selectedRegion,
+            isCorrect: isCorrect
+        });
+
+        if (isCorrect) {
+            showFeedback(true, `¡Correcto! ${currentItem.display} pertenece a ${REGION_NAMES[selectedRegion]}`);
+            placeNumberInDiagram(currentItem.display, selectedRegion);
+        } else {
+            showFeedback(false, `Incorrecto. ${currentItem.display} corresponde a ${REGION_NAMES[currentItem.region]}`);
+        }
+
+        // Bloquear temporalmente interacción y avanzar
+        disableRegionsTemporarily();
+        setTimeout(() => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < totalQuestions) {
+                loadQuestion();
+            } else {
+                finishGame();
+            }
+        }, 1500);
+    }
+
+    // Deshabilitar clics rápidos durante feedback
+    function disableRegionsTemporarily() {
+        const regions = document.querySelectorAll('.set-region');
+        regions.forEach(r => r.style.pointerEvents = 'none');
+        setTimeout(() => {
+            regions.forEach(r => r.style.pointerEvents = 'auto');
+        }, 1500);
+    }
+
+    // Mostrar mensaje de feedback
+    function showFeedback(isCorrect, msg) {
+        feedbackEl.textContent = msg;
+        feedbackEl.className = `feedback-msg show ${isCorrect ? 'correct' : 'error'}`;
+    }
+
+    // Colocar el número visualmente en el diagram de Venn tras un acierto
+    function placeNumberInDiagram(numText, region) {
+        const group = document.getElementById('placed-numbers-group');
+        const count = regionPlacementCounts[region] || 0;
+        const coordsList = REGION_COORDS[region] || [{x: 300, y: 200}];
+        const coord = coordsList[count % coordsList.length];
+
+        // Añadir una pequeña variación aleatoria para que no queden exactamente encima si hay más
+        const offsetX = (Math.random() - 0.5) * 15;
+        const offsetY = (Math.random() - 0.5) * 15;
+
+        const textNode = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        textNode.setAttribute("x", coord.x + offsetX);
+        textNode.setAttribute("y", coord.y + offsetY);
+        textNode.setAttribute("class", "placed-number");
+        textNode.textContent = numText;
+
+        group.appendChild(textNode);
+        regionPlacementCounts[region] = count + 1;
+    }
+
+    // Finalizar el juego y mostrar estadísticas
+    function finishGame() {
+        clearInterval(timerInterval);
+        showScreen(screenResults);
+
+        // Calcular Métricas
+        const correctAnswers = history.filter(h => h.isCorrect).length;
+        const scorePercent = Math.round((correctAnswers / totalQuestions) * 100);
+
+        const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+        const secs = String(secondsElapsed % 60).padStart(2, '0');
+        const timeFormatted = `${mins}:${secs}`;
+
+        const today = new Date();
+        const dateFormatted = today.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+        // Actualizar UI Resultados
+        document.getElementById('res-score-percent').textContent = `${scorePercent}%`;
+        document.getElementById('res-player').textContent = playerName;
+        document.getElementById('res-time').textContent = timeFormatted;
+        document.getElementById('res-date').textContent = dateFormatted;
+
+        // Mensaje según puntaje
+        const congratsEl = document.getElementById('res-congrats');
+        if (scorePercent === 100) congratsEl.textContent = "🏆 ¡Puntaje Perfecto! Dominas el conjunto de los números.";
+        else if (scorePercent >= 70) congratsEl.textContent = "🎉 ¡Muy buen trabajo! Tienes un sólido conocimiento.";
+        else congratsEl.textContent = "💪 ¡Buen intento! Sigue practicando los conjuntos numéricos.";
+
+        // Rellenar tabla de historial
+        const tableBody = document.getElementById('history-table-body');
+        tableBody.innerHTML = '';
+
+        history.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td style="font-weight:700; color:#38bdf8;">${item.number}</td>
+                <td>${REGION_NAMES[item.correctRegion]}</td>
+                <td>${REGION_NAMES[item.selectedRegion]}</td>
+                <td><span class="status-tag ${item.isCorrect ? 'correct' : 'incorrect'}">${item.isCorrect ? 'Correcto' : 'Error'}</span></td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // Reiniciar Aplicación
+    function resetApp() {
+        showScreen(screenStart);
+    }
+</script>
+
+</body>
+</html>
