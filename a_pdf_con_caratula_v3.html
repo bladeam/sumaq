@@ -351,6 +351,7 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
+            transition: transform 0.2s ease;
         }
 
         @media (max-width: 1024px) {
@@ -533,7 +534,8 @@
                 reader.onload = (e) => {
                     imageList.push({
                         dataUrl: e.target.result,
-                        type: file.type === 'image/png' ? 'PNG' : 'JPEG'
+                        type: file.type === 'image/png' ? 'PNG' : 'JPEG',
+                        rotation: 0
                     });
                     loadedCount++;
                     if (loadedCount === files.length) {
@@ -543,6 +545,11 @@
                 reader.readAsDataURL(file);
             });
             event.target.value = '';
+        }
+
+        function rotateImage(index) {
+            imageList[index].rotation = (imageList[index].rotation + 90) % 360;
+            renderImages();
         }
 
         function moveImage(index, direction) {
@@ -577,11 +584,12 @@
                 const thumbItem = document.createElement('div');
                 thumbItem.className = 'thumb-item';
                 thumbItem.innerHTML = `
-                    <img src="${imgObj.dataUrl}" alt="Img ${index + 1}">
+                    <img src="${imgObj.dataUrl}" alt="Img ${index + 1}" style="transform: rotate(${imgObj.rotation}deg)">
                     <div class="thumb-actions">
-                        <button class="btn-action" onclick="moveImage(${index}, -1)" ${index === 0 ? 'disabled' : ''}>▲</button>
-                        <button class="btn-action" onclick="moveImage(${index}, 1)" ${index === imageList.length - 1 ? 'disabled' : ''}>▼</button>
-                        <button class="btn-action btn-danger" onclick="removeImage(${index})">✕</button>
+                        <button class="btn-action" title="Rotar" onclick="rotateImage(${index})">↻</button>
+                        <button class="btn-action" title="Subir" onclick="moveImage(${index}, -1)" ${index === 0 ? 'disabled' : ''}>▲</button>
+                        <button class="btn-action" title="Bajar" onclick="moveImage(${index}, 1)" ${index === imageList.length - 1 ? 'disabled' : ''}>▼</button>
+                        <button class="btn-action btn-danger" title="Eliminar" onclick="removeImage(${index})">✕</button>
                     </div>
                 `;
                 thumbsList.appendChild(thumbItem);
@@ -589,8 +597,47 @@
                 const pageDiv = document.createElement('div');
                 pageDiv.className = 'page-letter image-page';
                 pageDiv.style.marginTop = '25px';
-                pageDiv.innerHTML = `<img src="${imgObj.dataUrl}" alt="Imagen ${index + 1}">`;
+                pageDiv.innerHTML = `<img src="${imgObj.dataUrl}" alt="Imagen ${index + 1}" style="transform: rotate(${imgObj.rotation}deg)">`;
                 pagesContainer.appendChild(pageDiv);
+            });
+        }
+
+        function processRotatedImage(dataUrl, rotationDegree, type) {
+            return new Promise((resolve) => {
+                if (rotationDegree === 0) {
+                    const img = new Image();
+                    img.onload = () => resolve({ dataUrl, width: img.width, height: img.height, type });
+                    img.src = dataUrl;
+                    return;
+                }
+
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    if (rotationDegree === 90 || rotationDegree === 270) {
+                        canvas.width = img.height;
+                        canvas.height = img.width;
+                    } else {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                    }
+
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate((rotationDegree * Math.PI) / 180);
+                    ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+                    const mimeType = type === 'PNG' ? 'image/png' : 'image/jpeg';
+                    const rotatedDataUrl = canvas.toDataURL(mimeType, 0.95);
+                    resolve({
+                        dataUrl: rotatedDataUrl,
+                        width: canvas.width,
+                        height: canvas.height,
+                        type
+                    });
+                };
+                img.src = dataUrl;
             });
         }
 
@@ -622,25 +669,25 @@
                 const coverImgData = canvas.toDataURL('image/jpeg', 0.95);
                 pdf.addImage(coverImgData, 'JPEG', 0, 0, pageWidth, pageHeight);
 
-                // 2. AÑADIR CADA IMAGEN EN UNA PÁGINA INDEPENDIENTE
+                // 2. AÑADIR CADA IMAGEN EN UNA PÁGINA INDEPENDIENTE (CON ROTACIÓN APLICADA AL CANVAS DEL PDF)
                 for (let i = 0; i < imageList.length; i++) {
                     pdf.addPage();
 
-                    const imgObj = imageList[i];
-                    const dimensions = await getImageDimensions(imgObj.dataUrl);
+                    const rawImg = imageList[i];
+                    const processedImg = await processRotatedImage(rawImg.dataUrl, rawImg.rotation, rawImg.type);
 
                     const margin = 10;
                     const maxW = pageWidth - (margin * 2);
                     const maxH = pageHeight - (margin * 2);
 
-                    const ratio = Math.min(maxW / dimensions.width, maxH / dimensions.height);
-                    const imgW = dimensions.width * ratio;
-                    const imgH = dimensions.height * ratio;
+                    const ratio = Math.min(maxW / processedImg.width, maxH / processedImg.height);
+                    const imgW = processedImg.width * ratio;
+                    const imgH = processedImg.height * ratio;
 
                     const xPos = (pageWidth - imgW) / 2;
                     const yPos = (pageHeight - imgH) / 2;
 
-                    pdf.addImage(imgObj.dataUrl, imgObj.type, xPos, yPos, imgW, imgH);
+                    pdf.addImage(processedImg.dataUrl, processedImg.type, xPos, yPos, imgW, imgH);
                 }
 
                 pdf.save('trabajo_academico.pdf');
@@ -652,15 +699,6 @@
                 btn.disabled = false;
                 btn.innerText = 'Descargar PDF Completo';
             }
-        }
-
-        function getImageDimensions(dataUrl) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve({ width: img.width, height: img.height });
-                img.onerror = () => resolve({ width: 800, height: 600 });
-                img.src = dataUrl;
-            });
         }
 
         toggleStudentMode();
