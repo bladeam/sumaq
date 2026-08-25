@@ -11,6 +11,7 @@
             --primary: #6366f1;
             --danger: #ef4444;
             --success: #10b981;
+            --warning: #f59e0b;
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
         }
@@ -113,6 +114,15 @@
             background-color: #dc2626;
         }
 
+        .btn-pause {
+            background-color: var(--warning);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-pause:hover {
+            background-color: #d97706;
+        }
+
         .btn-stop {
             background-color: #475569;
         }
@@ -191,7 +201,7 @@
 
     <div class="studio-card">
         <h2>Grabadora de Voz Pro</h2>
-        <p class="subtitle">© Bladimir Arias</p>
+        <p class="subtitle">Captura audio de alta fidelidad desde tu navegador</p>
 
         <!-- Visualizador en Vivo -->
         <div class="visualizer-container">
@@ -206,6 +216,7 @@
             <button id="btnRecord" class="btn btn-record">
                 <span id="recordDot"></span> Grabar
             </button>
+            <button id="btnPause" class="btn btn-pause" disabled>Pausar</button>
             <button id="btnStop" class="btn btn-stop" disabled>Detener</button>
         </div>
 
@@ -215,6 +226,7 @@
             <audio id="audioPreview" controls></audio>
             <a id="downloadBtn" class="btn-download hidden">Descargar Grabación (MP3)</a>
         </div>
+<p>© Bladimir Arias</p>
     </div>
 
     <!-- Librería ultraligera para codificación nativa en MP3 -->
@@ -231,6 +243,7 @@
         let secondsElapsed = 0;
 
         const btnRecord = document.getElementById('btnRecord');
+        const btnPause = document.getElementById('btnPause');
         const btnStop = document.getElementById('btnStop');
         const recordDot = document.getElementById('recordDot');
         const timerDisplay = document.getElementById('timer');
@@ -272,6 +285,17 @@
                 }
             };
             draw();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                timerDisplay.textContent = formatTime(secondsElapsed);
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
         }
 
         btnRecord.addEventListener('click', async () => {
@@ -319,14 +343,13 @@
 
                 secondsElapsed = 0;
                 timerDisplay.textContent = '00:00';
-                timerInterval = setInterval(() => {
-                    secondsElapsed++;
-                    timerDisplay.textContent = formatTime(secondsElapsed);
-                }, 1000);
+                startTimer();
 
                 recordDot.classList.add('recording-pulse');
                 btnRecord.disabled = true;
+                btnPause.disabled = false;
                 btnStop.disabled = false;
+                btnPause.textContent = 'Pausar';
                 playerSection.classList.add('hidden');
 
             } catch (err) {
@@ -334,11 +357,35 @@
             }
         });
 
+        btnPause.addEventListener('click', () => {
+            if (!mediaRecorder) return;
+
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.pause();
+                stopTimer();
+                cancelAnimationFrame(animFrameId);
+
+                // Limpiar visualizador en pausa
+                canvasCtx.fillStyle = '#0f172a';
+                canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+                recordDot.classList.remove('recording-pulse');
+                btnPause.textContent = 'Continuar';
+            } else if (mediaRecorder.state === 'paused') {
+                mediaRecorder.resume();
+                startTimer();
+                drawVisualizer();
+
+                recordDot.classList.add('recording-pulse');
+                btnPause.textContent = 'Pausar';
+            }
+        });
+
         btnStop.addEventListener('click', () => {
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                 mediaRecorder.stop();
 
-                clearInterval(timerInterval);
+                stopTimer();
                 cancelAnimationFrame(animFrameId);
                 if (audioContext) audioContext.close();
 
@@ -347,7 +394,9 @@
 
                 recordDot.classList.remove('recording-pulse');
                 btnRecord.disabled = false;
+                btnPause.disabled = true;
                 btnStop.disabled = true;
+                btnPause.textContent = 'Pausar';
             }
         });
 
