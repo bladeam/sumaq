@@ -189,10 +189,12 @@
             align-items: center;
             background: rgba(15, 23, 42, 0.8);
             border: 1px solid #334155;
-            padding: 10px 18px;
+            padding: 8px 14px;
             border-radius: 14px;
             font-size: 0.85rem;
             margin-bottom: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .hud-item {
@@ -206,6 +208,37 @@
         .hud-value {
             color: #F8FAFC;
             font-weight: 700;
+        }
+
+        /* CONTROL DE VELOCIDAD */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(30, 41, 59, 0.9);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid #475569;
+        }
+
+        .speed-control label {
+            font-size: 0.75rem;
+            margin-bottom: 0;
+            color: #FBBF24;
+            white-space: nowrap;
+        }
+
+        .speed-control input[type="range"] {
+            width: 70px;
+            accent-color: #F59E0B;
+            cursor: pointer;
+        }
+
+        .speed-val {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #FFF;
+            min-width: 30px;
         }
 
         .turn-banner {
@@ -485,6 +518,13 @@ Carlos Condori</textarea>
             <div class="hud-item">Pregunta: <span id="hud-turn" class="hud-value">1/5</span></div>
             <div class="hud-item">Fecha: <span id="hud-date" class="hud-value">--</span></div>
             <div class="hud-item">Inicio: <span id="hud-starttime" class="hud-value">--</span></div>
+            
+            <!-- CONTROL DE VELOCIDAD DE LOS GLOBOS -->
+            <div class="speed-control">
+                <label for="input-speed">⚡ Vel:</label>
+                <input type="range" id="input-speed" min="0.5" max="3" step="0.25" value="1">
+                <span id="speed-label" class="speed-val">1.0x</span>
+            </div>
         </div>
 
         <div class="turn-banner">
@@ -569,11 +609,20 @@ Carlos Condori</textarea>
     let activeBalloons = [];
     let animationFrameId = null;
     let isRoundActive = false;
+    let globalSpeedMultiplier = 1.0;
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('btn-start').addEventListener('click', startGame);
         document.getElementById('btn-restart').addEventListener('click', resetToConfig);
         document.getElementById('btn-speak').addEventListener('click', speakQuechuaWord);
+
+        const speedInput = document.getElementById('input-speed');
+        const speedLabel = document.getElementById('speed-label');
+        
+        speedInput.addEventListener('input', (e) => {
+            globalSpeedMultiplier = parseFloat(e.target.value);
+            speedLabel.textContent = globalSpeedMultiplier.toFixed(1) + 'x';
+        });
     });
 
     function showScreen(screenId) {
@@ -686,7 +735,7 @@ Carlos Condori</textarea>
 
             const startX = Math.max(8, Math.floor(index * stepX + Math.random() * (stepX - 12)));
             const startY = -110 - (Math.random() * 160);
-            const speed = 1.1 + Math.random() * 1.2;
+            const baseSpeed = 1.1 + Math.random() * 1.2;
 
             el.style.left = `${startX}px`;
             el.style.top = `${startY}px`;
@@ -704,7 +753,7 @@ Carlos Condori</textarea>
                 itemData: item,
                 x: startX,
                 y: startY,
-                speed: speed,
+                baseSpeed: baseSpeed,
                 popped: false
             });
         });
@@ -719,7 +768,7 @@ Carlos Condori</textarea>
 
         activeBalloons.forEach(b => {
             if (!b.popped) {
-                b.y += b.speed;
+                b.y += b.baseSpeed * globalSpeedMultiplier;
                 b.element.style.top = `${b.y}px`;
 
                 if (b.y < areaHeight) {
