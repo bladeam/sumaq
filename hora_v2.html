@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Hora en Quechua</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        #subtitle {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Registro de Participante */
+        #setup-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .instruction {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #555;
+        }
+        
+        #question-counter {
+            font-size: 1em;
+            color: #555;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        #question-container {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .quechua-phrase {
+            font-size: 1.6em;
+            font-weight: bold;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            min-height: 50px;
+        }
+
+        .number {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .blank {
+            display: inline-block;
+            min-width: 100px;
+            height: 32px;
+            border-bottom: 2px solid #95a5a6;
+            margin: 0 5px;
+            vertical-align: middle;
+            background-color: #ecf0f1;
+            transition: background-color 0.2s, border-color 0.2s;
+            text-align: center;
+            line-height: 30px;
+            font-size: 0.85em;
+            color: #2c3e50;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .blank.hover {
+            background-color: #bdc3c7;
+        }
+
+        .blank.filled {
+            border-bottom: 2px solid #2ecc71;
+            background-color: #d1e7dd;
+            color: #2c3e50;
+            cursor: grab;
+        }
+
+        .blank.filled:active {
+            cursor: grabbing;
+        }
+
+        #options-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            min-height: 50px;
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #ecf0f1;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        #options-container.hover {
+            background-color: #f7f9fa;
+            border-color: #3498db;
+        }
+
+        .option {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, background-color 0.2s;
+            font-size: 0.9em;
+        }
+
+        .option:active {
+            cursor: grabbing;
+        }
+        
+        #feedback {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+            height: 25px;
+        }
+
+        #score {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn.primary {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .btn.primary:hover {
+            background-color: #219d53;
+        }
+
+        .btn.secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn.secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        /* Modal Historial y Resultados */
+        #results-modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        #modal-content {
+            background-color: #fefefe;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-width: 650px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        #modal-content h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+
+        .meta-info {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 0.95em;
+        }
+
+        .meta-info p {
+            margin: 5px 0;
+        }
+
+        .score-percentage {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .history-list {
+            text-align: left;
+            margin-top: 20px;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 15px;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+
+        .history-item.correct {
+            border-left: 4px solid #27ae60;
+            background-color: #f0fff4;
+        }
+
+        .history-item.incorrect {
+            border-left: 4px solid #c0392b;
+            background-color: #fff5f5;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .modal-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>La Hora en Quechua</h1>
+    <p id="subtitle">Arrastra las palabras para formar la hora correcta en quechua</p>
+
+    <!-- Pantalla Inicial -->
+    <div id="setup-card" class="game-container">
+        <h2>Registro de Participante</h2>
+        <div id="setup-container">
+            <div class="input-group">
+                <label for="participant-name">Nombre del Participante:</label>
+                <input type="text" id="participant-name" placeholder="Ej. Juan Pérez" required>
+            </div>
+            <div class="input-group">
+                <label for="question-limit">Número de preguntas:</label>
+                <input type="number" id="question-limit" min="1" max="233" value="10" required>
+            </div>
+            <button id="start-button" class="btn primary">Comenzar Evaluación</button>
+        </div>
+    </div>
+
+    <!-- Pantalla del Juego -->
+    <div id="game-card" class="game-container" style="display: none;">
+        <p id="question-counter"></p>
+        <p class="instruction">Completa la traducción arrastrando las palabras. Puedes reordenar las casillas arrastrándolas entre sí.</p>
+        
+        <div id="question-container"></div>
+
+        <div id="options-container"></div>
+
+        <div id="feedback"></div>
+
+        <div id="controls">
+            <button id="check-button" class="btn primary">Verificar</button>
+            <button id="next-button" class="btn secondary" style="display: none;">Siguiente</button>
+        </div>
+
+        <div id="score">Aciertos: <span id="correct-count">0</span> | Errores: <span id="incorrect-count">0</span></div>
+    </div>
+
+    <!-- Modal de Resultados Finales e Historial -->
+    <div id="results-modal">
+        <div id="modal-content">
+            <h2 id="modal-title">¡Evaluación Finalizada!</h2>
+            
+            <div class="meta-info">
+                <p><strong>Participante:</strong> <span id="res-name"></span></p>
+                <p><strong>Fecha y Hora de término:</strong> <span id="res-datetime"></span></p>
+                <p><strong>Aciertos:</strong> <span id="final-correct-count">0</span> / <span id="res-total-questions">0</span></p>
+                <p><strong>Errores:</strong> <span id="final-incorrect-count">0</span></p>
+                <p class="score-percentage"><strong>Nota final:</strong> <span id="res-percentage">0%</span></p>
+            </div>
+
+            <h3>Historial de Preguntas</h3>
+            <div id="history-container" class="history-list"></div>
+
+            <button class="modal-btn" onclick="window.location.reload()">Nuevo Intento</button>
+        </div>
+    </div>
+
+    <script>
+        const RAW_DATABASE = `6:38 = suqta phani kimsa chunka pusaq chininiyuq
+9:49 = jisq'un phani tawa chunka jisq'un chininiyuq
+12:46 = chawpi p'unchay phani tawa chunka suqta chininiyuq
+6:24 = suqta phani iskay chunka tawa chininiyuq
+11:42 = chunka juk phani tawa chunka iskay chininiyuq
+9:6 = jisq'un phani suqta chininiyuq
+12:39 = chawpi p'unchay phani kimsa chunka jisq'un chininiyuq
+6:19 = suqta phani chunka jisq'un chininiyuq
+4:19 = tawa phani chunka jisq'un chininiyuq
+1:50 = juk phani phichqa chunka chininiyuq
+4:50 = tawa phani phichqa chunka chininiyuq
+9:52 = jisq'un phani phichqa chunka iskay chininiyuq
+2:5 = iskay phani phichqa chininiyuq
+5:20 = phichqa phani iskay chunka chininiyuq
+5:56 = phichqa phani phichqa chunka suqta chininiyuq
+8:14 = pusaq phani chunka tawa chininiyuq
+1:48 = juk phani tawa chunka pusaq chininiyuq
+11:35 = chunka juk phani kimsa chunka phichqa chininiyuq
+8:55 = pusaq phani phichqa chunka phichqa chininiyuq
+8:50 = pusaq phani phichqa chunka chininiyuq
+2:2 = iskay phani iskay chininiyuq
+7:51 = qanchis phani phichqa chunka juk chininiyuq
+3:40 = kimsa phani tawa chunka chininiyuq
+9:57 = jisq'un phani phichqa chunka qanchis chininiyuq
+12:43 = chawpi p'unchay phani tawa chunka kimsa chininiyuq
+3:38 = kimsa phani kimsa chunka pusaq chininiyuq
+7:14 = qanchis phani chunka tawa chininiyuq
+11:24 = chunka juk phani iskay chunka tawa chininiyuq
+11:50 = chunka juk phani phichqa chunka chininiyuq
+9:44 = jisq'un phani tawa chunka tawa chininiyuq
+12:5 = chawpi p'unchay phani phichqa chininiyuq
+1:40 = juk phani tawa chunka chininiyuq
+7:29 = qanchis phani iskay chunka jisq'un chininiyuq
+5:13 = phichqa phani chunka kimsa chininiyuq
+7:47 = qanchis phani tawa chunka qanchis chininiyuq
+11:6 = chunka juk phani suqta chininiyuq
+9:4 = jisq'un phani tawa chininiyuq
+4:8 = tawa phani pusaq chininiyuq
+3:13 = kimsa phani chunka kimsa chininiyuq
+12:16 = chawpi p'unchay phani chunka suqta chininiyuq
+10:17 = chunka phani chunka qanchis chininiyuq
+10:49 = chunka phani tawa chunka jisq'un chininiyuq
+3:31 = kimsa phani kimsa chunka juk chininiyuq
+3:39 = kimsa phani kimsa chunka jisq'un chininiyuq
+10:51 = chunka phani phichqa chunka juk chininiyuq
+8:55 = pusaq phani phichqa chunka phichqa chininiyuq
+1:24 = juk phani iskay chunka tawa chininiyuq
+6:7 = suqta phani qanchis chininiyuq
+1:29 = juk phani iskay chunka jisq'un chininiyuq
+11:13 = chunka juk phani chunka kimsa chininiyuq
+10:7 = chunka phani qanchis chininiyuq
+11:23 = chunka juk phani iskay chunka kimsa chininiyuq
+9:25 = jisq'un phani iskay chunka phichqa chininiyuq
+3:19 = kimsa phani chunka jisq'un chininiyuq
+4:23 = tawa phani iskay chunka kimsa chininiyuq
+3:20 = kimsa phani iskay chunka chininiyuq
+3:53 = kimsa phani phichqa chunka kimsa chininiyuq
+2:38 = iskay phani kimsa chunka pusaq chininiyuq
+3:7 = kimsa phani qanchis chininiyuq
+9:57 = jisq'un phani phichqa chunka qanchis chininiyuq
+6:39 = suqta phani kimsa chunka jisq'un chininiyuq
+2:38 = iskay phani kimsa chunka pusaq chininiyuq
+10:51 = chunka phani phichqa chunka juk chininiyuq
+6:1 = suqta phani juk chininiyuq
+7:21 = qanchis phani iskay chunka juk chininiyuq
+6:36 = suqta phani kimsa chunka suqta chininiyuq
+10:25 = chunka phani iskay chunka phichqa chininiyuq
+11:34 = chunka juk phani kimsa chunka tawa chininiyuq
+6:23 = suqta phani iskay chunka kimsa chininiyuq
+11:36 = chunka juk phani kimsa chunka suqta chininiyuq
+9:25 = jisq'un phani iskay chunka phichqa chininiyuq
+7:33 = qanchis phani kimsa chunka kimsa chininiyuq
+5:40 = phichqa phani tawa chunka chininiyuq
+12:27 = chawpi p'unchay phani iskay chunka qanchis chininiyuq
+6:24 = suqta phani iskay chunka tawa chininiyuq
+9:7 = jisq'un phani qanchis chininiyuq
+7:12 = qanchis phani chunka iskay chininiyuq
+2:52 = iskay phani phichqa chunka iskay chininiyuq
+4:30 = tawa khuskanniyuqña
+6:44 = suqta phani tawa chunka tawa chininiyuq
+12:23 = chawpi p'unchay phani iskay chunka kimsa chininiyuq
+5:39 = phichqa phani kimsa chunka jisq'un chininiyuq
+10:19 = chunka phani chunka jisq'un chininiyuq
+9:28 = jisq'un phani iskay chunka pusaq chininiyuq
+7:36 = qanchis phani kimsa chunka suqta chininiyuq
+5:56 = phichqa phani phichqa chunka suqta chininiyuq
+9:5 = jisq'un phani phichqa chininiyuq
+2:15 = iskay phani chunka phichqa chininiyuq
+7:15 = qanchis phani chunka phichqa chininiyuq
+10:56 = chunka phani phichqa chunka suqta chininiyuq
+10:34 = chunka phani kimsa chunka tawa chininiyuq
+5:55 = phichqa phani phichqa chunka phichqa chininiyuq
+6:47 = suqta phani tawa chunka qanchis chininiyuq
+10:26 = chunka phani iskay chunka suqta chininiyuq
+3:28 = kimsa phani iskay chunka pusaq chininiyuq
+12:26 = chawpi p'unchay phani iskay chunka suqta chininiyuq
+10:46 = chunka phani tawa chunka suqta chininiyuq
+3:52 = kimsa phani phichqa chunka iskay chininiyuq
+10:58 = chunka phani phichqa chunka pusaq chininiyuq
+12:59 = chawpi p'unchay phani phichqa chunka jisq'un chininiyuq
+8:46 = pusaq phani tawa chunka suqta chininiyuq
+12:52 = chawpi p'unchay phani phichqa chunka iskay chininiyuq
+1:41 = juk phani tawa chunka juk chininiyuq
+6:49 = suqta phani tawa chunka jisq'un chininiyuq
+10:59 = chunka phani phichqa chunka jisq'un chininiyuq
+7:49 = qanchis phani tawa chunka jisq'un chininiyuq
+4:38 = tawa phani kimsa chunka pusaq chininiyuq
+1:21 = juk phani iskay chunka juk chininiyuq
+12:14 = chawpi p'unchay phani chunka tawa chininiyuq
+6:40 = suqta phani tawa chunka chininiyuq
+10:9 = chunka phani jisq'un chininiyuq
+11:16 = chunka juk phani chunka suqta chininiyuq
+7:26 = qanchis phani iskay chunka suqta chininiyuq
+3:41 = kimsa phani tawa chunka juk chininiyuq
+7:53 = qanchis phani phichqa chunka kimsa chininiyuq
+2:50 = iskay phani phichqa chunka chininiyuq
+6:24 = suqta phani iskay chunka tawa chininiyuq
+7:26 = qanchis phani iskay chunka suqta chininiyuq
+8:25 = pusaq phani iskay chunka phichqa chininiyuq
+12:42 = chawpi p'unchay phani tawa chunka iskay chininiyuq
+9:38 = jisq'un phani kimsa chunka pusaq chininiyuq
+8:32 = pusaq phani kimsa chunka iskay chininiyuq
+12:52 = chawpi p'unchay phani phichqa chunka iskay chininiyuq
+3:11 = kimsa phani chunka juk chininiyuq
+1:28 = juk phani iskay chunka pusaq chininiyuq
+7:31 = qanchis phani kimsa chunka juk chininiyuq
+2:49 = iskay phani tawa chunka jisq'un chininiyuq
+6:27 = suqta phani iskay chunka qanchis chininiyuq
+5:17 = phichqa phani chunka qanchis chininiyuq
+3:42 = kimsa phani tawa chunka iskay chininiyuq
+3:31 = kimsa phani kimsa chunka juk chininiyuq
+4:19 = tawa phani chunka jisq'un chininiyuq
+4:30 = tawa khuskanniyuqña
+5:30 = phichqa khuskanniyuqña
+6:30 = suqta khuskanniyuqña
+7:30 = qanchis khuskanniyuqña
+8:30 = pusaq khuskanniyuqña
+9:30 = jisq'un khuskanniyuqña
+11:30 = chunka juk khuskanniyuqña
+12:30 = chawpi p'unchay khuskanniyuqña
+4:35 = tawa phani kimsa chunka phichqa chininiyuq
+4:33 = tawa phani kimsa chunka kimsa chininiyuq
+2:44 = iskay phani tawa chunka tawa chininiyuq
+11:16 = chunka juk phani chunka suqta chininiyuq
+9:33 = jisq'un phani kimsa chunka kimsa chininiyuq
+7:28 = qanchis phani iskay chunka pusaq chininiyuq
+10:36 = chunka phani kimsa chunka suqta chininiyuq
+2:54 = iskay phani phichqa chunka tawa chininiyuq
+12:45 = chawpi p'unchay phani tawa chunka phichqa chininiyuq
+2:55 = iskay phani phichqa chunka phichqa chininiyuq
+5:51 = phichqa phani phichqa chunka juk chininiyuq
+1:55 = juk phani phichqa chunka phichqa chininiyuq
+4:28 = tawa phani iskay chunka pusaq chininiyuq
+11:29 = chunka juk phani iskay chunka jisq'un chininiyuq
+10:30 = chunka khuskanniyuqña
+10:6 = chunka phani suqta chininiyuq
+12:17 = chawpi p'unchay phani chunka qanchis chininiyuq
+10:50 = chunka phani phichqa chunka chininiyuq
+6:51 = suqta phani phichqa chunka juk chininiyuq
+4:10 = tawa phani chunka chininiyuq
+7:37 = qanchis phani kimsa chunka qanchis chininiyuq
+10:25 = chunka phani iskay chunka phichqa chininiyuq
+10:11 = chunka phani chunka juk chininiyuq
+2:34 = iskay phani kimsa chunka tawa chininiyuq
+1:24 = juk phani iskay chunka tawa chininiyuq
+9:20 = jisq'un phani iskay chunka chininiyuq
+12:15 = chawpi p'unchay phani chunka phichqa chininiyuq
+11:54 = chunka juk phani phichqa chunka tawa chininiyuq
+5:35 = phichqa phani kimsa chunka phichqa chininiyuq
+9:10 = jisq'un phani chunka chininiyuq
+12:36 = chawpi p'unchay phani kimsa chunka suqta chininiyuq
+9:41 = jisq'un phani tawa chunka juk chininiyuq
+4:49 = tawa phani tawa chunka jisq'un chininiyuq
+9:49 = jisq'un phani tawa chunka jisq'un chininiyuq
+8:54 = pusaq phani phichqa chunka tawa chininiyuq
+6:42 = suqta phani tawa chunka iskay chininiyuq
+4:8 = tawa phani pusaq chininiyuq
+9:7 = jisq'un phani qanchis chininiyuq
+1:7 = juk phani qanchis chininiyuq
+3:51 = kimsa phani phichqa chunka juk chininiyuq
+7:4 = qanchis phani tawa chininiyuq
+3:8 = kimsa phani pusaq chininiyuq
+12:48 = chawpi p'unchay phani tawa chunka pusaq chininiyuq
+4:33 = tawa phani kimsa chunka kimsa chininiyuq
+12:52 = chawpi p'unchay phani phichqa chunka iskay chininiyuq
+6:15 = suqta phani chunka phichqa chininiyuq
+2:54 = iskay phani phichqa chunka tawa chininiyuq
+1:16 = juk phani chunka suqta chininiyuq
+8:24 = pusaq phani iskay chunka tawa chininiyuq
+3:17 = kimsa phani chunka qanchis chininiyuq
+2:30 = iskay khuskanniyuqña
+4:2 = tawa phani iskay chininiyuq
+12:4 = chawpi p'unchay phani tawa chininiyuq
+6:37 = suqta phani kimsa chunka qanchis chininiyuq
+9:45 = jisq'un phani tawa chunka phichqa chininiyuq
+11:35 = chunka juk phani kimsa chunka phichqa chininiyuq
+5:56 = phichqa phani phichqa chunka suqta chininiyuq
+12:25 = chawpi p'unchay phani iskay chunka phichqa chininiyuq
+8:15 = pusaq phani chunka phichqa chininiyuq
+12:58 = chawpi p'unchay phani phichqa chunka pusaq chininiyuq
+2:43 = iskay phani tawa chunka kimsa chininiyuq
+1:53 = juk phani phichqa chunka kimsa chininiyuq
+9:59 = jisq'un phani phichqa chunka jisq'un chininiyuq
+11:14 = chunka juk phani chunka tawa chininiyuq
+1:40 = juk phani tawa chunka chininiyuq
+2:11 = iskay phani chunka juk chininiyuq
+6:57 = suqta phani phichqa chunka qanchis chininiyuq
+3:3 = kimsa phani kimsa chininiyuq
+6:25 = suqta phani iskay chunka phichqa chininiyuq
+7:14 = qanchis phani chunka tawa chininiyuq
+3:4 = kimsa phani tawa chininiyuq
+6:6 = suqta phani suqta chininiyuq
+4:32 = tawa phani kimsa chunka iskay chininiyuq
+5:21 = phichqa phani iskay chunka juk chininiyuq
+5:5 = phichqa phani phichqa chininiyuq
+11:19 = chunka juk phani chunka jisq'un chininiyuq
+1:28 = juk phani iskay chunka pusaq chininiyuq
+7:17 = qanchis phani chunka qanchis chininiyuq
+12:1 = chawpi p'unchay phani juk chininiyuq
+2:21 = iskay phani iskay chunka juk chininiyuq
+9:17 = jisq'un phani chunka qanchis chininiyuq
+10:59 = chunka phani phichqa chunka jisq'un chininiyuq
+12:49 = chawpi p'unchay phani tawa chunka jisq'un chininiyuq
+1:2 = juk phani iskay chininiyuq
+9:36 = jisq'un phani kimsa chunka suqta chininiyuq
+9:37 = jisq'un phani kimsa chunka qanchis chininiyuq
+7:11 = qanchis phani chunka juk chininiyuq
+8:52 = pusaq phani phichqa chunka iskay chininiyuq
+5:23 = phichqa phani iskay chunka kimsa chininiyuq
+10:17 = chunka phani chunka qanchis chininiyuq
+5:18 = phichqa phani chunka pusaq chininiyuq
+5:4 = phichqa phani tawa chininiyuq
+10:55 = chunka phani phichqa chunka phichqa chininiyuq
+1:8 = juk phani pusaq chininiyuq
+9:6 = jisq'un phani suqta chininiyuq
+3:18 = kimsa phani chunka pusaq chininiyuq
+12:21 = chawpi p'unchay phani iskay chunka juk chininiyuq
+11:39 = chunka juk phani kimsa chunka jisq'un chininiyuq
+9:24 = jisq'un phani iskay chunka tawa chininiyuq
+11:32 = chunka juk phani kimsa chunka iskay chininiyuq
+2:39 = iskay phani kimsa chunka jisq'un chininiyuq
+10:57 = chunka phani phichqa chunka qanchis chininiyuq
+9:47 = jisq'un phani tawa chunka qanchis chininiyuq
+2:36 = iskay phani kimsa chunka suqta chininiyuq
+8:49 = pusaq phani tawa chunka jisq'un chininiyuq
+8:2 = pusaq phani iskay chininiyuq
+11:7 = chunka juk phani qanchis chininiyuq
+5:49 = phichqa phani tawa chunka jisq'un chininiyuq
+5:57 = phichqa phani phichqa chunka qanchis chininiyuq
+1:51 = juk phani phichqa chunka juk chininiyuq
+6:18 = suqta phani chunka pusaq chininiyuq
+8:42 = pusaq phani tawa chunka iskay chininiyuq
+6:28 = suqta phani iskay chunka pusaq chininiyuq
+10:54 = chunka phani phichqa chunka tawa chininiyuq
+4:15 = tawa phani chunka phichqa chininiyuq
+6:29 = suqta phani iskay chunka jisq'un chininiyuq
+2:16 = iskay phani chunka suqta chininiyuq
+2:26 = iskay phani iskay chunka suqta chininiyuq
+7:5 = qanchis phani phichqa chininiyuq
+9:39 = jisq'un phani kimsa chunka jisq'un chininiyuq
+5:9 = phichqa phani jisq'un chininiyuq
+1:53 = juk phani phichqa chunka kimsa chininiyuq
+9:55 = jisq'un phani phichqa chunka phichqa chininiyuq
+8:31 = pusaq phani kimsa chunka juk chininiyuq
+10:57 = chunka phani phichqa chunka qanchis chininiyuq
+4:14 = tawa phani chunka tawa chininiyuq
+7:28 = qanchis phani iskay chunka pusaq chininiyuq
+8:15 = pusaq phani chunka phichqa chininiyuq
+6:20 = suqta phani iskay chunka chininiyuq
+9:26 = jisq'un phani iskay chunka suqta chininiyuq
+11:40 = chunka juk phani tawa chunka chininiyuq
+2:4 = iskay phani tawa chininiyuq
+7:00 = qanchisña
+12:14 = chawpi p'unchay phani chunka tawa chininiyuq
+12:27 = chawpi p'unchay phani iskay chunka qanchis chininiyuq
+1:10 = juk phani chunka chininiyuq
+6:58 = suqta phani phichqa chunka pusaq chininiyuq
+10:7 = chunka phani qanchis chininiyuq
+8:25 = pusaq phani iskay chunka phichqa chininiyuq
+11:17 = chunka juk phani chunka qanchis chininiyuq
+3:36 = kimsa phani kimsa chunka suqta chininiyuq
+7:33 = qanchis phani kimsa chunka kimsa chininiyuq
+5:3 = phichqa phani kimsa chininiyuq
+2:33 = iskay phani kimsa chunka kimsa chininiyuq
+1:41 = juk phani tawa chunka juk chininiyuq
+8:57 = pusaq phani phichqa chunka qanchis chininiyuq
+2:59 = iskay phani phichqa chunka jisq'un chininiyuq
+10:13 = chunka phani chunka kimsa chininiyuq
+9:4 = jisq'un phani tawa chininiyuq
+12:45 = chawpi p'unchay phani tawa chunka phichqa chininiyuq
+7:14 = qanchis phani chunka tawa chininiyuq
+1:9 = juk phani jisq'un chininiyuq
+12:1 = chawpi p'unchay phani juk chininiyuq
+11:10 = chunka juk phani chunka chininiyuq
+9:34 = jisq'un phani kimsa chunka tawa chininiyuq
+8:52 = pusaq phani phichqa chunka iskay chininiyuq
+4:25 = tawa phani iskay chunka phichqa chininiyuq
+12:38 = chawpi p'unchay phani kimsa chunka pusaq chininiyuq
+11:57 = chunka juk phani phichqa chunka qanchis chininiyuq
+7:21 = qanchis phani iskay chunka juk chininiyuq
+5:16 = phichqa phani chunka suqta chininiyuq
+1:24 = juk phani iskay chunka tawa chininiyuq
+10:22 = chunka phani iskay chunka iskay chininiyuq
+12:27 = chawpi p'unchay phani iskay chunka qanchis chininiyuq
+3:10 = kimsa phani chunka chininiyuq
+9:31 = jisq'un phani kimsa chunka juk chininiyuq
+2:49 = iskay phani tawa chunka jisq'un chininiyuq
+5:18 = phichqa phani chunka pusaq chininiyuq
+11:2 = chunka juk phani iskay chininiyuq
+11:45 = chunka juk phani tawa chunka phichqa chininiyuq
+7:55 = qanchis phani phichqa chunka phichqa chininiyuq
+6:11 = suqta phani chunka juk chininiyuq
+5:33 = phichqa phani kimsa chunka kimsa chininiyuq
+10:58 = chunka phani phichqa chunka pusaq chininiyuq
+4:20 = tawa phani iskay chunka chininiyuq
+1:51 = juk phani phichqa chunka juk chininiyuq
+1:16 = juk phani chunka suqta chininiyuq
+8:1 = pusaq phani juk chininiyuq
+5:00 = phichqaña
+1:00 = jukña
+6:00 = suqtaña
+2:00 = iskayña
+3:00 = kimsaña
+4:00 = tawaña
+8:00 = pusaqña
+9:00 = jisq'unña
+10:00 = chunkaña
+11:00 = chunka jukña
+12:00 = chawpi p'unchayña
+6:32 = suqta phani kimsa chunka iskay chininiyuq
+3:28 = kimsa phani iskay chunka pusaq chininiyuq
+3:57 = kimsa phani phichqa chunka qanchis chininiyuq
+12:4 = chawpi p'unchay phani tawa chininiyuq`;
+
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let score = { correct: 0, incorrect: 0 };
+        let draggedData = null;
+        let isAnswered = false;
+        let participantName = "";
+        let questionLimit = 10;
+        let gameHistory = [];
+
+        // Elementos DOM
+        const setupCard = document.getElementById('setup-card');
+        const gameCard = document.getElementById('game-card');
+        const startButton = document.getElementById('start-button');
+        const participantNameInput = document.getElementById('participant-name');
+        const questionLimitInput = document.getElementById('question-limit');
+
+        const questionCounterElement = document.getElementById('question-counter');
+        const questionContainer = document.getElementById('question-container');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackElement = document.getElementById('feedback');
+        const correctCountSpan = document.getElementById('correct-count');
+        const incorrectCountSpan = document.getElementById('incorrect-count');
+        const checkButton = document.getElementById('check-button');
+        const nextButton = document.getElementById('next-button');
+        
+        const resultsModal = document.getElementById('results-modal');
+        const resName = document.getElementById('res-name');
+        const resDateTime = document.getElementById('res-datetime');
+        const resTotalQuestions = document.getElementById('res-total-questions');
+        const finalCorrectCountSpan = document.getElementById('final-correct-count');
+        const finalIncorrectCountSpan = document.getElementById('final-incorrect-count');
+        const resPercentage = document.getElementById('res-percentage');
+        const historyContainer = document.getElementById('history-container');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createQuestions() {
+            const parsedData = RAW_DATABASE.split('\n').map(line => {
+                const parts = line.split(' = ');
+                if (parts.length === 2) {
+                    return {
+                        time: parts[0].trim(),
+                        quechuaWords: parts[1].trim().split(' ')
+                    };
+                }
+                return null;
+            }).filter(item => item !== null);
+
+            let allQuestions = parsedData.map(item => {
+                const allQuechuaWords = parsedData.flatMap(p => p.quechuaWords);
+                const uniqueWords = Array.from(new Set(allQuechuaWords));
+                
+                let incorrectOptions = [];
+                let correctOptions = [...item.quechuaWords];
+                
+                const otherWords = uniqueWords.filter(word => !correctOptions.includes(word));
+                
+                while (incorrectOptions.length < 3 && otherWords.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * otherWords.length);
+                    const randomWord = otherWords[randomIndex];
+                    incorrectOptions.push(randomWord);
+                    otherWords.splice(randomIndex, 1);
+                }
+                
+                const options = shuffleArray([...correctOptions, ...incorrectOptions]);
+                
+                return {
+                    time: item.time,
+                    quechuaWords: item.quechuaWords,
+                    options: options
+                };
+            });
+            
+            shuffleArray(allQuestions);
+            questions = allQuestions.slice(0, questionLimit);
+        }
+
+        function createOptionElement(wordText) {
+            const optionElement = document.createElement('div');
+            optionElement.className = 'option';
+            optionElement.textContent = wordText;
+            optionElement.setAttribute('draggable', true);
+
+            optionElement.addEventListener('dragstart', (e) => {
+                if (isAnswered) return;
+                draggedData = {
+                    text: wordText,
+                    source: 'options',
+                    element: optionElement
+                };
+                e.dataTransfer.setData('text/plain', wordText);
+                setTimeout(() => optionElement.style.display = 'none', 0);
+            });
+
+            optionElement.addEventListener('dragend', () => {
+                if (draggedData && draggedData.element) {
+                    draggedData.element.style.display = 'block';
+                }
+            });
+
+            return optionElement;
+        }
+
+        function renderQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                showResults();
+                return;
+            }
+            
+            isAnswered = false;
+            questionCounterElement.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            questionContainer.innerHTML = `
+                <p class="quechua-phrase">
+                    <span class="number">${currentQuestion.time}</span> = 
+                </p>
+            `;
+
+            const phraseContainer = questionContainer.querySelector('.quechua-phrase');
+            
+            currentQuestion.quechuaWords.forEach((_, index) => {
+                const blank = document.createElement('span');
+                blank.className = 'blank';
+                blank.dataset.index = index;
+
+                blank.addEventListener('dragstart', (e) => {
+                    if (isAnswered || !blank.textContent) return;
+                    draggedData = {
+                        text: blank.textContent,
+                        source: 'blank',
+                        element: blank
+                    };
+                    e.dataTransfer.setData('text/plain', blank.textContent);
+                });
+
+                blank.addEventListener('dragover', (e) => e.preventDefault());
+                blank.addEventListener('dragenter', (e) => {
+                    e.preventDefault();
+                    if (!isAnswered) blank.classList.add('hover');
+                });
+                blank.addEventListener('dragleave', () => blank.classList.remove('hover'));
+
+                blank.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    blank.classList.remove('hover');
+                    if (isAnswered || !draggedData) return;
+
+                    const incomingText = draggedData.text;
+
+                    if (draggedData.source === 'options') {
+                        if (blank.textContent) {
+                            optionsContainer.appendChild(createOptionElement(blank.textContent));
+                        }
+                        blank.textContent = incomingText;
+                        blank.classList.add('filled');
+                        blank.setAttribute('draggable', true);
+                        if (draggedData.element) draggedData.element.remove();
+                    } 
+                    else if (draggedData.source === 'blank' && draggedData.element !== blank) {
+                        const targetOldText = blank.textContent;
+                        
+                        blank.textContent = incomingText;
+                        blank.classList.add('filled');
+                        blank.setAttribute('draggable', true);
+
+                        if (targetOldText) {
+                            draggedData.element.textContent = targetOldText;
+                            draggedData.element.classList.add('filled');
+                            draggedData.element.setAttribute('draggable', true);
+                        } else {
+                            draggedData.element.textContent = '';
+                            draggedData.element.classList.remove('filled');
+                            draggedData.element.removeAttribute('draggable');
+                        }
+                    }
+                    draggedData = null;
+                });
+
+                phraseContainer.appendChild(blank);
+            });
+
+            optionsContainer.innerHTML = '';
+            currentQuestion.options.forEach(word => {
+                optionsContainer.appendChild(createOptionElement(word));
+            });
+
+            optionsContainer.addEventListener('dragover', (e) => e.preventDefault());
+            optionsContainer.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                if (!isAnswered) optionsContainer.classList.add('hover');
+            });
+            optionsContainer.addEventListener('dragleave', () => optionsContainer.classList.remove('hover'));
+            
+            optionsContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                optionsContainer.classList.remove('hover');
+                if (isAnswered || !draggedData) return;
+
+                if (draggedData.source === 'blank') {
+                    optionsContainer.appendChild(createOptionElement(draggedData.text));
+                    draggedData.element.textContent = '';
+                    draggedData.element.classList.remove('filled');
+                    draggedData.element.removeAttribute('draggable');
+                }
+                draggedData = null;
+            });
+
+            feedbackElement.textContent = '';
+            checkButton.style.display = 'block';
+            nextButton.style.display = 'none';
+        }
+
+        function checkAnswers() {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const currentQuestion = questions[currentQuestionIndex];
+            const blanks = document.querySelectorAll('.blank');
+            const userAnswer = Array.from(blanks).map(blank => blank.textContent || "___");
+            const correctAnswer = currentQuestion.quechuaWords;
+
+            blanks.forEach(b => b.removeAttribute('draggable'));
+            document.querySelectorAll('.option').forEach(o => o.removeAttribute('draggable'));
+
+            const isCorrect = userAnswer.length === correctAnswer.length && 
+                              userAnswer.every((word, index) => word === correctAnswer[index]);
+
+            if (isCorrect) {
+                feedbackElement.textContent = '¡Correcto!';
+                feedbackElement.style.color = '#27ae60';
+                score.correct++;
+            } else {
+                feedbackElement.textContent = `Incorrecto. La respuesta correcta era: ${correctAnswer.join(' ')}`;
+                feedbackElement.style.color = '#c0392b';
+                score.incorrect++;
+            }
+
+            gameHistory.push({
+                timeNum: currentQuestion.time,
+                userAns: userAnswer.join(' '),
+                correctAns: correctAnswer.join(' '),
+                isCorrect: isCorrect
+            });
+            
+            updateScore();
+            checkButton.style.display = 'none';
+            nextButton.style.display = 'block';
+        }
+        
+        function updateScore() {
+            correctCountSpan.textContent = score.correct;
+            incorrectCountSpan.textContent = score.incorrect;
+        }
+
+        function showResults() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+            const total = questions.length;
+            const percentage = Math.round((score.correct / total) * 100);
+
+            resName.textContent = participantName;
+            resDateTime.textContent = dateStr;
+            resTotalQuestions.textContent = total;
+            finalCorrectCountSpan.textContent = score.correct;
+            finalIncorrectCountSpan.textContent = score.incorrect;
+            resPercentage.textContent = `${percentage}%`;
+
+            historyContainer.innerHTML = '';
+            gameHistory.forEach((item, index) => {
+                const historyDiv = document.createElement('div');
+                historyDiv.className = `history-item ${item.isCorrect ? 'correct' : 'incorrect'}`;
+                historyDiv.innerHTML = `
+                    <p><strong>P${index + 1} (${item.timeNum}):</strong> ${item.isCorrect ? '✓ Correcto' : '✗ Incorrecto'}</p>
+                    <p><em>Tu respuesta:</em> ${item.userAns}</p>
+                    ${!item.isCorrect ? `<p><em>Respuesta correcta:</em> ${item.correctAns}</p>` : ''}
+                `;
+                historyContainer.appendChild(historyDiv);
+            });
+
+            resultsModal.style.display = 'flex';
+        }
+
+        startButton.addEventListener('click', () => {
+            const nameValue = participantNameInput.value.trim();
+            const limitValue = parseInt(questionLimitInput.value);
+
+            if (!nameValue) {
+                alert("Por favor, ingresa el nombre del participante.");
+                return;
+            }
+
+            if (isNaN(limitValue) || limitValue < 1) {
+                alert("Por favor, ingresa un número válido de preguntas.");
+                return;
+            }
+
+            participantName = nameValue;
+            questionLimit = limitValue;
+
+            setupCard.style.display = 'none';
+            gameCard.style.display = 'flex';
+
+            createQuestions();
+            renderQuestion();
+            updateScore();
+        });
+
+        checkButton.addEventListener('click', checkAnswers);
+
+        nextButton.addEventListener('click', () => {
+            currentQuestionIndex++;
+            renderQuestion();
+        });
+    </script>
+</body>
+</html>
