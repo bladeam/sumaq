@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descargar Base de Datos</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            background-color: #ffffff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .card h1 {
+            font-size: 1.5rem;
+            color: #333333;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            color: #666666;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .btn-download {
+            display: inline-block;
+            background-color: #24292e; /* Color oscuro estilo GitHub */
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-download:hover {
+            background-color: #0366d6; /* Azul al pasar el cursor */
+        }
+
+        .btn-download:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Descarga de Archivo SQL</h1>
+        <p>Haz clic en el siguiente botón para obtener el archivo <code>bd.sql</code> guardado en este repositorio.</p>
+        
+        <!-- Botón de descarga -->
+        <a href="bd.sql" download="bd.sql" class="btn-download">
+            Descargar bd.sql
+        </a>
+    </div>
+
+</body>
+</html>
