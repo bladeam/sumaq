@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Práctica Interactiva: Factor Común en Álgebra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .math-expr {
+            font-family: 'Fira Code', monospace;
+            letter-spacing: -0.5px;
+        }
+        sup {
+            font-size: 0.75em;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline;
+            top: -0.5em;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-brand-600 text-white p-2.5 rounded-xl shadow-md">
+                    <i class="fa-solid fa-calculator text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900 leading-tight">Factor Común</h1>
+                    <p class="text-xs text-slate-500">Álgebra Interactiva - 10 Ejercicios Prácticos</p>
+                </div>
+            </div>
+
+            <!-- Panel de Estadísticas -->
+            <div class="flex items-center gap-4 bg-slate-100 px-4 py-2 rounded-xl w-full sm:w-auto justify-around sm:justify-end">
+                <div class="text-center sm:text-right">
+                    <span class="text-xs text-slate-500 block font-medium">Progreso</span>
+                    <span id="progress-text" class="text-sm font-bold text-slate-800">0 / 10</span>
+                </div>
+                <div class="h-8 w-px bg-slate-300"></div>
+                <div class="text-center sm:text-right">
+                    <span class="text-xs text-slate-500 block font-medium">Puntaje</span>
+                    <span id="score-text" class="text-sm font-bold text-brand-600">0 pts</span>
+                </div>
+                <button onclick="resetAll()" title="Reiniciar todo" class="ml-2 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Barra de Progreso Superior -->
+        <div class="w-full bg-slate-100 h-2 overflow-hidden">
+            <div id="progress-bar" class="bg-brand-600 h-full w-0 transition-all duration-500 ease-out"></div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 flex-grow w-full">
+        
+        <!-- Guía / Ayuda rápida -->
+        <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4 sm:p-5 mb-8 flex flex-col sm:flex-row items-start gap-4">
+            <div class="text-brand-600 text-2xl mt-0.5">
+                <i class="fa-solid fa-lightbulb"></i>
+            </div>
+            <div class="text-sm text-slate-700 leading-relaxed">
+                <h2 class="font-semibold text-slate-900 text-base mb-1">Guía de Formato de Respuestas:</h2>
+                <p>Escribe tu respuesta simplificada usando paréntesis. Puedes usar exponentes con el símbolo <code class="bg-white px-1.5 py-0.5 rounded border border-blue-200 text-brand-700 font-mono font-bold">^</code> o directamente escribiéndolos (ejemplo: <code class="bg-white px-1.5 py-0.5 rounded border border-blue-200 text-brand-700 font-mono font-bold">3x(2x + 3)</code> o <code class="bg-white px-1.5 py-0.5 rounded border border-blue-200 text-brand-700 font-mono font-bold">3x(2x^2 + 3)</code>). Los espacios no afectan el resultado.</p>
+            </div>
+        </div>
+
+        <!-- Lista de Ejercicios Container -->
+        <div id="exercises-container" class="space-y-6">
+            <!-- Los ejercicios se renderizan dinámicamente con JS -->
+        </div>
+
+        <!-- Mensaje de felicitación final -->
+        <div id="congrats-card" class="hidden mt-8 bg-emerald-500 text-white rounded-2xl p-8 text-center shadow-lg transform transition-all">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4 text-3xl">
+                🏆
+            </div>
+            <h2 class="text-2xl font-bold mb-2">¡Excelente Trabajo!</h2>
+            <p class="text-emerald-100 max-w-md mx-auto mb-6">Has completado los 10 ejercicios de factorización por factor común con éxito.</p>
+            <button onclick="resetAll()" class="bg-white text-emerald-700 px-6 py-3 rounded-xl font-bold hover:bg-emerald-50 transition-colors shadow-md">
+                Intentar de nuevo
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+        <p>Herramienta Didáctica de Álgebra &bull; Factor Común Monomio y Polinomio</p>
+    </footer>
+
+    <script>
+        // Definición de ejercicios
+        const exercisesData = [
+            {
+                id: 1,
+                level: 'Básico',
+                levelColor: 'bg-emerald-100 text-emerald-800',
+                expressionHTML: '5x + 10',
+                hint: 'Encuentra el Máximo Común Divisor (MCD) de los coeficientes numéricos 5 y 10.',
+                validAnswers: ['5(x+2)', '5(2+x)'],
+                explanation: '1. El MCD de 5 y 10 es 5.<br>2. Dividimos cada término entre 5: <code>5x/5 = x</code> y <code>10/5 = 2</code>.<br>3. Expresamos como producto: <strong>5(x + 2)</strong>.'
+            },
+            {
+                id: 2,
+                level: 'Básico',
+                levelColor: 'bg-emerald-100 text-emerald-800',
+                expressionHTML: '6x² + 9x',
+                hint: 'El factor común tiene una parte numérica (MCD de 6 y 9) y una parte literal (la variable x con menor exponente).',
+                validAnswers: ['3x(2x+3)', '3x(3+2x)'],
+                explanation: '1. MCD de 6 y 9 es 3.<br>2. La menor potencia de x es x¹.<br>3. El factor común es <strong>3x</strong>.<br>4. Dividimos términos: <code>6x²/3x = 2x</code> y <code>9x/3x = 3</code>.<br>5. Resultado: <strong>3x(2x + 3)</strong>.'
+            },
+            {
+                id: 3,
+                level: 'Básico',
+                levelColor: 'bg-emerald-100 text-emerald-800',
+                expressionHTML: '8a³ - 12a²',
+                hint: 'Calcula el MCD de 8 y 12. La variable \'a\' se repite; toma el exponente más pequeño.',
+                validAnswers: ['4a^2(2a-3)', '4a²(2a-3)'],
+                explanation: '1. MCD(8, 12) = 4.<br>2. La menor potencia de \'a\' presente es a².<br>3. Factor común: <strong>4a²</strong>.<br>4. Al dividir: <code>8a³/4a² = 2a</code> y <code>-12a²/4a² = -3</code>.<br>5. Resultado: <strong>4a²(2a - 3)</strong>.'
+            },
+            {
+                id: 4,
+                level: 'Intermedio',
+                levelColor: 'bg-blue-100 text-blue-800',
+                expressionHTML: '14x³y² - 21x²y³',
+                hint: 'Extrae el MCD numérico y el menor exponente de cada variable (x e y).',
+                validAnswers: ['7x^2y^2(2x-3y)', '7x²y²(2x-3y)'],
+                explanation: '1. MCD(14, 21) = 7.<br>2. Factores literales comunes: x² e y².<br>3. Factor común monomio: <strong>7x²y²</strong>.<br>4. Dividiendo: <code>14x³y² / 7x²y² = 2x</code> y <code>-21x²y³ / 7x²y² = -3y</code>.<br>5. Resultado: <strong>7x²y²(2x - 3y)</strong>.'
+            },
+            {
+                id: 5,
+                level: 'Intermedio',
+                levelColor: 'bg-blue-100 text-blue-800',
+                expressionHTML: '15a²b + 25ab² - 10ab',
+                hint: 'Hay tres términos. Busca el MCD numérico de 15, 25 y 10, y las variables en común.',
+                validAnswers: ['5ab(3a+5b-2)', '5ab(3a-2+5b)', '5ab(5b+3a-2)'],
+                explanation: '1. MCD(15, 25, 10) = 5.<br>2. Variables comunes a todos los términos: ab.<br>3. Factor común: <strong>5ab</strong>.<br>4. Dividimos cada término entre 5ab: <code>3a + 5b - 2</code>.<br>5. Resultado: <strong>5ab(3a + 5b - 2)</strong>.'
+            },
+            {
+                id: 6,
+                level: 'Intermedio',
+                levelColor: 'bg-blue-100 text-blue-800',
+                expressionHTML: 'x(a + b) + y(a + b)',
+                hint: 'En este caso, el factor común no es un monomio, sino el binomio completo que se repite.',
+                validAnswers: ['(a+b)(x+y)', '(x+y)(a+b)'],
+                explanation: '1. Observa que el bloque <strong>(a + b)</strong> está en ambos términos.<br>2. Extraemos (a + b) como factor común.<br>3. Lo que queda en el otro factor es (x + y).<br>4. Resultado: <strong>(a + b)(x + y)</strong>.'
+            },
+            {
+                id: 7,
+                level: 'Intermedio',
+                levelColor: 'bg-blue-100 text-blue-800',
+                expressionHTML: '2a(x - 1) - 3b(x - 1)',
+                hint: 'Identifica el polinomio que es exactamente igual en ambos términos.',
+                validAnswers: ['(x-1)(2a-3b)', '(2a-3b)(x-1)'],
+                explanation: '1. El polinomio común en ambos términos es <strong>(x - 1)</strong>.<br>2. Factorizamos (x - 1).<br>3. Queda agrupado (2a - 3b).<br>4. Resultado: <strong>(x - 1)(2a - 3b)</strong>.'
+            },
+            {
+                id: 8,
+                level: 'Avanzado',
+                levelColor: 'bg-amber-100 text-amber-800',
+                expressionHTML: '18m⁴n³ - 24m³n⁵ + 36m²n²',
+                hint: 'El MCD numérico de 18, 24 y 36 es 6. Selecciona los menores exponentes de m y n.',
+                validAnswers: ['6m^2n^2(3m^2n-4mn^3+6)', '6m²n²(3m²n-4mn³+6)'],
+                explanation: '1. MCD(18, 24, 36) = 6.<br>2. Menores exponentes: m² y n².<br>3. Factor común: <strong>6m²n²</strong>.<br>4. Dividiendo cada término: <code>18m⁴n³/6m²n² = 3m²n</code>, <code>-24m³n⁵/6m²n² = -4mn³</code>, <code>36m²n²/6m²n² = 6</code>.<br>5. Resultado: <strong>6m²n²(3m²n - 4mn³ + 6)</strong>.'
+            },
+            {
+                id: 9,
+                level: 'Avanzado',
+                levelColor: 'bg-amber-100 text-amber-800',
+                expressionHTML: 'a(x + 2) + x + 2',
+                hint: 'Agrupa los últimos dos términos con paréntesis: (x + 2) = 1(x + 2).',
+                validAnswers: ['(x+2)(a+1)', '(a+1)(x+2)'],
+                explanation: '1. Reescribimos la expresión: <code>a(x + 2) + 1(x + 2)</code>.<br>2. El factor común polinomio es <strong>(x + 2)</strong>.<br>3. Al factorizarlo obtenemos: <strong>(x + 2)(a + 1)</strong>.'
+            },
+            {
+                id: 10,
+                level: 'Avanzado',
+                levelColor: 'bg-amber-100 text-amber-800',
+                expressionHTML: '3x²(y - 3) - 6x(y - 3)',
+                hint: 'Combina el factor común polinomio (y - 3) con el factor común monomio que hay entre 3x² y 6x.',
+                validAnswers: ['3x(y-3)(x-2)', '3x(x-2)(y-3)', '(y-3)(3x^2-6x)'],
+                explanation: '1. Primero extraemos el binomio común (y - 3): <code>(y - 3)(3x² - 6x)</code>.<br>2. Luego factorizamos por completo el segundo paréntesis (3x² - 6x = 3x(x - 2)).<br>3. Factorización total final: <strong>3x(y - 3)(x - 2)</strong>.'
+            }
+        ];
+
+        // Estado global de la app
+        let state = {
+            completed: new Set(),
+            scores: {}
+        };
+
+        function normalizeMathString(str) {
+            if (!str) return '';
+            return str
+                .toLowerCase()
+                .replace(/\s+/g, '') // Eliminar todos los espacios
+                .replace(/²/g, '^2') // Normalizar superíndice 2
+                .replace(/³/g, '^3') // Normalizar superíndice 3
+                .replace(/⁴/g, '^4') // Normalizar superíndice 4
+                .replace(/⁵/g, '^5') // Normalizar superíndice 5
+                .replace(/\*/g, ''); // Eliminar asteriscos de multiplicación explícita
+        }
+
+        function checkUserAnswer(userStr, validAnswers) {
+            const cleanUser = normalizeMathString(userStr);
+            if (!cleanUser) return false;
+            
+            return validAnswers.some(valid => {
+                const cleanValid = normalizeMathString(valid);
+                return cleanUser === cleanValid;
+            });
+        }
+
+        function renderExercises() {
+            const container = document.getElementById('exercises-container');
+            container.innerHTML = '';
+
+            exercisesData.forEach((ex, idx) => {
+                const card = document.createElement('div');
+                card.className = "bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden";
+                card.id = `card-${ex.id}`;
+
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">
+                                ${idx + 1}
+                            </span>
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${ex.levelColor}">
+                                ${ex.level}
+                            </span>
+                        </div>
+                        <span id="status-badge-${ex.id}" class="hidden text-xs font-medium px-2.5 py-1 rounded-full"></span>
+                    </div>
+
+                    <!-- Enunciado de la expresión -->
+                    <div class="mb-5 bg-slate-50 border border-slate-100 p-4 rounded-xl text-center">
+                        <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold block mb-1">Factorizar:</span>
+                        <div class="text-xl sm:text-2xl font-bold text-slate-900 math-expr">${ex.expressionHTML}</div>
+                    </div>
+
+                    <!-- Formulario de Respuesta -->
+                    <div class="space-y-3">
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="relative flex-grow">
+                                <input type="text" 
+                                    id="input-${ex.id}" 
+                                    placeholder="Ej: 3x(2x + 3)"
+                                    onkeydown="if(event.key === 'Enter') verifyExercise(${ex.id})"
+                                    class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-slate-800 font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all text-sm sm:text-base">
+                            </div>
+                            <button onclick="verifyExercise(${ex.id})" 
+                                class="bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 text-sm">
+                                <span>Comprobar</span>
+                                <i class="fa-solid fa-check text-xs"></i>
+                            </button>
+                        </div>
+
+                        <!-- Botones de ayuda -->
+                        <div class="flex items-center gap-3 text-xs pt-1">
+                            <button onclick="toggleHint(${ex.id})" class="text-slate-500 hover:text-brand-600 font-medium flex items-center gap-1.5 transition-colors">
+                                <i class="fa-regular fa-lightbulb"></i>
+                                <span>Pista</span>
+                            </button>
+                            <span class="text-slate-300">&bull;</span>
+                            <button onclick="toggleSolution(${ex.id})" class="text-slate-500 hover:text-brand-600 font-medium flex items-center gap-1.5 transition-colors">
+                                <i class="fa-regular fa-eye"></i>
+                                <span>Ver Solución Paso a Paso</span>
+                            </button>
+                        </div>
+
+                        <!-- Pista Box -->
+                        <div id="hint-box-${ex.id}" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3.5 rounded-xl mt-2 animate-fade-in">
+                            <div class="font-semibold mb-0.5 flex items-center gap-1">
+                                <i class="fa-solid fa-lightbulb text-amber-500"></i> Pista:
+                            </div>
+                            ${ex.hint}
+                        </div>
+
+                        <!-- Solución Box -->
+                        <div id="solution-box-${ex.id}" class="hidden bg-slate-100 border border-slate-200 text-slate-700 text-xs p-4 rounded-xl mt-2 space-y-1">
+                            <div class="font-bold text-slate-900 mb-1 flex items-center gap-1">
+                                <i class="fa-solid fa-square-check text-brand-600"></i> Solución detallada:
+                            </div>
+                            <div class="leading-relaxed font-sans">${ex.explanation}</div>
+                        </div>
+
+                        <!-- Feedback de resultado -->
+                        <div id="feedback-${ex.id}" class="hidden rounded-xl p-3 text-xs font-medium flex items-center gap-2"></div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Acciones e interacciones
+        function toggleHint(id) {
+            const box = document.getElementById(`hint-box-${id}`);
+            box.classList.toggle('hidden');
+        }
+
+        function toggleSolution(id) {
+            const box = document.getElementById(`solution-box-${id}`);
+            box.classList.toggle('hidden');
+        }
+
+        function verifyExercise(id) {
+            const ex = exercisesData.find(e => e.id === id);
+            const input = document.getElementById(`input-${ex.id}`);
+            const feedback = document.getElementById(`feedback-${ex.id}`);
+            const badge = document.getElementById(`status-badge-${ex.id}`);
+            const userVal = input.value.trim();
+
+            if (!userVal) {
+                feedback.className = "rounded-xl p-3 text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-2";
+                feedback.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Por favor escribe una respuesta antes de comprobar.';
+                feedback.classList.remove('hidden');
+                return;
+            }
+
+            const isCorrect = checkUserAnswer(userVal, ex.validAnswers);
+
+            if (isCorrect) {
+                feedback.className = "rounded-xl p-3 text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-2";
+                feedback.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 text-base"></i> <span><strong>¡Correcto!</strong> Excelente trabajo al factorizar.</span>';
+                
+                badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1";
+                badge.innerHTML = '<i class="fa-solid fa-check text-xs"></i> Correcto';
+                badge.classList.remove('hidden');
+
+                state.completed.add(id);
+                state.scores[id] = 10;
+            } else {
+                feedback.className = "rounded-xl p-3 text-xs font-medium bg-rose-50 text-rose-800 border border-rose-200 flex items-center gap-2";
+                feedback.innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600 text-base"></i> <span><strong>Respuesta incorrecta.</strong> Revisa los exponentes o signos e inténtalo nuevamente o usa una pista.</span>';
+                
+                if (!state.completed.has(id)) {
+                    badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 flex items-center gap-1";
+                    badge.innerHTML = '<i class="fa-solid fa-xmark text-xs"></i> Revisar';
+                    badge.classList.remove('hidden');
+                }
+            }
+
+            feedback.classList.remove('hidden');
+            updateProgress();
+        }
+
+        // Actualizar UI del progreso
+        function updateProgress() {
+            const total = exercisesData.length;
+            const completedCount = state.completed.size;
+            const scoreTotal = Object.values(state.scores).reduce((a, b) => a + b, 0);
+
+            document.getElementById('progress-text').innerText = `${completedCount} / ${total}`;
+            document.getElementById('score-text').innerText = `${scoreTotal} pts`;
+
+            const percentage = (completedCount / total) * 100;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+
+            if (completedCount === total) {
+                document.getElementById('congrats-card').classList.remove('hidden');
+            }
+        }
+
+        // Reiniciar todo
+        function resetAll() {
+            state.completed.clear();
+            state.scores = {};
+            
+            exercisesData.forEach(ex => {
+                const input = document.getElementById(`input-${ex.id}`);
+                const feedback = document.getElementById(`feedback-${ex.id}`);
+                const badge = document.getElementById(`status-badge-${ex.id}`);
+                const hint = document.getElementById(`hint-box-${ex.id}`);
+                const solution = document.getElementById(`solution-box-${ex.id}`);
+
+                if (input) input.value = '';
+                if (feedback) feedback.classList.add('hidden');
+                if (badge) badge.classList.add('hidden');
+                if (hint) hint.classList.add('hidden');
+                if (solution) solution.classList.add('hidden');
+            });
+
+            document.getElementById('congrats-card').classList.add('hidden');
+            updateProgress();
+        }
+
+        // Inicialización al cargar la página
+        window.onload = function() {
+            renderExercises();
+            updateProgress();
+        };
+    </script>
+</body>
+</html>
