@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Conteo en Quechua</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            min-height: 200px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #e6f7ff;
+            gap: 10px;
+        }
+
+        .image-container span {
+            font-size: 30px;
+        }
+
+        .question {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .option:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .correct {
+            color: green;
+        }
+
+        .incorrect {
+            color: red;
+        }
+
+        #end-game-btn {
+            margin-top: 20px;
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        #end-game-btn:hover {
+            background-color: #c82333;
+        }
+
+        .history-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .history-item {
+            padding: 8px;
+            border-bottom: 1px solid #e9ecef;
+            text-align: left;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="question">¿Cuántos hay?</h1>
+        <div class="image-container" id="image-container"></div>
+        <div class="options-container" id="options-container"></div>
+        <div class="feedback" id="feedback-message"></div>
+        <button id="end-game-btn">Terminar juego</button>
+    </div>
+
+    <script>
+        const database = [
+            { name: 'juk misi', count: 1, image: '🐱' },
+            { name: 'iskay misi', count: 2, image: '🐱' },
+            { name: 'kimsa misi', count: 3, image: '🐱' },
+            { name: 'tawa misi', count: 4, image: '🐱' },
+            { name: 'phichqa misi', count: 5, image: '🐱' },
+            { name: 'suqta misi', count: 6, image: '🐱' },
+            { name: 'qanchis misi', count: 7, image: '🐱' },
+            { name: 'pusaq misi', count: 8, image: '🐱' },
+            { name: 'jisq\'un misi', count: 9, image: '🐱' },
+            { name: 'chunka misi', count: 10, image: '🐱' },
+            { name: 'chunka juk misi', count: 11, image: '🐱' },
+            { name: 'chunka iskay misi', count: 12, image: '🐱' },
+
+            { name: 'juk warmi', count: 1, image: '👩' },
+            { name: 'iskay warmi', count: 2, image: '👩' },
+            { name: 'kimsa warmi', count: 3, image: '👩' },
+            { name: 'tawa warmi', count: 4, image: '👩' },
+            { name: 'phichqa warmi', count: 5, image: '👩' },
+            { name: 'suqta warmi', count: 6, image: '👩' },
+            { name: 'qanchis warmi', count: 7, image: '👩' },
+            { name: 'pusaq warmi', count: 8, image: '👩' },
+            { name: 'jisq\'un warmi', count: 9, image: '👩' },
+            { name: 'chunka warmi', count: 10, image: '👩' },
+            { name: 'chunka juk warmi', count: 11, image: '👩' },
+            { name: 'chunka iskay warmi', count: 12, image: '👩' },
+
+            { name: 'juk allqu', count: 1, image: '🐶' },
+            { name: 'iskay allqu', count: 2, image: '🐶' },
+            { name: 'kimsa allqu', count: 3, image: '🐶' },
+            { name: 'tawa allqu', count: 4, image: '🐶' },
+            { name: 'phichqa allqu', count: 5, image: '🐶' },
+            { name: 'suqta allqu', count: 6, image: '🐶' },
+            { name: 'qanchis allqu', count: 7, image: '🐶' },
+            { name: 'pusaq allqu', count: 8, image: '🐶' },
+            { name: 'jisq\'un allqu', count: 9, image: '🐶' },
+            { name: 'chunka allqu', count: 10, image: '🐶' },
+            { name: 'chunka juk allqu', count: 11, image: '🐶' },
+            { name: 'chunka iskay allqu', count: 12, image: '🐶' },
+
+            { name: 'juk runtu', count: 1, image: '🥚' },
+            { name: 'iskay runtu', count: 2, image: '🥚' },
+            { name: 'kimsa runtu', count: 3, image: '🥚' },
+            { name: 'tawa runtu', count: 4, image: '🥚' },
+            { name: 'phichqa runtu', count: 5, image: '🥚' },
+            { name: 'suqta runtu', count: 6, image: '🥚' },
+            { name: 'qanchis runtu', count: 7, image: '🥚' },
+            { name: 'pusaq runtu', count: 8, image: '🥚' },
+            { name: 'jisq\'un runtu', count: 9, image: '🥚' },
+            { name: 'chunka runtu', count: 10, image: '🥚' },
+            { name: 'chunka juk runtu', count: 11, image: '🥚' },
+            { name: 'chunka iskay runtu', count: 12, image: '🥚' },
+
+            { name: 'juk sik\'imira', count: 1, image: '🐜' },
+            { name: 'iskay sik\'imira', count: 2, image: '🐜' },
+            { name: 'kimsa sik\'imira', count: 3, image: '🐜' },
+            { name: 'tawa sik\'imira', count: 4, image: '🐜' },
+            { name: 'phichqa sik\'imira', count: 5, image: '🐜' },
+            { name: 'suqta sik\'imira', count: 6, image: '🐜' },
+            { name: 'qanchis sik\'imira', count: 7, image: '🐜' },
+            { name: 'pusaq sik\'imira', count: 8, image: '🐜' },
+            { name: 'jisq\'un sik\'imira', count: 9, image: '🐜' },
+            { name: 'chunka sik\'imira', count: 10, image: '🐜' },
+            { name: 'chunka juk sik\'imira', count: 11, image: '🐜' },
+            { name: 'chunka iskay sik\'imira', count: 12, image: '🐜' },
+
+            { name: 'juk atuq', count: 1, image: '🦊' },
+            { name: 'iskay atuq', count: 2, image: '🦊' },
+            { name: 'kimsa atuq', count: 3, image: '🦊' },
+            { name: 'tawa atuq', count: 4, image: '🦊' },
+            { name: 'phichqa atuq', count: 5, image: '🦊' },
+            { name: 'suqta atuq', count: 6, image: '🦊' },
+            { name: 'qanchis atuq', count: 7, image: '🦊' },
+            { name: 'pusaq atuq', count: 8, image: '🦊' },
+            { name: 'jisq\'un atuq', count: 9, image: '🦊' },
+            { name: 'chunka atuq', count: 10, image: '🦊' },
+            { name: 'chunka juk atuq', count: 11, image: '🦊' },
+            { name: 'chunka iskay atuq', count: 12, image: '🦊' },
+
+            { name: 'juk wallpa', count: 1, image: '🐔' },
+            { name: 'iskay wallpa', count: 2, image: '🐔' },
+            { name: 'kimsa wallpa', count: 3, image: '🐔' },
+            { name: 'tawa wallpa', count: 4, image: '🐔' },
+            { name: 'phichqa wallpa', count: 5, image: '🐔' },
+            { name: 'suqta wallpa', count: 6, image: '🐔' },
+            { name: 'qanchis wallpa', count: 7, image: '🐔' },
+            { name: 'pusaq wallpa', count: 8, image: '🐔' },
+            { name: 'jisq\'un wallpa', count: 9, image: '🐔' },
+            { name: 'chunka wallpa', count: 10, image: '🐔' },
+            { name: 'chunka juk wallpa', count: 11, image: '🐔' },
+            { name: 'chunka iskay wallpa', count: 12, image: '🐔' },
+
+            { name: 'juk chaki', count: 1, image: '🦶' },
+            { name: 'iskay chaki', count: 2, image: '🦶' },
+            { name: 'kimsa chaki', count: 3, image: '🦶' },
+            { name: 'tawa chaki', count: 4, image: '🦶' },
+            { name: 'phichqa chaki', count: 5, image: '🦶' },
+            { name: 'suqta chaki', count: 6, image: '🦶' },
+            { name: 'qanchis chaki', count: 7, image: '🦶' },
+            { name: 'pusaq chaki', count: 8, image: '🦶' },
+            { name: 'jisq\'un chaki', count: 9, image: '🦶' },
+            { name: 'chunka chaki', count: 10, image: '🦶' },
+            { name: 'chunka juk chaki', count: 11, image: '🦶' },
+            { name: 'chunka iskay chaki', count: 12, image: '🦶' },
+
+            { name: 'juk maki', count: 1, image: '✋' },
+            { name: 'iskay maki', count: 2, image: '✋' },
+            { name: 'kimsa maki', count: 3, image: '✋' },
+            { name: 'tawa maki', count: 4, image: '✋' },
+            { name: 'phichqa maki', count: 5, image: '✋' },
+            { name: 'suqta maki', count: 6, image: '✋' },
+            { name: 'qanchis maki', count: 7, image: '✋' },
+            { name: 'pusaq maki', count: 8, image: '✋' },
+            { name: 'jisq\'un maki', count: 9, image: '✋' },
+            { name: 'chunka maki', count: 10, image: '✋' },
+            { name: 'chunka juk maki', count: 11, image: '✋' },
+            { name: 'chunka iskay maki', count: 12, image: '✋' },
+
+            { name: 'juk katari', count: 1, image: '🐍' },
+            { name: 'iskay katari', count: 2, image: '🐍' },
+            { name: 'kimsa katari', count: 3, image: '🐍' },
+            { name: 'tawa katari', count: 4, image: '🐍' },
+            { name: 'phichqa katari', count: 5, image: '🐍' },
+            { name: 'suqta katari', count: 6, image: '🐍' },
+            { name: 'qanchis katari', count: 7, image: '🐍' },
+            { name: 'pusaq katari', count: 8, image: '🐍' },
+            { name: 'jisq\'un katari', count: 9, image: '🐍' },
+            { name: 'chunka katari', count: 10, image: '🐍' },
+            { name: 'chunka juk katari', count: 11, image: '🐍' },
+            { name: 'chunka iskay katari', count: 12, image: '🐍' },
+
+            { name: 'juk lachiwana', count: 1, image: '🐝' },
+            { name: 'iskay lachiwana', count: 2, image: '🐝' },
+            { name: 'kimsa lachiwana', count: 3, image: '🐝' },
+            { name: 'tawa lachiwana', count: 4, image: '🐝' },
+            { name: 'phichqa lachiwana', count: 5, image: '🐝' },
+            { name: 'suqta lachiwana', count: 6, image: '🐝' },
+            { name: 'qanchis lachiwana', count: 7, image: '🐝' },
+            { name: 'pusaq lachiwana', count: 8, image: '🐝' },
+            { name: 'jisq\'un lachiwana', count: 9, image: '🐝' },
+            { name: 'chunka lachiwana', count: 10, image: '🐝' },
+            { name: 'chunka juk lachiwana', count: 11, image: '🐝' },
+            { name: 'chunka iskay lachiwana', count: 12, image: '🐝' },
+
+            { name: 'juk punku', count: 1, image: '🚪' },
+            { name: 'iskay punku', count: 2, image: '🚪' },
+            { name: 'kimsa punku', count: 3, image: '🚪' },
+            { name: 'tawa punku', count: 4, image: '🚪' },
+            { name: 'phichqa punku', count: 5, image: '🚪' },
+            { name: 'suqta punku', count: 6, image: '🚪' },
+            { name: 'qanchis punku', count: 7, image: '🚪' },
+            { name: 'pusaq punku', count: 8, image: '🚪' },
+            { name: 'jisq\'un punku', count: 9, image: '🚪' },
+            { name: 'chunka punku', count: 10, image: '🚪' },
+            { name: 'chunka juk punku', count: 11, image: '🚪' },
+            { name: 'chunka iskay punku', count: 12, image: '🚪' },
+
+            { name: 'juk manka', count: 1, image: '🏺' },
+            { name: 'iskay manka', count: 2, image: '🏺' },
+            { name: 'kimsa manka', count: 3, image: '🏺' },
+            { name: 'tawa manka', count: 4, image: '🏺' },
+            { name: 'phichqa manka', count: 5, image: '🏺' },
+            { name: 'suqta manka', count: 6, image: '🏺' },
+            { name: 'qanchis manka', count: 7, image: '🏺' },
+            { name: 'pusaq manka', count: 8, image: '🏺' },
+            { name: 'jisq\'un manka', count: 9, image: '🏺' },
+            { name: 'chunka manka', count: 10, image: '🏺' },
+            { name: 'chunka juk manka', count: 11, image: '🏺' },
+            { name: 'chunka iskay manka', count: 12, image: '🏺' },
+
+            { name: 'juk inti', count: 1, image: '☀️' },
+            { name: 'iskay inti', count: 2, image: '☀️' },
+            { name: 'kimsa inti', count: 3, image: '☀️' },
+            { name: 'tawa inti', count: 4, image: '☀️' },
+            { name: 'phichqa inti', count: 5, image: '☀️' },
+            { name: 'suqta inti', count: 6, image: '☀️' },
+            { name: 'qanchis inti', count: 7, image: '☀️' },
+            { name: 'pusaq inti', count: 8, image: '☀️' },
+            { name: 'jisq\'un inti', count: 9, image: '☀️' },
+            { name: 'chunka inti', count: 10, image: '☀️' },
+            { name: 'chunka juk inti', count: 11, image: '☀️' },
+            { name: 'chunka iskay inti', count: 12, image: '☀️' },
+
+            { name: 'juk killa', count: 1, image: '🌙' },
+            { name: 'iskay killa', count: 2, image: '🌙' },
+            { name: 'kimsa killa', count: 3, image: '🌙' },
+            { name: 'tawa killa', count: 4, image: '🌙' },
+            { name: 'phichqa killa', count: 5, image: '🌙' },
+            { name: 'suqta killa', count: 6, image: '🌙' },
+            { name: 'qanchis killa', count: 7, image: '🌙' },
+            { name: 'pusaq killa', count: 8, image: '🌙' },
+            { name: 'jisq\'un killa', count: 9, image: '🌙' },
+            { name: 'chunka killa', count: 10, image: '🌙' },
+            { name: 'chunka juk killa', count: 11, image: '🌙' },
+            { name: 'chunka iskay killa', count: 12, image: '🌙' },
+
+            { name: 'juk qhari', count: 1, image: '👨' },
+            { name: 'iskay qhari', count: 2, image: '👨' },
+            { name: 'kimsa qhari', count: 3, image: '👨' },
+            { name: 'tawa qhari', count: 4, image: '👨' },
+            { name: 'phichqa qhari', count: 5, image: '👨' },
+            { name: 'suqta qhari', count: 6, image: '👨' },
+            { name: 'qanchis qhari', count: 7, image: '👨' },
+            { name: 'pusaq qhari', count: 8, image: '👨' },
+            { name: 'jisq\'un qhari', count: 9, image: '👨' },
+            { name: 'chunka qhari', count: 10, image: '👨' },
+            { name: 'chunka juk qhari', count: 11, image: '👨' },
+            { name: 'chunka iskay qhari', count: 12, image: '👨' },
+
+            { name: 'juk ñawi', count: 1, image: '👁️' },
+            { name: 'iskay ñawi', count: 2, image: '👁️' },
+            { name: 'kimsa ñawi', count: 3, image: '👁️' },
+            { name: 'tawa ñawi', count: 4, image: '👁️' },
+            { name: 'phichqa ñawi', count: 5, image: '👁️' },
+            { name: 'suqta ñawi', count: 6, image: '👁️' },
+            { name: 'qanchis ñawi', count: 7, image: '👁️' },
+            { name: 'pusaq ñawi', count: 8, image: '👁️' },
+            { name: 'jisq\'un ñawi', count: 9, image: '👁️' },
+            { name: 'chunka ñawi', count: 10, image: '👁️' },
+            { name: 'chunka juk ñawi', count: 11, image: '👁️' },
+            { name: 'chunka iskay ñawi', count: 12, image: '👁️' },
+
+            { name: 'juk ninri', count: 1, image: '👂' },
+            { name: 'iskay ninri', count: 2, image: '👂' },
+            { name: 'kimsa ninri', count: 3, image: '👂' },
+            { name: 'tawa ninri', count: 4, image: '👂' },
+            { name: 'phichqa ninri', count: 5, image: '👂' },
+            { name: 'suqta ninri', count: 6, image: '👂' },
+            { name: 'qanchis ninri', count: 7, image: '👂' },
+            { name: 'pusaq ninri', count: 8, image: '👂' },
+            { name: 'jisq\'un ninri', count: 9, image: '👂' },
+            { name: 'chunka ninri', count: 10, image: '👂' },
+            { name: 'chunka juk ninri', count: 11, image: '👂' },
+            { name: 'chunka iskay ninri', count: 12, image: '👂' },
+
+            { name: 'juk sinqa', count: 1, image: '👃' },
+            { name: 'iskay sinqa', count: 2, image: '👃' },
+            { name: 'kimsa sinqa', count: 3, image: '👃' },
+            { name: 'tawa sinqa', count: 4, image: '👃' },
+            { name: 'phichqa sinqa', count: 5, image: '👃' },
+            { name: 'suqta sinqa', count: 6, image: '👃' },
+            { name: 'qanchis sinqa', count: 7, image: '👃' },
+            { name: 'pusaq sinqa', count: 8, image: '👃' },
+            { name: 'jisq\'un sinqa', count: 9, image: '👃' },
+            { name: 'chunka sinqa', count: 10, image: '👃' },
+            { name: 'chunka juk sinqa', count: 11, image: '👃' },
+            { name: 'chunka iskay sinqa', count: 12, image: '👃' },
+
+            { name: 'juk kiru', count: 1, image: '🦷' },
+            { name: 'iskay kiru', count: 2, image: '🦷' },
+            { name: 'kimsa kiru', count: 3, image: '🦷' },
+            { name: 'tawa kiru', count: 4, image: '🦷' },
+            { name: 'phichqa kiru', count: 5, image: '🦷' },
+            { name: 'suqta kiru', count: 6, image: '🦷' },
+            { name: 'qanchis kiru', count: 7, image: '🦷' },
+            { name: 'pusaq kiru', count: 8, image: '🦷' },
+            { name: 'jisq\'un kiru', count: 9, image: '🦷' },
+            { name: 'chunka kiru', count: 10, image: '🦷' },
+            { name: 'chunka juk kiru', count: 11, image: '🦷' },
+            { name: 'chunka iskay kiru', count: 12, image: '🦷' },
+
+            { name: 'juk t\'anta', count: 1, image: '🍞' },
+            { name: 'iskay t\'anta', count: 2, image: '🍞' },
+            { name: 'kimsa t\'anta', count: 3, image: '🍞' },
+            { name: 'tawa t\'anta', count: 4, image: '🍞' },
+            { name: 'phichqa t\'anta', count: 5, image: '🍞' },
+            { name: 'suqta t\'anta', count: 6, image: '🍞' },
+            { name: 'qanchis t\'anta', count: 7, image: '🍞' },
+            { name: 'pusaq t\'anta', count: 8, image: '🍞' },
+            { name: 'jisq\'un t\'anta', count: 9, image: '🍞' },
+            { name: 'chunka t\'anta', count: 10, image: '🍞' },
+            { name: 'chunka juk t\'anta', count: 11, image: '🍞' },
+            { name: 'chunka iskay t\'anta', count: 12, image: '🍞' },
+
+            { name: 'juk wawa', count: 1, image: '👶' },
+            { name: 'iskay wawa', count: 2, image: '👶' },
+            { name: 'kimsa wawa', count: 3, image: '👶' },
+            { name: 'tawa wawa', count: 4, image: '👶' },
+            { name: 'phichqa wawa', count: 5, image: '👶' },
+            { name: 'suqta wawa', count: 6, image: '👶' },
+            { name: 'qanchis wawa', count: 7, image: '👶' },
+            { name: 'pusaq wawa', count: 8, image: '👶' },
+            { name: 'jisq\'un wawa', count: 9, image: '👶' },
+            { name: 'chunka wawa', count: 10, image: '👶' },
+            { name: 'chunka juk wawa', count: 11, image: '👶' },
+            { name: 'chunka iskay wawa', count: 12, image: '👶' },
+
+            { name: 'juk papa', count: 1, image: '🥔' },
+            { name: 'iskay papa', count: 2, image: '🥔' },
+            { name: 'kimsa papa', count: 3, image: '🥔' },
+            { name: 'tawa papa', count: 4, image: '🥔' },
+            { name: 'phichqa papa', count: 5, image: '🥔' },
+            { name: 'suqta papa', count: 6, image: '🥔' },
+            { name: 'qanchis papa', count: 7, image: '🥔' },
+            { name: 'pusaq papa', count: 8, image: '🥔' },
+            { name: 'jisq\'un papa', count: 9, image: '🥔' },
+            { name: 'chunka papa', count: 10, image: '🥔' },
+            { name: 'chunka juk papa', count: 11, image: '🥔' },
+            { name: 'chunka iskay papa', count: 12, image: '🥔' },
+        ];
+
+        const imageContainer = document.getElementById('image-container');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const endGameBtn = document.getElementById('end-game-btn');
+
+        let currentQuestion;
+        let history = [];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function generateQuestion() {
+            imageContainer.innerHTML = '';
+            optionsContainer.innerHTML = '';
+            feedbackMessage.textContent = '';
+            
+            endGameBtn.disabled = false;
+
+            currentQuestion = database[Math.floor(Math.random() * database.length)];
+
+            for (let i = 0; i < currentQuestion.count; i++) {
+                const span = document.createElement('span');
+                span.textContent = currentQuestion.image;
+                imageContainer.appendChild(span);
+            }
+
+            let options = new Set();
+            options.add(currentQuestion.name);
+
+            const incorrectItems = database.filter(item => item.name !== currentQuestion.name);
+            shuffleArray(incorrectItems);
+
+            for (let i = 0; options.size < 4 && i < incorrectItems.length; i++) {
+                options.add(incorrectItems[i].name);
+            }
+            
+            let shuffledOptions = Array.from(options);
+            shuffleArray(shuffledOptions);
+
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('option');
+                button.addEventListener('click', () => checkAnswer(option));
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedOption) {
+            let isCorrect = (selectedOption === currentQuestion.name);
+            history.push({
+                question: `${currentQuestion.count} ${currentQuestion.image}`,
+                answer: selectedOption,
+                correct: isCorrect
+            });
+
+            if (isCorrect) {
+                feedbackMessage.textContent = '¡Correcto!';
+                feedbackMessage.classList.add('correct');
+                feedbackMessage.classList.remove('incorrect');
+            } else {
+                feedbackMessage.textContent = `Incorrecto. La respuesta correcta era: ${currentQuestion.name}`;
+                feedbackMessage.classList.add('incorrect');
+                feedbackMessage.classList.remove('correct');
+            }
+
+            document.querySelectorAll('.option').forEach(button => {
+                button.disabled = true;
+            });
+            
+            setTimeout(generateQuestion, 2000);
+        }
+
+        function endGame() {
+            const container = document.querySelector('.container');
+            container.innerHTML = '';
+            
+            const historyContainer = document.createElement('div');
+            historyContainer.classList.add('history-container');
+            
+            const title = document.createElement('h2');
+            title.textContent = 'Historial de Respuestas';
+            historyContainer.appendChild(title);
+            
+            history.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.classList.add('history-item');
+                let status = item.correct ? 'Correcto' : 'Incorrecto';
+                let statusColor = item.correct ? 'green' : 'red';
+                historyItem.innerHTML = `
+                    <strong>Pregunta ${index + 1}:</strong> ${item.question} <br>
+                    <strong>Tu respuesta:</strong> ${item.answer} <br>
+                    <strong>Estado:</strong> <span style="color:${statusColor};">${status}</span>
+                `;
+                historyContainer.appendChild(historyItem);
+            });
+            
+            container.appendChild(historyContainer);
+        }
+
+        endGameBtn.addEventListener('click', endGame);
+
+        document.addEventListener('DOMContentLoaded', generateQuestion);
+    </script>
+
+</body>
+</html>

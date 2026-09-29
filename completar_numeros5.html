@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío Quechua - Pro</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --player-card: #8e44ad;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-container {
+            width: 95%;
+            max-width: 900px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        h1 { text-align: center; color: var(--primary); margin-bottom: 10px; }
+
+        #setup-screen { display: flex; flex-direction: column; gap: 15px; }
+        textarea {
+            width: 100%; height: 100px; padding: 12px; border-radius: 8px;
+            border: 1px solid #ccc; resize: none; font-size: 1rem; box-sizing: border-box;
+        }
+
+        input[type="number"] {
+            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;
+        }
+
+        #turn-indicator {
+            background: var(--player-card);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .quechua-phrase {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 12px; min-height: 70px; background: #fdfdfd;
+            padding: 20px; border: 3px dashed #cbd5e0; border-radius: 12px; margin: 20px 0;
+        }
+
+        .blank {
+            min-width: 90px; height: 50px; background: #fff;
+            border: 2px solid #e2e8f0; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: move; font-weight: bold; color: var(--primary);
+        }
+
+        .blank.over { border-color: var(--accent); background: #ebf8ff; }
+
+        #options-container {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 10px; padding: 20px; background: #edf2f7; border-radius: 12px;
+        }
+
+        .option {
+            background: var(--accent); color: white; padding: 10px 18px;
+            border-radius: 8px; cursor: grab; user-select: none; font-weight: 500;
+        }
+
+        #results-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); overflow-y: auto; z-index: 2000; padding: 40px 10px;
+        }
+
+        .modal-content {
+            background: white; width: 95%; max-width: 800px; margin: auto; padding: 30px; border-radius: 15px;
+        }
+
+        .summary-box {
+            background: #f1f2f6; padding: 20px; border-radius: 12px; margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;
+        }
+
+        .summary-item {
+            text-align: center; padding: 15px; background: white; border-radius: 10px; border-bottom: 4px solid var(--accent);
+        }
+
+        .history-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        .history-table th, .history-table td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; }
+        
+        .correct { color: var(--success); font-weight: bold; }
+        .wrong { color: var(--error); font-weight: bold; }
+        .hidden { display: none !important; }
+
+        /* Animación de feedback */
+        .feedback-pop { animation: pop 0.4s ease-out; }
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>Yachay Yupaykunata</h1>
+
+        <div id="setup-screen">
+            <div>
+                <label><strong>Participantes (uno por línea):</strong></label>
+                <textarea id="players-list" placeholder="Ejemplo:&#10;Juan Perez&#10;Maria Lopez"></textarea>
+            </div>
+            <div>
+                <label><strong>Preguntas por participante (Cualquier número positivo):</strong></label>
+                <input type="number" id="q-per-player" value="5" min="1">
+            </div>
+            <button class="btn primary" style="width:100%; padding: 15px;" onclick="initMultiplayerGame()">Comenzar Desafío</button>
+        </div>
+
+        <div id="game-screen" class="hidden" style="text-align: center;">
+            <div id="turn-indicator">Turno de: <span id="current-player-name"></span></div>
+            <p id="progress-text">Pregunta 1 de X</p>
+            
+            <h2 id="target-number" style="font-size: 3.5rem; color: var(--accent); margin: 10px 0;"></h2>
+            
+            <div id="drop-zone" class="quechua-phrase"></div>
+            <div id="options-container"></div>
+
+            <div id="feedback" style="height: 40px; font-size: 1.5rem; font-weight: bold; margin: 15px;"></div>
+
+            <div style="display: flex; justify-content: center;">
+                <button id="check-btn" class="btn primary" onclick="checkStep()">Verificar Respuesta</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="results-modal">
+        <div class="modal-content">
+            <h2 style="text-align: center;">Resultados Finales del Desafío</h2>
+            
+            <h3 style="border-left: 5px solid var(--accent); padding-left: 10px;">Resumen de Aciertos</h3>
+            <div id="general-summary" class="summary-box"></div>
+
+            <h3 style="margin-top: 30px; border-left: 5px solid var(--player-card); padding-left: 10px;">Historial Detallado</h3>
+            <div id="players-reports-container"></div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn primary" onclick="location.reload()">Reiniciar Todo</button>
+            </div>
+        </div>
+    </div>
+<footer>
+        Msc. Bladimir Arias Mejia 2026
+    </footer>
+    <script>
+        // ... (Base de datos DB extraída de los archivos previos) ...
+        const DB_RAW = `267 = iskay pachak suqta chunka qanchisniyuq
+891 = pusaq pachak jisq'un chunka jukniyuq
+681 = suqta pachak pusaq chunka jukniyuq
+934 = jisq'un pachak kimsa chunka tawayuq
+65 = suqta chunka phichqayuq
+726 = qanchis pachak iskay chunka suqtayuq
+456 = tawa pachak phichqa chunka suqtayuq
+115 = pachak chunka phichqayuq
+162 = pachak suqta chunka iskayniyuq
+729 = qanchis pachak iskay chunka jisq'unniyuq
+127 = pachak iskay chunka qanchisniyuq
+307 = kimsa pachak qanchisniyuq
+255 = iskay pachak phichqa chunka phichqayuq
+903 = jisq'un pachak kimsayuq
+610 = suqta pachak chunka
+257 = iskay pachak phichqa chunka qanchisniyuq
+973 = jisq'un pachak qanchis chunka kimsayuq
+508 = phichqa pachak pusaqniyuq
+472 = tawa pachak qanchis chunka iskayniyuq
+625 = suqta pachak iskay chunka phichqayuq
+537 = phichqa pachak kimsa chunka qanchisniyuq
+340 = kimsa pachak tawa chunka
+158 = pachak phichqa chunka pusaqniyuq
+861 = pusaq pachak suqta chunka jukniyuq
+564 = phichqa pachak suqta chunka tawayuq
+103 = pachak kimsayuq
+1 = juk
+47 = tawa chunka qanchisniyuq
+193 = pachak jisq'un chunka kimsayuq
+771 = qanchis pachak qanchis chunka jukniyuq
+953 = jisq'un pachak phichqa chunka kimsayuq
+912 = jisq'un pachak chunka iskayniyuq
+125 = pachak iskay chunka phichqayuq
+164 = pachak suqta chunka tawayuq
+25 = iskay chunka phichqayuq
+141 = pachak tawa chunka jukniyuq
+174 = pachak qanchis chunka tawayuq
+451 = tawa pachak phichqa chunka jukniyuq
+88 = pusaq chunka pusaqniyuq
+1002 = waranqa iskayniyuq
+869 = pusaq pachak suqta chunka jisq'unniyuq
+210 = iskay pachak chunka
+19 = chunka jisq'unniyuq
+363 = kimsa pachak suqta chunka kimsayuq
+745 = qanchis pachak tawa chunka phichqayuq
+231 = iskay pachak kimsa chunka jukniyuq
+910 = jisq'un pachak chunka
+110 = pachak chunka
+461 = tawa pachak suqta chunka jukniyuq
+34 = kimsa chunka tawayuq
+311 = kimsa pachak chunka jukniyuq
+229 = iskay pachak iskay chunka jisq'unniyuq
+451 = tawa pachak phichqa chunka jukniyuq
+65 = suqta chunka phichqayuq
+316 = kimsa pachak chunka suqtayuq
+981 = jisq'un pachak pusaq chunka jukniyuq
+67 = suqta chunka qanchisniyuq
+335 = kimsa pachak kimsa chunka phichqayuq
+971 = jisq'un pachak qanchis chunka jukniyuq
+948 = jisq'un pachak tawa chunka pusaqniyuq
+166 = pachak suqta chunka suqtayuq
+607 = suqta pachak qanchisniyuq
+166 = pachak suqta chunka suqtayuq
+967 = jisq'un pachak suqta chunka qanchisniyuq
+982 = jisq'un pachak pusaq chunka iskayniyuq
+3 = kimsa
+85 = pusaq chunka phichqayuq
+61 = suqta chunka jukniyuq
+122 = pachak iskay chunka iskayniyuq
+587 = phichqa pachak pusaq chunka qanchisniyuq
+64 = suqta chunka tawayuq
+870 = pusaq pachak qanchis chunka
+474 = tawa pachak qanchis chunka tawayuq
+109 = pachak jisq'unniyuq
+824 = pusaq pachak iskay chunka tawayuq
+696 = suqta pachak jisq'un chunka suqtayuq
+309 = kimsa pachak jisq'unniyuq
+186 = pachak pusaq chunka suqtayuq
+388 = kimsa pachak pusaq chunka pusaqniyuq
+994 = jisq'un pachak jisq'un chunka tawayuq
+74 = qanchis chunka tawayuq
+522 = phichqa pachak iskay chunka iskayniyuq
+171 = pachak qanchis chunka jukniyuq
+955 = jisq'un pachak phichqa chunka phichqayuq
+453 = tawa pachak phichqa chunka kimsayuq
+346 = kimsa pachak tawa chunka suqtayuq
+287 = iskay pachak pusaq chunka qanchisniyuq
+759 = qanchis pachak phichqa chunka jisq'unniyuq
+532 = phichqa pachak kimsa chunka iskayniyuq
+803 = pusaq pachak kimsayuq
+128 = pachak iskay chunka pusaqniyuq
+340 = kimsa pachak tawa chunka
+979 = jisq'un pachak qanchis chunka jisq'unniyuq
+307 = kimsa pachak qanchisniyuq
+145 = pachak tawa chunka phichqayuq
+881 = pusaq pachak pusaq chunka jukniyuq
+966 = jisq'un pachak suqta chunka suqtayuq
+701 = qanchis pachak jukniyuq
+940 = jisq'un pachak tawa chunka
+603 = suqta pachak kimsayuq
+98 = jisq'un chunka pusaqniyuq
+343 = kimsa pachak tawa chunka kimsayuq
+8 = pusaq
+285 = iskay pachak pusaq chunka phichqayuq
+485 = tawa pachak pusaq chunka phichqayuq
+124 = pachak iskay chunka tawayuq
+529 = phichqa pachak iskay chunka jisq'unniyuq
+47 = tawa chunka qanchisniyuq
+561 = phichqa pachak suqta chunka jukniyuq
+1002 = waranqa iskayniyuq
+200 = iskay pachak
+836 = pusaq pachak kimsa chunka suqtayuq
+929 = jisq'un pachak iskay chunka jisq'unniyuq
+416 = tawa pachak chunka suqtayuq
+874 = pusaq pachak qanchis chunka tawayuq
+513 = phichqa pachak chunka kimsayuq
+223 = iskay pachak iskay chunka kimsayuq
+420 = tawa pachak iskay chunka
+981 = jisq'un pachak pusaq chunka jukniyuq
+184 = pachak pusaq chunka tawayuq
+591 = phichqa pachak jisq'un chunka jukniyuq
+262 = iskay pachak suqta chunka iskayniyuq
+767 = qanchis pachak suqta chunka qanchisniyuq
+439 = tawa pachak kimsa chunka jisq'unniyuq
+217 = iskay pachak chunka qanchisniyuq
+596 = phichqa pachak jisq'un chunka suqtayuq
+657 = suqta pachak phichqa chunka qanchisniyuq
+40 = tawa chunka
+222 = iskay pachak iskay chunka iskayniyuq
+833 = pusaq pachak kimsa chunka kimsayuq
+193 = pachak jisq'un chunka kimsayuq
+36 = kimsa chunka suqtayuq
+247 = iskay pachak tawa chunka qanchisniyuq
+609 = suqta pachak jisq'unniyuq
+619 = suqta pachak chunka jisq'unniyuq
+885 = pusaq pachak pusaq chunka phichqayuq
+10 = chunka
+518 = phichqa pachak chunka pusaqniyuq
+591 = phichqa pachak jisq'un chunka jukniyuq
+729 = qanchis pachak iskay chunka jisq'unniyuq
+344 = kimsa pachak tawa chunka tawayuq
+524 = phichqa pachak iskay chunka tawayuq
+156 = pachak phichqa chunka suqtayuq
+366 = kimsa pachak suqta chunka suqtayuq
+136 = pachak kimsa chunka suqtayuq
+155 = pachak phichqa chunka phichqayuq
+841 = pusaq pachak tawa chunka jukniyuq
+274 = iskay pachak qanchis chunka tawayuq
+476 = tawa pachak qanchis chunka suqtayuq
+684 = suqta pachak pusaq chunka tawayuq
+325 = kimsa pachak iskay chunka phichqayuq
+950 = jisq'un pachak phichqa chunka
+472 = tawa pachak qanchis chunka iskayniyuq
+799 = qanchis pachak jisq'un chunka jisq'unniyuq
+116 = pachak chunka suqtayuq
+332 = kimsa pachak kimsa chunka iskayniyuq
+901 = jisq'un pachak jukniyuq
+347 = kimsa pachak tawa chunka qanchisniyuq
+833 = pusaq pachak kimsa chunka kimsayuq
+806 = pusaq pachak suqtayuq
+275 = iskay pachak qanchis chunka phichqayuq
+805 = pusaq pachak phichqayuq
+581 = phichqa pachak pusaq chunka jukniyuq
+848 = pusaq pachak tawa chunka pusaqniyuq
+674 = suqta pachak qanchis chunka tawayuq
+707 = qanchis pachak qanchisniyuq
+310 = kimsa pachak chunka
+586 = phichqa pachak pusaq chunka suqtayuq
+863 = pusaq pachak suqta chunka kimsayuq
+90 = jisq'un chunka
+146 = pachak tawa chunka suqtayuq
+997 = jisq'un pachak jisq'un chunka qanchisniyuq
+471 = tawa pachak qanchis chunka jukniyuq
+43 = tawa chunka kimsayuq
+533 = phichqa pachak kimsa chunka kimsayuq
+2 = iskay
+248 = iskay pachak tawa chunka pusaqniyuq
+747 = qanchis pachak tawa chunka qanchisniyuq
+349 = kimsa pachak tawa chunka jisq'unniyuq
+244 = iskay pachak tawa chunka tawayuq
+149 = pachak tawa chunka jisq'unniyuq
+959 = jisq'un pachak phichqa chunka jisq'unniyuq
+304 = kimsa pachak tawayuq
+900 = jisq'un pachak
+175 = pachak qanchis chunka phichqayuq
+486 = tawa pachak pusaq chunka suqtayuq
+896 = pusaq pachak jisq'un chunka suqtayuq
+160 = pachak suqta chunka
+418 = tawa pachak chunka pusaqniyuq
+469 = tawa pachak suqta chunka jisq'unniyuq
+606 = suqta pachak suqtayuq
+669 = suqta pachak suqta chunka jisq'unniyuq
+417 = tawa pachak chunka qanchisniyuq
+369 = kimsa pachak suqta chunka jisq'unniyuq
+797 = qanchis pachak jisq'un chunka qanchisniyuq
+54 = phichqa chunka tawayuq
+658 = suqta pachak phichqa chunka pusaqniyuq
+185 = pachak pusaq chunka phichqayuq
+999 = jisq'un pachak jisq'un chunka jisq'unniyuq
+543 = phichqa pachak tawa chunka kimsayuq
+322 = kimsa pachak iskay chunka iskayniyuq
+336 = kimsa pachak kimsa chunka suqtayuq
+664 = suqta pachak suqta chunka tawayuq
+868 = pusaq pachak suqta chunka pusaqniyuq
+696 = suqta pachak jisq'un chunka suqtayuq
+109 = pachak jisq'unniyuq
+882 = pusaq pachak pusaq chunka iskayniyuq
+129 = pachak iskay chunka jisq'unniyuq
+516 = phichqa pachak chunka suqtayuq
+481 = tawa pachak pusaq chunka jukniyuq
+819 = pusaq pachak chunka jisq'unniyuq
+382 = kimsa pachak pusaq chunka iskayniyuq
+30 = kimsa chunka
+50 = phichqa chunka
+165 = pachak suqta chunka phichqayuq
+501 = phichqa pachak jukniyuq
+779 = qanchis pachak qanchis chunka jisq'unniyuq
+2 = iskay
+952 = jisq'un pachak phichqa chunka iskayniyuq
+717 = qanchis pachak chunka qanchisniyuq
+239 = iskay pachak kimsa chunka jisq'unniyuq
+468 = tawa pachak suqta chunka pusaqniyuq
+938 = jisq'un pachak kimsa chunka pusaqniyuq
+550 = phichqa pachak phichqa chunka
+813 = pusaq pachak chunka kimsayuq
+632 = suqta pachak kimsa chunka iskayniyuq
+200 = iskay pachak
+56 = phichqa chunka suqtayuq
+529 = phichqa pachak iskay chunka jisq'unniyuq
+183 = pachak pusaq chunka kimsayuq
+345 = kimsa pachak tawa chunka phichqayuq
+552 = phichqa pachak phichqa chunka iskayniyuq
+947 = jisq'un pachak tawa chunka qanchisniyuq
+61 = suqta chunka jukniyuq
+476 = tawa pachak qanchis chunka suqtayuq
+969 = jisq'un pachak suqta chunka jisq'unniyuq
+841 = pusaq pachak tawa chunka jukniyuq
+921 = jisq'un pachak iskay chunka jukniyuq
+586 = phichqa pachak pusaq chunka suqtayuq
+71 = qanchis chunka jukniyuq
+168 = pachak suqta chunka pusaqniyuq
+575 = phichqa pachak qanchis chunka phichqayuq
+45 = tawa chunka phichqayuq
+609 = suqta pachak jisq'unniyuq
+643 = suqta pachak tawa chunka kimsayuq
+740 = qanchis pachak tawa chunka
+727 = qanchis pachak iskay chunka qanchisniyuq
+193 = pachak jisq'un chunka kimsayuq
+854 = pusaq pachak phichqa chunka tawayuq
+282 = iskay pachak pusaq chunka iskayniyuq
+510 = phichqa pachak chunka
+647 = suqta pachak tawa chunka qanchisniyuq
+358 = kimsa pachak phichqa chunka pusaqniyuq
+438 = tawa pachak kimsa chunka pusaqniyuq
+68 = suqta chunka pusaqniyuq
+195 = pachak jisq'un chunka phichqayuq
+336 = kimsa pachak kimsa chunka suqtayuq
+731 = qanchis pachak kimsa chunka jukniyuq
+288 = iskay pachak pusaq chunka pusaqniyuq
+173 = pachak qanchis chunka kimsayuq
+504 = phichqa pachak tawayuq
+483 = tawa pachak pusaq chunka kimsayuq
+911 = jisq'un pachak chunka jukniyuq
+987 = jisq'un pachak pusaq chunka qanchisniyuq
+157 = pachak phichqa chunka qanchisniyuq
+258 = iskay pachak phichqa chunka pusaqniyuq
+574 = phichqa pachak qanchis chunka tawayuq
+596 = phichqa pachak jisq'un chunka suqtayuq
+770 = qanchis pachak qanchis chunka
+833 = pusaq pachak kimsa chunka kimsayuq
+949 = jisq'un pachak tawa chunka jisq'unniyuq
+187 = pachak pusaq chunka qanchisniyuq
+161 = pachak suqta chunka jukniyuq
+721 = qanchis pachak iskay chunka jukniyuq
+580 = phichqa pachak pusaq chunka
+856 = pusaq pachak phichqa chunka suqtayuq
+961 = jisq'un pachak suqta chunka jukniyuq
+580 = phichqa pachak pusaq chunka
+950 = jisq'un pachak phichqa chunka
+718 = qanchis pachak chunka pusaqniyuq
+521 = phichqa pachak iskay chunka jukniyuq
+233 = iskay pachak kimsa chunka kimsayuq
+804 = pusaq pachak tawayuq
+434 = tawa pachak kimsa chunka tawayuq
+188 = pachak pusaq chunka pusaqniyuq
+159 = pachak phichqa chunka jisq'unniyuq
+362 = kimsa pachak suqta chunka iskayniyuq
+788 = qanchis pachak pusaq chunka pusaqniyuq
+352 = kimsa pachak phichqa chunka iskayniyuq
+894 = pusaq pachak jisq'un chunka tawayuq
+794 = qanchis pachak jisq'un chunka tawayuq
+619 = suqta pachak chunka jisq'unniyuq
+229 = iskay pachak iskay chunka jisq'unniyuq
+833 = pusaq pachak kimsa chunka kimsayuq
+259 = iskay pachak phichqa chunka jisq'unniyuq
+61 = suqta chunka jukniyuq
+583 = phichqa pachak pusaq chunka kimsayuq
+291 = iskay pachak jisq'un chunka jukniyuq
+579 = phichqa pachak qanchis chunka jisq'unniyuq
+281 = iskay pachak pusaq chunka jukniyuq`;
+
+        const DB = DB_RAW.split('\n').map(l => {
+            const p = l.split(' = ');
+            return p.length === 2 ? { n: p[0], q: p[1].split(' ') } : null;
+        }).filter(x => x);
+
+        let players = [];
+        let currentPlayerIdx = 0;
+        let questionsPerPlayer = 0;
+        let globalQuestions = [];
+        let currentGlobalIdx = 0;
+        let draggedElement = null;
+
+        function initMultiplayerGame() {
+            const list = document.getElementById('players-list').value.trim().split('\n').filter(n => n.trim() !== "");
+            const qCount = parseInt(document.getElementById('q-per-player').value);
+
+            if (list.length === 0) return alert("Ingresa al menos un participante.");
+            if (isNaN(qCount) || qCount < 1) return alert("Ingresa un número válido de preguntas.");
+
+            questionsPerPlayer = qCount;
+            players = list.map(name => ({ name: name.trim(), score: 0, history: [], totalAsked: 0 }));
+
+            // Generar pool de preguntas
+            const totalNeeded = players.length * questionsPerPlayer;
+            globalQuestions = [];
+            for(let i=0; i<totalNeeded; i++) {
+                globalQuestions.push(DB[Math.floor(Math.random()*DB.length)]);
+            }
+
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            loadStep();
+        }
+
+        function loadStep() {
+            const player = players[currentPlayerIdx];
+            const question = globalQuestions[currentGlobalIdx];
+
+            document.getElementById('current-player-name').textContent = player.name;
+            document.getElementById('progress-text').textContent = `Pregunta ${player.totalAsked + 1} de ${questionsPerPlayer}`;
+            document.getElementById('target-number').textContent = question.n;
+            document.getElementById('feedback').textContent = "";
+            document.getElementById('check-btn').disabled = false;
+            document.getElementById('check-btn').style.opacity = "1";
+
+            const dz = document.getElementById('drop-zone'); dz.innerHTML = "";
+            question.q.forEach(() => {
+                const b = document.createElement('div');
+                b.className = 'blank';
+                initDropHandlers(b);
+                dz.appendChild(b);
+            });
+
+            const optContainer = document.getElementById('options-container'); optContainer.innerHTML = "";
+            let words = [...question.q];
+            // Añadir distractores
+            for(let i=0; i<2; i++) {
+                const r = DB[Math.floor(Math.random()*DB.length)].q;
+                const w = r[Math.floor(Math.random()*r.length)];
+                if(!words.includes(w)) words.push(w);
+            }
+
+            words.sort(() => 0.5 - Math.random()).forEach(w => {
+                const o = document.createElement('div');
+                o.className = 'option'; o.textContent = w; o.draggable = true;
+                o.addEventListener('dragstart', (e) => { draggedElement = o; e.dataTransfer.setData('text/plain', w); });
+                optContainer.appendChild(o);
+            });
+        }
+
+        function initDropHandlers(el) {
+            el.addEventListener('dragover', (e) => { e.preventDefault(); el.classList.add('over'); });
+            el.addEventListener('dragleave', () => el.classList.remove('over'));
+            el.addEventListener('drop', (e) => {
+                e.preventDefault(); el.classList.remove('over');
+                const data = e.dataTransfer.getData('text/plain');
+
+                if (el.textContent !== "") {
+                    if (draggedElement.classList.contains('blank')) {
+                        const tmp = el.textContent; el.textContent = draggedElement.textContent; draggedElement.textContent = tmp;
+                    } else {
+                        const oldText = el.textContent; el.textContent = data;
+                        const backOpt = document.createElement('div');
+                        backOpt.className = 'option'; backOpt.textContent = oldText; backOpt.draggable = true;
+                        backOpt.addEventListener('dragstart', (e) => { draggedElement = backOpt; e.dataTransfer.setData('text/plain', oldText); });
+                        document.getElementById('options-container').appendChild(backOpt);
+                        draggedElement.remove();
+                    }
+                } else {
+                    el.textContent = data;
+                    if (!draggedElement.classList.contains('blank')) draggedElement.remove();
+                    else draggedElement.textContent = "";
+                }
+                el.draggable = (el.textContent !== "");
+                if(el.draggable) el.addEventListener('dragstart', (e) => { draggedElement = el; e.dataTransfer.setData('text/plain', el.textContent); });
+            });
+        }
+
+        function checkStep() {
+            const player = players[currentPlayerIdx];
+            const question = globalQuestions[currentGlobalIdx];
+            const userStr = Array.from(document.querySelectorAll('.blank')).map(b => b.textContent.trim()).join(' ');
+            const correctStr = question.q.join(' ');
+            const isCorrect = (userStr === correctStr);
+
+            const feedback = document.getElementById('feedback');
+            feedback.classList.remove('feedback-pop');
+            void feedback.offsetWidth; // Trigger reflow
+            feedback.classList.add('feedback-pop');
+
+            if(isCorrect) {
+                player.score++;
+                feedback.textContent = "¡ALLIN! ✓";
+                feedback.style.color = "var(--success)";
+            } else {
+                feedback.textContent = "MANA ALLINCHU ✗";
+                feedback.style.color = "var(--error)";
+            }
+
+            player.history.push({ n: question.n, user: userStr || "(vacío)", correct: correctStr, ok: isCorrect });
+            player.totalAsked++;
+            document.getElementById('check-btn').disabled = true;
+            document.getElementById('check-btn').style.opacity = "0.5";
+
+            // ESPERA DE 1.6 SEGUNDOS Y CAMBIO AUTOMÁTICO
+            setTimeout(() => {
+                currentGlobalIdx++;
+                if (currentGlobalIdx >= globalQuestions.length) {
+                    showFinalMatrix();
+                } else {
+                    currentPlayerIdx = (currentPlayerIdx + 1) % players.length;
+                    loadStep();
+                }
+            }, 1600);
+        }
+
+        function showFinalMatrix() {
+            const summaryContainer = document.getElementById('general-summary');
+            const reportsContainer = document.getElementById('players-reports-container');
+            summaryContainer.innerHTML = "";
+            reportsContainer.innerHTML = "";
+
+            players.forEach(p => {
+                const pct = Math.round((p.score / questionsPerPlayer) * 100);
+                
+                // 1. Resumen al principio (Tarjetas)
+                const sItem = document.createElement('div');
+                sItem.className = 'summary-item';
+                sItem.innerHTML = `<strong>${p.name}</strong><br><span style="font-size:1.4rem; color:var(--accent)">${pct}%</span>`;
+                summaryContainer.appendChild(sItem);
+
+                // 2. Reportes detallados abajo
+                const div = document.createElement('div');
+                div.style.marginBottom = "20px";
+                div.innerHTML = `
+                    <h4 style="margin-bottom:5px;">Historial de ${p.name}</h4>
+                    <table class="history-table">
+                        <thead><tr><th>Nº</th><th>Respuesta</th><th>Estado</th></tr></thead>
+                        <tbody>
+                            ${p.history.map(h => `
+                                <tr>
+                                    <td>${h.n}</td>
+                                    <td>${h.user}</td>
+                                    <td class="${h.ok ? 'correct' : 'wrong'}">${h.ok ? '✓' : '✗ Solución: ' + h.correct}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                reportsContainer.appendChild(div);
+            });
+
+            document.getElementById('results-modal').style.display = 'block';
+        }
+    </script>
+    
+</body>
+</html>
