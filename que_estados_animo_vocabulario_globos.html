@@ -135,18 +135,18 @@
         .slider-container {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             background: #0F172A;
-            padding: 10px 16px;
-            border-radius: 12px;
-            border: 2px solid #1E293B;
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 1px solid #1E293B;
         }
 
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
-            height: 8px;
+            height: 6px;
             border-radius: 5px;
             background: #1E293B;
             outline: none;
@@ -155,12 +155,12 @@
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 22px;
-            height: 22px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: var(--primary);
             cursor: pointer;
-            box-shadow: 0 0 10px var(--primary-glow);
+            box-shadow: 0 0 8px var(--primary-glow);
             transition: transform 0.1s ease;
         }
 
@@ -171,8 +171,8 @@
         .speed-value {
             color: #F8FAFC;
             font-weight: 800;
-            font-size: 0.95rem;
-            min-width: 45px;
+            font-size: 0.85rem;
+            min-width: 35px;
             text-align: right;
         }
 
@@ -233,10 +233,12 @@
             align-items: center;
             background: rgba(15, 23, 42, 0.85);
             border: 1px solid #1E293B;
-            padding: 10px 18px;
+            padding: 8px 14px;
             border-radius: 14px;
             font-size: 0.85rem;
             margin-bottom: 10px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
         .hud-item {
@@ -250,6 +252,18 @@
         .hud-value {
             color: #F8FAFC;
             font-weight: 700;
+        }
+
+        .hud-speed-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #0F172A;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid #1E293B;
+            flex: 1;
+            max-width: 220px;
         }
 
         .turn-banner {
@@ -578,18 +592,6 @@ Carlos Condori</textarea>
                 </select>
             </div>
 
-            <div class="form-group">
-                <label for="input-speed-range">
-                    <span>⚡ Velocidad de los Globos:</span>
-                    <span id="speed-indicator" class="speed-value">1.0x</span>
-                </label>
-                <div class="slider-container">
-                    <span>🐌 Allillamanta</span>
-                    <input type="range" id="input-speed-range" min="0.5" max="3.0" step="0.1" value="1.0">
-                    <span>Usqhayta 🚀</span>
-                </div>
-            </div>
-
             <button class="btn" id="btn-start">
                 <span>¡Iniciar Juego!</span> 🎈
             </button>
@@ -606,6 +608,13 @@ Carlos Condori</textarea>
             <div class="hud-item">Pregunta: <span id="hud-turn" class="hud-value">1/5</span></div>
             <div class="hud-item">Fecha: <span id="hud-date" class="hud-value">--</span></div>
             <div class="hud-item">Inicio: <span id="hud-starttime" class="hud-value">--</span></div>
+            
+            <!-- CONTROL DE VELOCIDAD DURANTE EL JUEGO -->
+            <div class="hud-speed-control">
+                <span style="font-size: 0.8rem; font-weight:700; color:#22D3EE;">⚡Vel:</span>
+                <input type="range" id="input-speed-range" min="0.5" max="3.0" step="0.1" value="1.0">
+                <span id="speed-indicator" class="speed-value">1.0x</span>
+            </div>
         </div>
 
         <div class="turn-banner">
@@ -714,8 +723,15 @@ Carlos Condori</textarea>
         const speedRange = document.getElementById('input-speed-range');
         const speedIndicator = document.getElementById('speed-indicator');
 
+        // Ajuste en tiempo real de la velocidad desde el HUD del juego
         speedRange.addEventListener('input', (e) => {
-            speedIndicator.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
+            speedMultiplier = parseFloat(e.target.value);
+            speedIndicator.textContent = `${speedMultiplier.toFixed(1)}x`;
+            
+            // Actualizar la velocidad base de los globos que están flotando actualmente
+            activeBalloons.forEach(b => {
+                b.speed = b.baseSpeed * speedMultiplier;
+            });
         });
 
         document.getElementById('btn-start').addEventListener('click', startGame);
@@ -749,7 +765,6 @@ Carlos Condori</textarea>
         const rawParticipants = document.getElementById('input-participants').value.trim();
         const rawQuestions = parseInt(document.getElementById('input-questions').value, 10);
         const selectedMode = document.getElementById('select-mode').value;
-        const speedVal = parseFloat(document.getElementById('input-speed-range').value);
 
         const parsedNames = rawParticipants.split('\n')
             .map(p => p.trim())
@@ -768,7 +783,7 @@ Carlos Condori</textarea>
             questionsPlayed: 0
         }));
 
-        speedMultiplier = speedVal;
+        speedMultiplier = parseFloat(document.getElementById('input-speed-range').value) || 1.0;
 
         currentPlayerIndex = 0;
         currentQuestionIndex = 0;
@@ -793,7 +808,7 @@ Carlos Condori</textarea>
                 langToUse = 'es-ES';
             } else {
                 textToSpeak = targetItem.qu;
-                langToUse = 'es-ES'; // O 'qu-BO' según la compatibilidad del dispositivo
+                langToUse = 'es-ES';
             }
 
             const utterance = new SpeechSynthesisUtterance(textToSpeak);
@@ -883,7 +898,7 @@ Carlos Condori</textarea>
             const startX = Math.max(8, Math.floor(index * stepX + Math.random() * (stepX - 12)));
             const startY = -120 - (Math.random() * 160);
             
-            const speed = (0.9 + Math.random() * 1.1) * speedMultiplier;
+            const baseSpeed = 0.9 + Math.random() * 1.1;
 
             el.style.left = `${startX}px`;
             el.style.top = `${startY}px`;
@@ -901,7 +916,8 @@ Carlos Condori</textarea>
                 itemData: item,
                 x: startX,
                 y: startY,
-                speed: speed,
+                baseSpeed: baseSpeed,
+                speed: baseSpeed * speedMultiplier,
                 popped: false
             });
         });
