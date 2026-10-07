@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cuestionario Interactivo | BAD 402 - Base de Datos I</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+  <!-- ENCABEZADO PRINCIPAL -->
+  <header class="bg-slate-900/80 border-b border-slate-800 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-gradient-to-tr from-indigo-600 to-violet-500 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+          <i class="fa-solid fa-graduation-cap text-xl"></i>
+        </div>
+        <div>
+          <span class="text-[10px] font-bold tracking-widest text-indigo-400 uppercase block">BAD 402 • Evaluación Académica</span>
+          <h1 class="text-base font-extrabold text-white leading-tight">Cuestionario de Arquitectura y Modelado de Datos</h1>
+        </div>
+      </div>
+      <div id="scoreCounter" class="hidden sm:flex items-center space-x-2 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700">
+        <i class="fa-solid fa-trophy text-amber-400 text-xs"></i>
+        <span class="text-xs font-semibold text-slate-300">Puntaje: <span id="currentScore" class="text-indigo-400 font-bold">0</span>/20</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="max-w-3xl mx-auto px-4 py-8 flex-grow w-full">
+
+    <!-- PANTALLA DE INICIO -->
+    <div id="startScreen" class="glass-panel rounded-3xl p-6 sm:p-10 text-center space-y-6 animate-fade-in shadow-2xl">
+      <div class="inline-flex p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-indigo-400">
+        <i class="fa-solid fa-database text-4xl"></i>
+      </div>
+      <div class="space-y-2">
+        <h2 class="text-2xl sm:text-3xl font-black text-white">Evaluación de Conocimientos BAD 402</h2>
+        <p class="text-slate-400 text-sm max-w-lg mx-auto">
+          Pon a prueba tu dominio sobre los Niveles de Abstracción (Conceptual, Lógico y Físico) y el Modelo Entidad-Relación (Notación Chen y Pata de Gallo).
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left max-w-xl mx-auto text-xs text-slate-300">
+        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 flex items-center gap-2.5">
+          <i class="fa-solid fa-list-check text-emerald-400 text-base"></i>
+          <span><strong>20 Preguntas</strong> de opción múltiple</span>
+        </div>
+        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 flex items-center gap-2.5">
+          <i class="fa-solid fa-bolt text-amber-400 text-base"></i>
+          <span><strong>Retroalimentación</strong> inmediata por pregunta</span>
+        </div>
+        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 flex items-center gap-2.5">
+          <i class="fa-solid fa-chart-pie text-indigo-400 text-base"></i>
+          <span><strong>Nota final</strong> con porcentaje y desglose</span>
+        </div>
+      </div>
+
+      <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5 active:translate-y-0">
+        <i class="fa-solid fa-play mr-2"></i> Iniciar Cuestionario
+      </button>
+    </div>
+
+    <!-- PANTALLA DEL CUESTIONARIO (OCULTA POR DEFECTO) -->
+    <div id="quizScreen" class="hidden space-y-6">
+
+      <!-- BARRA DE PROGRESO -->
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs font-semibold text-slate-400">
+          <span>Pregunta <span id="qNumber" class="text-indigo-400">1</span> de 20</span>
+          <span>Progreso: <span id="qPercent">5%</span></span>
+        </div>
+        <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
+          <div id="progressBar" class="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-300" style="width: 5%;"></div>
+        </div>
+      </div>
+
+      <!-- CONTENEDOR DE LA PREGUNTA -->
+      <div id="questionCard" class="glass-panel rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl animate-fade-in">
+        <div class="space-y-3">
+          <span id="questionCategory" class="inline-block bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase">
+            Categoría
+          </span>
+          <h3 id="questionText" class="text-lg sm:text-xl font-bold text-white leading-snug">
+            Cargando pregunta...
+          </h3>
+        </div>
+
+        <!-- OPCIONES DE RESPUESTA -->
+        <div id="optionsContainer" class="space-y-3">
+          <!-- Se generan dinámicamente con JS -->
+        </div>
+
+        <!-- EXPLICACIÓN / RETROALIMENTACIÓN -->
+        <div id="feedbackContainer" class="hidden p-4 rounded-xl text-xs sm:text-sm leading-relaxed border animate-fade-in">
+          <div class="flex items-start gap-2.5">
+            <i id="feedbackIcon" class="text-lg mt-0.5"></i>
+            <div>
+              <p id="feedbackTitle" class="font-bold mb-1"></p>
+              <p id="feedbackText" class="text-slate-300"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTÓN SIGUIENTE -->
+        <div class="flex justify-end pt-2">
+          <button id="nextBtn" onclick="nextQuestion()" disabled class="px-6 py-2.5 bg-slate-800 text-slate-500 font-bold text-xs sm:text-sm rounded-xl border border-slate-700 cursor-not-allowed transition flex items-center gap-2">
+            <span>Siguiente Pregunta</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PANTALLA DE RESULTADOS FINALES (OCULTA POR DEFECTO) -->
+    <div id="resultsScreen" class="hidden glass-panel rounded-3xl p-6 sm:p-10 text-center space-y-8 animate-fade-in shadow-2xl">
+      <div class="space-y-2">
+        <span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
+          Resultados de la Evaluación
+        </span>
+        <h2 class="text-3xl font-black text-white">Resumen de Calificación</h2>
+      </div>
+
+      <!-- INSIGNIA Y MEDIDOR DE NOTA -->
+      <div class="relative w-40 h-40 mx-auto flex items-center justify-center">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+          <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path id="circleProgress" class="text-indigo-500" stroke-dasharray="0, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+        <div class="absolute flex flex-col items-center">
+          <span id="finalScoreText" class="text-4xl font-black text-white">0/20</span>
+          <span id="finalPercentage" class="text-xs font-bold text-indigo-400">0%</span>
+        </div>
+      </div>
+
+      <div id="gradeBadge" class="inline-block px-4 py-2 rounded-xl border text-sm font-bold">
+        Cargando estado...
+      </div>
+
+      <p id="gradeFeedback" class="text-slate-300 text-sm max-w-md mx-auto">
+        Explicación detallada del rendimiento.
+      </p>
+
+      <!-- METRICAS DETALLADAS -->
+      <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto text-center">
+        <div class="bg-emerald-950/30 border border-emerald-500/30 p-3 rounded-xl">
+          <span class="block text-2xl font-black text-emerald-400" id="correctCount">0</span>
+          <span class="text-[11px] font-semibold text-emerald-200">Correctas</span>
+        </div>
+        <div class="bg-rose-950/30 border border-rose-500/30 p-3 rounded-xl">
+          <span class="block text-2xl font-black text-rose-400" id="incorrectCount">0</span>
+          <span class="text-[11px] font-semibold text-rose-200">Incorrectas</span>
+        </div>
+      </div>
+
+      <!-- BOTONES DE ACCIÓN -->
+      <div class="pt-4 flex flex-col sm:flex-row justify-center gap-3">
+        <button onclick="restartQuiz()" class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm rounded-xl shadow-lg transition">
+          <i class="fa-solid fa-rotate-right mr-2"></i> Reintentar Cuestionario
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="bg-slate-950 text-slate-500 border-t border-slate-900 py-4">
+    <div class="max-w-5xl mx-auto px-4 text-center text-xs">
+      <p class="font-medium text-slate-400">Universidad Latinoamericana • Asignatura Base de Datos I (BAD 402)</p>
+      <p class="text-slate-600 mt-0.5">M.Sc. Bladimir Arias Mejia • Sistema Interactivo de Autoevaluación</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPT CON EL BANCO DE PREGUNTAS Y LA LÓGICA -->
+  <script>
+    const questionsBank = [
+      {
+        category: "Niveles de Abstracción",
+        question: "¿Cuál es el objetivo principal del Modelo Conceptual en el diseño de bases de datos?",
+        options: [
+          "Optimizar la velocidad de ejecución y los tipos de datos nativos SQL.",
+          "Entender los requisitos y reglas del negocio sin importar la tecnología de implementación.",
+          "Definir las tablas relacionales y aplicar las reglas de normalización (1FN, 2FN, 3FN).",
+          "Generar los scripts DDL de creación de tablas para PostgreSQL o MySQL."
+        ],
+        correct: 1,
+        explanation: "El modelo conceptual captura las entidades y reglas del negocio de manera completamente independiente de cualquier SGBD o tecnología de software."
+      },
+      {
+        category: "Niveles de Abstracción",
+        question: "En la matriz de niveles de abstracción, ¿qué característica corresponde al Modelo Físico?",
+        options: [
+          "Es totalmente independiente del motor DBMS utilizado.",
+          "Es utilizado principalmente por clientes y analistas de negocio.",
+          "Es totalmente dependiente del motor específico (MySQL, PostgreSQL, etc.).",
+          "Representa entidades mediante rombos de relación únicamente."
+        ],
+        correct: 2,
+        explanation: "El modelo físico implementa el diseño en un motor específico (DBMS), definiendo sintaxis SQL, tipos de datos nativos e índices."
+      },
+      {
+        category: "Modelo Entidad-Relación",
+        question: "¿Qué representa un rectángulo en la Notación Académica de Peter Chen (1976)?",
+        options: [
+          "Un atributo clave primaria.",
+          "Una relación binaria o ternaria.",
+          "Una entidad fuerte o regular.",
+          "Un atributo multivaluado o derivado."
+        ],
+        correct: 2,
+        explanation: "En la notación Chen, los rectángulos representan entidades, mientras que los rombos representan relaciones y las elipses representan atributos."
+      },
+      {
+        category: "Modelo Entidad-Relación",
+        question: "¿Qué caracteriza a una Entidad Débil en el Modelo Entidad-Relación?",
+        options: [
+          "No tiene ningún atributo definido en el diagrama.",
+          "No posee una clave primaria completa por sí misma y depende de una entidad fuerte.",
+          "Solo puede conectarse mediante relaciones de cardinalidad 1:1.",
+          "Es una relación que se convierte en tabla sin claves foráneas."
+        ],
+        correct: 1,
+        explanation: "Una entidad débil no tiene suficiente identificación propia y requiere la clave primaria de su entidad fuerte identificadora para existir."
+      },
+      {
+        category: "Modelo Entidad-Relación",
+        question: "Si un cliente puede realizar muchos pedidos y cada pedido pertenece a un solo cliente, ¿qué cardinalidad tiene la relación entre CLIENTE y PEDIDO?",
+        options: [
+          "1 a 1 (1:1)",
+          "Muchos a Muchos (N:M)",
+          "1 a Muchos (1:N)",
+          "Recursiva de grado 3"
+        ],
+        correct: 2,
+        explanation: "Un cliente se asocia con múltiples pedidos (1:N), mientras que cada pedido identifica un único cliente en esa dirección."
+      },
+      {
+        category: "Notaciones Diagramáticas",
+        question: "En la notación Pata de Gallo (Crow's Foot), ¿dónde se ubica el conector con forma de 'pata de gallo'?",
+        options: [
+          "En el extremo correspondiente al lado '1' de la relación.",
+          "En el extremo correspondiente al lado 'Muchos' de la relación.",
+          "Unicamente en las relaciones de tipo 1:1.",
+          "Alrededor de los rombos de asociación."
+        ],
+        correct: 1,
+        explanation: "El símbolo de la 'Pata de Gallo' (tres líneas que divergen) señala el extremo 'Muchos' o múltiple en una relación entre tablas."
+      },
+      {
+        category: "Modelo Entidad-Relación",
+        question: "¿Qué es un atributo derivado en un modelo Entidad-Relación?",
+        options: [
+          "Un atributo que se calcula automáticamente a partir de otro dato (ej. Edad desde FechaNac).",
+          "Un atributo que admite múltiples valores simultáneos como 'Teléfonos'.",
+          "Un atributo que actúa como clave primaria compuesta.",
+          "Un atributo que pertenece únicamente a una entidad débil."
+        ],
+        correct: 0,
+        explanation: "Un atributo derivado no se almacena directamente, sino que su valor se obtiene procesando otros atributos existentes en la base de datos."
+      },
+      {
+        category: "Modelo Lógico",
+        question: "¿Cuál de los siguientes entregables corresponde al Modelo Lógico de Base de Datos?",
+        options: [
+          "Un script SQL DDL con instrucciones CREATE TABLE.",
+          "Un diagrama conceptual puro con rombos de relación según Peter Chen.",
+          "Un Diagrama Relacional en notación Pata de Gallo con PK, FK y tablas normalizadas.",
+          "Un documento formal de requerimientos de software redactado por el cliente."
+        ],
+        correct: 2,
+        explanation: "El modelo lógico traduce el diagrama conceptual a estructuras relacionales (tablas, PK, FK) aplicando reglas de normalización sin código de motor específico."
+      },
+      {
+        category: "Modelo Entidad-Relación",
+        question: "En una relación N:M (Muchos a Muchos) entre ESTUDIANTE y MATERIA con el atributo 'fecha_inscripcion', ¿a quién pertenece dicho atributo?",
+        options: [
+          "A la entidad ESTUDIANTE.",
+          "A la entidad MATERIA.",
+          "Directamente al hecho de la relación 'INSCRIBE'.",
+          "A una clave primaria compuesta sin relación."
+        ],
+        correct: 2,
+        explanation: "Los atributos de relación describen la intersección de dos entidades (el evento o hecho de asociarlas), no a las entidades individuales."
+      },
+      {
+        category: "Niveles de Abstracción",
+        question: "¿Qué figura profesional es el principal destinatario y responsable del Modelo Físico?",
+        options: [
+          "Los clientes y usuarios finales del sistema.",
+          "El Administrador de Base de Datos (DBA) y los desarrolladores.",
+          "Los analistas de negocio y diseñadores UX/UI.",
+          "El gerente de ventas de la empresa."
+        ],
+        correct: 1,
+        explanation: "El DBA y los desarrolladores gestionan la implementación física en el servidor, optimizando tipos de datos nativos, espacio e índices."
+      },
+      {
+        category: "Modelo Entidad-Relación",
+        question: "¿Qué diferencia a un atributo simple de uno compuesto?",
+        options: [
+          "El simple almacena texto y el compuesto almacena números.",
+          "El simple es atómico y no se divide; el compuesto se puede descomponer en subpartes (ej. Dirección).",
+          "El compuesto siempre es una clave primaria y el simple es foránea.",
+          "El simple puede tener múltiples valores y el compuesto solo uno."
+        ],
+        correct: 1,
+        explanation: "Un atributo compuesto se subdivide en partes con significado propio (como Dirección = Calle + Número + Ciudad), mientras que el atómico no se divide."
+      },
+      {
+        category: "Notaciones Diagramáticas",
+        question: "¿Qué ventaja tiene la notación Pata de Gallo frente a la notación Chen en el ámbito industrial?",
+        options: [
+          "Utiliza rombos más grandes para explicar el negocio.",
+          "Integra atributos y claves dentro del bloque de la entidad, facilitando el uso en CASE tools.",
+          "Elimina la necesidad de definir claves primarias o foráneas.",
+          "Es la única notación aceptada por la teoría académica formal."
+        ],
+        correct: 1,
+        explanation: "La notación Pata de Gallo es más compacta e integrada para software de diseño (CASE tools), al compactar entidades y atributos en bloques rectangulares."
+      },
+      {
+        category: "Modelo Entidad-Relación",
+        question: "En la notación Chen, ¿cómo se representa un Atributo Multivaluado (ej. varios teléfonos)?",
+        options: [
+          "Con un rectángulo de doble línea.",
+          "Con una elipse u óvalo de doble línea.",
+          "Con un rombo relleno de color.",
+          "Con una línea punteada conectada a la PK."
+        ],
+        correct: 1,
+        explanation: "En la notación Chen, una elipse u óvalo trazado con línea doble representa un atributo que puede contener varios valores simultáneos para un mismo registro."
+      },
+      {
+        category: "Modelo Lógico",
+        question: "¿Qué elemento del modelo lógico asegura la integridad referencial entre dos tablas?",
+        options: [
+          "La Clave Primaria (PK).",
+          "La Clave Foránea (FK).",
+          "El Script DDL.",
+          "El atributo derivado."
+        ],
+        correct: 1,
+        explanation: "La Clave Foránea (FK) es un campo en una tabla secundaria que hace referencia a la Clave Primaria (PK) de una tabla principal para mantener coherencia."
+      },
+      {
+        category: "Mapeo y Normalización",
+        question: "Cuando se pasa una relación N:M del Modelo Conceptual al Modelo Lógico Relacional, ¿qué ocurre estructuralmente?",
+        options: [
+          "Se elimina una de las entidades para simplificar.",
+          "Se convierte obligatoriamente en una relación 1:1.",
+          "Se crea una nueva tabla intermedia que contiene las FKs de ambas tablas.",
+          "Se insertan los atributos de una tabla dentro de la otra como texto."
+        ],
+        correct: 2,
+        explanation: "El modelo relacional no soporta relaciones N:M directas; por ello, se descomponen en dos relaciones 1:N mediante una tabla intermedia de asociación."
+      },
+      {
+        category: "Niveles de Abstracción",
+        question: "De arriba hacia abajo, ¿cuál es el orden correcto de los niveles de abstracción en el diseño de bases de datos?",
+        options: [
+          "Modelo Físico ➔ Modelo Lógico ➔ Modelo Conceptual.",
+          "Modelo Lógico ➔ Modelo Conceptual ➔ Modelo Físico.",
+          "Modelo Conceptual ➔ Modelo Lógico ➔ Modelo Físico.",
+          "Modelo Conceptual ➔ Modelo Físico ➔ Modelo Lógico."
+        ],
+        correct: 2,
+        explanation: "El proceso desciende progresivamente: primero el entendimiento conceptual (alto nivel), luego la estructura lógica relacional (medio) y finalmente el código físico en BD (bajo nivel)."
+      },
+      {
+        category: "Modelo Entidad-Relación",
+        question: "¿A qué se refiere el 'Grado' de una relación en el Modelo E-R?",
+        options: [
+          "Al número de atributos que contiene la entidad principal.",
+          "Al número de entidades que participan en la relación (ej. Binaria, Ternaria).",
+          "A la cantidad máxima de registros almacenados.",
+          "Al nivel de normalización alcanzado por las tablas."
+        ],
+        correct: 1,
+        explanation: "El grado de una relación se define por la cantidad de entidades participantes: Grado 1 (Recursiva), Grado 2 (Binaria), Grado 3 (Ternaria), etc."
+      },
+      {
+        category: "Modelo Físico",
+        question: "En un script SQL físico, ¿qué instrucción DDL se utiliza para definir la estructura de una tabla y sus restricciones?",
+        options: [
+          "INSERT INTO",
+          "SELECT FROM",
+          "CREATE TABLE",
+          "UPDATE SET"
+        ],
+        correct: 2,
+        explanation: "CREATE TABLE es la sentencia DDL (Data Definition Language) principal empleada en el modelo físico para crear tablas y definir tipos de columnas."
+      },
+      {
+        category: "Modelo Entidad-Relación",
+        question: "¿Qué indica la Participación Total (u Obligatoria) de una entidad en una relación?",
+        options: [
+          "Que cada registro de la entidad debe estar obligatoriamente enlazado en la relación.",
+          "Que la entidad posee todos los tipos de datos nativos SQL.",
+          "Que la relación es de cardinalidad N:M sin excepciones.",
+          "Que la entidad no tiene clave primaria definida."
+        ],
+        correct: 0,
+        explanation: "La participación total (representada con línea doble en Chen) significa que la existencia de cada tupla de esa entidad requiere estar vinculada en la relación."
+      },
+      {
+        category: "Resumen Arquitectura",
+        question: "Si se cambia el motor de base de datos de MySQL a PostgreSQL, ¿cuál de los tres modelos debe reescribirse obligatoriamente?",
+        options: [
+          "El Modelo Conceptual.",
+          "El Modelo Lógico.",
+          "El Modelo Físico.",
+          "Ninguno, los tres son inmunes al motor de base de datos."
+        ],
+        correct: 2,
+        explanation: "Dado que el modelo físico contiene scripts SQL con tipos de datos nativos e índices específicos de la plataforma, es el único dependiente del DBMS."
+      }
+    ];
+
+    // ESTADO DE LA APLICACIÓN
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let userAnswers = new Array(questionsBank.length).fill(null);
+    let answeredQuestions = new Array(questionsBank.length).fill(false);
+
+    // ELEMENTOS DOM
+    const startScreen = document.getElementById('startScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultsScreen = document.getElementById('resultsScreen');
+    const scoreCounter = document.getElementById('scoreCounter');
+    
+    const qNumber = document.getElementById('qNumber');
+    const qPercent = document.getElementById('qPercent');
+    const progressBar = document.getElementById('progressBar');
+    const currentScoreText = document.getElementById('currentScore');
+    
+    const questionCategory = document.getElementById('questionCategory');
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const feedbackContainer = document.getElementById('feedbackContainer');
+    const feedbackIcon = document.getElementById('feedbackIcon');
+    const feedbackTitle = document.getElementById('feedbackTitle');
+    const feedbackText = document.getElementById('feedbackText');
+    const nextBtn = document.getElementById('nextBtn');
+
+    // INICIAR CUESTIONARIO
+    function startQuiz() {
+      startScreen.classList.add('hidden');
+      quizScreen.classList.remove('hidden');
+      scoreCounter.classList.remove('hidden');
+      currentQuestionIndex = 0;
+      score = 0;
+      userAnswers.fill(null);
+      answeredQuestions.fill(false);
+      updateScoreDisplay();
+      loadQuestion();
+    }
+
+    // CARGAR PREGUNTA ACTUAL
+    function loadQuestion() {
+      const q = questionsBank[currentQuestionIndex];
+      
+      // Actualizar encabezados y barra de progreso
+      qNumber.textContent = currentQuestionIndex + 1;
+      const progress = ((currentQuestionIndex + 1) / questionsBank.length) * 100;
+      qPercent.textContent = `${Math.round(progress)}%`;
+      progressBar.style.width = `${progress}%`;
+
+      questionCategory.textContent = q.category;
+      questionText.textContent = q.question;
+
+      // Ocultar feedback y deshabilitar botón siguiente
+      feedbackContainer.classList.add('hidden');
+      nextBtn.disabled = true;
+      nextBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500', 'text-white', 'cursor-pointer', 'shadow-lg');
+      nextBtn.classList.add('bg-slate-800', 'text-slate-500', 'cursor-not-allowed');
+
+      // Limpiar y renderizar opciones
+      optionsContainer.innerHTML = '';
+      q.options.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left p-4 rounded-xl border border-slate-700/80 bg-slate-900/60 hover:bg-slate-800/80 text-xs sm:text-sm text-slate-200 transition flex items-center justify-between group`;
+        btn.onclick = () => selectOption(idx);
+        
+        btn.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <span class="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 text-xs font-bold flex items-center justify-center group-hover:border-indigo-500 group-hover:text-indigo-400 transition">
+              ${String.fromCharCode(65 + idx)}
+            </span>
+            <span class="leading-relaxed">${optText}</span>
+          </div>
+          <i class="fa-regular fa-circle text-slate-600 text-base ml-2"></i>
+        `;
+        optionsContainer.appendChild(btn);
+      });
+
+      // Si ya fue respondida anteriormente (en navegación)
+      if (answeredQuestions[currentQuestionIndex]) {
+        revealAnswer(userAnswers[currentQuestionIndex]);
+      }
+    }
+
+    // SELECCIONAR OPCIÓN
+    function selectOption(selectedIndex) {
+      if (answeredQuestions[currentQuestionIndex]) return;
+
+      answeredQuestions[currentQuestionIndex] = true;
+      userAnswers[currentQuestionIndex] = selectedIndex;
+
+      const q = questionsBank[currentQuestionIndex];
+      if (selectedIndex === q.correct) {
+        score++;
+        updateScoreDisplay();
+      }
+
+      revealAnswer(selectedIndex);
+    }
+
+    // MOSTRAR RESULTADO DE LA PREGUNTA
+    function revealAnswer(selectedIndex) {
+      const q = questionsBank[currentQuestionIndex];
+      const buttons = optionsContainer.children;
+
+      // Deshabilitar todos los botones
+      for (let i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = true;
+        buttons[i].classList.remove('hover:bg-slate-800/80');
+
+        if (i === q.correct) {
+          // Opción Correcta
+          buttons[i].className = "w-full text-left p-4 rounded-xl border border-emerald-500/50 bg-emerald-950/40 text-xs sm:text-sm text-emerald-200 font-medium flex items-center justify-between";
+          buttons[i].querySelector('i').className = "fa-solid fa-circle-check text-emerald-400 text-base ml-2";
+        } else if (i === selectedIndex && selectedIndex !== q.correct) {
+          // Opción Incorrecta seleccionada
+          buttons[i].className = "w-full text-left p-4 rounded-xl border border-rose-500/50 bg-rose-950/40 text-xs sm:text-sm text-rose-200 font-medium flex items-center justify-between";
+          buttons[i].querySelector('i').className = "fa-solid fa-circle-xmark text-rose-400 text-base ml-2";
+        } else {
+          // Otras opciones no seleccionadas
+          buttons[i].classList.add('opacity-40');
+        }
+      }
+
+      // Mostrar caja de feedback
+      feedbackContainer.classList.remove('hidden', 'bg-emerald-950/40', 'border-emerald-500/40', 'text-emerald-200', 'bg-rose-950/40', 'border-rose-500/40', 'text-rose-200');
+
+      if (selectedIndex === q.correct) {
+        feedbackContainer.classList.add('bg-emerald-950/40', 'border-emerald-500/40');
+        feedbackIcon.className = "fa-solid fa-circle-check text-emerald-400";
+        feedbackTitle.className = "font-bold text-emerald-400";
+        feedbackTitle.textContent = "¡Respuesta Correcta!";
+      } else {
+        feedbackContainer.classList.add('bg-rose-950/40', 'border-rose-500/40');
+        feedbackIcon.className = "fa-solid fa-circle-xmark text-rose-400";
+        feedbackTitle.className = "font-bold text-rose-400";
+        feedbackTitle.textContent = "Respuesta Incorrecta";
+      }
+
+      feedbackText.textContent = q.explanation;
+
+      // Habilitar botón Siguiente
+      nextBtn.disabled = false;
+      nextBtn.classList.remove('bg-slate-800', 'text-slate-500', 'cursor-not-allowed');
+      nextBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-500', 'text-white', 'cursor-pointer', 'shadow-lg', 'shadow-indigo-600/30');
+
+      if (currentQuestionIndex === questionsBank.length - 1) {
+        nextBtn.querySelector('span').textContent = "Ver Calificación Final";
+        nextBtn.querySelector('i').className = "fa-solid fa-flag-checkered";
+      }
+    }
+
+    // SIGUIENTE PREGUNTA O FINALIZAR
+    function nextQuestion() {
+      if (currentQuestionIndex < questionsBank.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    // ACTUALIZAR PUNTAJE EN TIEMPO REAL
+    function updateScoreDisplay() {
+      currentScoreText.textContent = score;
+    }
+
+    // MOSTRAR PANTALLA DE RESULTADOS
+    function showResults() {
+      quizScreen.classList.add('hidden');
+      scoreCounter.classList.add('hidden');
+      resultsScreen.classList.remove('hidden');
+
+      const percentage = Math.round((score / questionsBank.length) * 100);
+      document.getElementById('finalScoreText').textContent = `${score}/20`;
+      document.getElementById('finalPercentage').textContent = `${percentage}%`;
+      document.getElementById('correctCount').textContent = score;
+      document.getElementById('incorrectCount').textContent = questionsBank.length - score;
+
+      // Animar círculo de progreso
+      const circleProgress = document.getElementById('circleProgress');
+      circleProgress.setAttribute('stroke-dasharray', `${percentage}, 100`);
+
+      const badge = document.getElementById('gradeBadge');
+      const feedback = document.getElementById('gradeFeedback');
+
+      if (score >= 18) {
+        badge.className = "inline-block px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-bold";
+        badge.innerHTML = '<i class="fa-solid fa-award mr-1.5"></i> Calificación: Excelente (Sobresaliente)';
+        feedback.textContent = "¡Felicidades! Tienes un dominio completo de los modelos de base de datos, relaciones y notaciones arquitectónicas.";
+      } else if (score >= 14) {
+        badge.className = "inline-block px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 text-sm font-bold";
+        badge.innerHTML = '<i class="fa-solid fa-thumbs-up mr-1.5"></i> Calificación: Buen Trabajo';
+        feedback.textContent = "Has demostrado un buen entendimiento de la materia. Revisa los detalles del modelo físico y la notación Chen para perfeccionar tus conceptos.";
+      } else if (score >= 10) {
+        badge.className = "inline-block px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm font-bold";
+        badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> Calificación: Aprobado (Suficiente)';
+        feedback.textContent = "Aprobaste el cuestionario, pero es recomendable reforzar el mapeo relacional y las características de las entidades.";
+      } else {
+        badge.className = "inline-block px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm font-bold";
+        badge.innerHTML = '<i class="fa-solid fa-circle-xmark mr-1.5"></i> Calificación: Reprobado (Insuficiente)';
+        feedback.textContent = "Se requiere una revisión detallada de la Unidad II de BAD 402. Repasa la teoría de los tres niveles y la construcción de diagramas E-R.";
+      }
+    }
+
+    // REINICIAR CUESTIONARIO
+    function restartQuiz() {
+      resultsScreen.classList.add('hidden');
+      startQuiz();
+    }
+  </script>
+</body>
+</html>
+```eof
+
+He creado la evaluación interactiva completa en el archivo `cuestionario_bad402.html`. 
+
+### Características principales incluidas:
+1. **20 Preguntas de nivel universitario** basadas en las unidades **BAD 402** (Modelos Conceptual, Lógico y Físico, Notaciones Chen y Crow's Foot).
+2. **Sistema de retroalimentación inmediata** con explicaciones teóricas y conceptuales detalladas tras responder cada opción.
+3. **Barra de progreso visual** e indicador de avance en tiempo real.
+4. **Calculadora de calificación final** con porcentaje, gráfico circular de rendimiento y desglose de aciertos e desaciertos.
+5. **Diseño responsivo y moderno** adaptado a dispositivos móviles y de escritorio con paleta temática oscura.
