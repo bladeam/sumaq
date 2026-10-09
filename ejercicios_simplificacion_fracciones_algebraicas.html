@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10 Ejercicios Resueltos: Simplificación de Fracciones Algebraicas</title>
+    <!-- MathJax for rendering LaTeX expressions -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #e2e8f0;
+            --success-color: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .intro {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        .exercise-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            margin-bottom: 25px;
+            padding: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .exercise-card:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .exercise-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .exercise-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .exercise-topic {
+            font-size: 0.85em;
+            background-color: #e8f4f8;
+            color: var(--secondary-color);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+
+        .problem-statement {
+            font-size: 1.3em;
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #f1f5f9;
+            border-left: 4px solid var(--secondary-color);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .btn-solution {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            font-size: 0.95em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-solution:hover {
+            background-color: #2980b9;
+        }
+
+        .solution-content {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border-color);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .step {
+            margin-bottom: 12px;
+            padding-left: 15px;
+            border-left: 2px solid var(--border-color);
+        }
+
+        .final-answer {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #e8f8f5;
+            border: 1px solid #a3e4d7;
+            border-radius: 5px;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>10 Ejercicios de Simplificación de Fracciones Algebraicas</h1>
+        <p class="intro">Guía práctica con soluciones paso a paso utilizando técnicas de factorización y simplificación.</p>
+    </header>
+
+    <!-- Ejercicio 1 -->
+    <div class="exercise-card">
+        <div class="exercise-title">
+            <span class="exercise-number">Ejercicio 1</span>
+            <span class="exercise-topic">Factor común monomio</span>
+        </div>
+        <div class="problem-statement">
+            $$\frac{12a^3b^2}{18a^2b^4}$$
+        </div>
+        <button class="btn-solution" onclick="toggleSolution('sol1', this)">
+            <span>Mostrar Solución</span>
+        </button>
+        <div id="sol1" class="solution-content">
+            <div class="step">
+                <strong>Paso 1:</strong> Simplificar los coeficientes numéricos dividiendo entre el máximo común divisor ($6$).
+                $$\frac{12 \div 6}{18 \div 6} = \frac{2}{3}$$
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Aplicar las leyes de los exponentes para las variables ($\frac{x^m}{x^n} = x^{m-n}$ o restar exponentes en la posición donde esté el mayor exponente).
+                $$\text{Para } a: \frac{a^3}{a^2} = a^{3-2} = a$$
+                $$\text{Para } b: \frac{b^2}{b^4} = \frac{1}{b^{4-2}} = \frac{1}{b^2}$$
+            </div>
+            <div class="final-answer">
+                $$\text{Resultado final: } \frac{2a}{3b^2}$$
+            </div>
+        </div>
+    </div>
+
+    <!-- Ejercicio 2 -->
+    <div class="exercise-card">
+        <div class="exercise-title">
+            <span class="exercise-number">Ejercicio 2</span>
+            <span class="exercise-topic">Factor común polinomio</span>
+        </div>
+        <div class="problem-statement">
+            $$\frac{4x + 12}{8x + 24}$$
+        </div>
+        <button class="btn-solution" onclick="toggleSolution('sol2', this)">
+            <span>Mostrar Solución</span>
+        </button>
+        <div id="sol2" class="solution-content">
+            <div class="step">
+                <strong>Paso 1:</strong> Extraer el factor común tanto del numerador como del denominador.
+                $$\text{Numerador: } 4x + 12 = 4(x + 3)$$
+                $$\text{Denominador: } 8x + 24 = 8(x + 3)$$
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Reescribir la fracción y cancelar los factores comunes binómicos.
+                $$\frac{4(x + 3)}{8(x + 3)} = \frac{4}{8}$$
+            </div>
+            <div class="step">
+                <strong>Paso 3:</strong> Simplificar la fracción numérica resultante.
+                $$\frac{4}{8} = \frac{1}{2}$$
+            </div>
+            <div class="final-answer">
+                $$\text{Resultado final: } \frac{1}{2}$$
+            </div>
+        </div>
+    </div>
+
+    <!-- Ejercicio 3 -->
+    <div class="exercise-card">
+        <div class="exercise-title">
+            <span class="exercise-number">Ejercicio 3</span>
+            <span class="exercise-topic">Diferencia de cuadrados</span>
+        </div>
+        <div class="problem-statement">
+            $$\frac{x^2 - 9}{x^2 + 6x + 9}$$
+        </div>
+        <button class="btn-solution" onclick="toggleSolution('sol3', this)">
+            <span>Mostrar Solución</span>
+        </button>
+        <div id="sol3" class="solution-content">
+            <div class="step">
+                <strong>Paso 1:</strong> Factorizar el numerador usando diferencia de cuadrados ($a^2 - b^2 = (a-b)(a+b)$).
+                $$x^2 - 9 = (x - 3)(x + 3)$$
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Factorizar el denominador reconociendo un trinomio cuadrado perfecto ($a^2 + 2ab + b^2 = (a+b)^2$).
+                $$x^2 + 6x + 9 = (x + 3)^2 = (x + 3)(x + 3)$$
+            </div>
+            <div class="step">
+                <strong>Paso 3:</strong> Cancelar los factores comunes del numerador y denominador.
+                $$\frac{(x - 3)(x + 3)}{(x + 3)(x + 3)} = \frac{x - 3}{x + 3}$$
+            </div>
+            <div class="final-answer">
+                $$\text{Resultado final: } \frac{x - 3}{x + 3}$$
+            </div>
+        </div>
+    </div>
+
+    <!-- Ejercicio 4 -->
+    <div class="exercise-card">
+        <div class="exercise-title">
+            <span class="exercise-number">Ejercicio 4</span>
+            <span class="exercise-topic">Trinomio de la forma $x^2 + bx + c$</span>
+        </div>
+        <div class="problem-statement">
+            $$\frac{x^2 - 5x + 6}{x^2 - 4}$$
+        </div>
+        <button class="btn-solution" onclick="toggleSolution('sol4', this)">
+            <span>Mostrar Solución</span>
+        </button>
+        <div id="sol4" class="solution-content">
+            <div class="step">
+                <strong>Paso 1:</strong> Factorizar el numerador buscando dos números que multiplicados den $6$ y sumados den $-5$ (los números son $-2$ y $-3$).
+                $$x^2 - 5x + 6 = (x - 2)(x - 3)$$
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Factorizar el denominador mediante diferencia de cuadrados.
+                $$x^2 - 4 = (x - 2)(x + 2)$$
+            </div>
+            <div class="step">
+                <strong>Paso 3:</strong> Cancelar el factor común $(x - 2)$.
+                $$\frac{(x - 2)(x - 3)}{(x - 2)(x + 2)} = \frac{x - 3}{x + 2}$$
+            </div>
+            <div class="final-answer">
+                $$\text{Resultado final: } \frac{x - 3}{x + 2}$$
+            </div>
+        </div>
+    </div>
+
+    <!-- Ejercicio 5 -->
+    <div class="exercise-card">
+        <div class="exercise-title">
+            <span class="exercise-number">Ejercicio 5</span>
+            <span class="exercise-topic">Factor opuesto o cambio de signo</span>
+        </div>
+        <div class="problem-statement">
+            $$\frac{2x - 6}{9 - x^2}$$
+        </div>
+        <button class="btn-solution" onclick="toggleSolution('sol5', this)">
+            <span>Mostrar Solución</span>
+        </button>
+        <div id="sol5" class="solution-content">
+            <div class="step">
+                <strong>Paso 1:</strong> Extraer el factor común en el numerador.
+                $$2x - 6 = 2(x - 3)$$
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Factorizar la diferencia de cuadrados en el denominador.
+                $$9 - x^2 = (3 - x)(3 + x)$$
+            </div>
+            <div class="step">
+                <strong>Paso 3:</strong> Notar que $(x - 3) = -(3 - x)$. Multiplicar por $-1$ para poder simplificar.
+                $$\frac{2(x - 3)}{(3 - x)(3 + x)} = \frac{-2(3 - x)}{(3 - x)(3 + x)}$$
+            </div>
+            <div class="step">
+                <strong>Paso 4:</strong> Cancelar el factor $(3 - x)$.
+                $$\frac{-2}{3 + x} \quad \text{o} \quad -\frac{2}{x + 3}$$
+            </div>
+            <div class="final-answer">
+                $$\text{Resultado final: } -\frac{2}{x + 3}$$
+            </div>
+        </div>
+    </div>
+
+    <!-- Ejercicio 6 -->
+    <div class="exercise-card">
+        <div class="exercise-title">
+            <span class="exercise-number">Ejercicio 6</span>
+            <span class="exercise-topic">Suma o diferencia de cubos</span>
+        </div>
+        <div class="problem-statement">
+            $$\frac{x^3 - 8}{x^2 + 2x + 4}$$
+        </div>
+        <button class="btn-solution" onclick="toggleSolution('sol6', this)">
+            <span>Mostrar Solución</span>
+        </button>
+        <div id="sol6" class="solution-content">
+            <div class="step">
+                <strong>Paso 1:</strong> Aplicar la fórmula de diferencia de cubos en el numerador: $a^3 - b^3 = (a - b)(a^2 + ab + b^2)$.
+                $$\text{Aquí } a = x \text{ y } b = 2:$$
+                $$x^3 - 8 = (x - 2)(x^2 + 2x + 4)$$
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Reescribir la fracción.
+                $$\frac{(x - 2)(x^2 + 2x + 4)}{x^2 + 2x + 4}$$
+            </div>
+            <div class="step">
+                <strong>Paso 3:</strong> Cancelar el trinomio $(x^2 + 2x + 4)$ que aparece en ambos términos.
+                $$x - 2$$
+            </div>
+            <div class="final-answer">
+                $$\text{Resultado final: } x - 2$$
+            </div>
+        </div>
+    </div>
+
+    <!-- Ejercicio 7 -->
+    <div class="exercise-card">
+        <div class="exercise-title">
+            <span class="exercise-number">Ejercicio 7</span>
+            <span class="exercise-topic">Trinomio de la forma $ax^2 + bx + c$</span>
+        </div>
+        <div class="problem-statement">
+            $$\frac{2x^2 + 5x - 3}{4x^2 - 1}$$
+        </div>
+        <button class="btn-solution" onclick="toggleSolution('sol7', this)">
+            <span>Mostrar Solución</span>
+        </button>
+        <div id="sol7" class="solution-content">
+            <div class="step">
+                <strong>Paso 1:</strong> Factorizar el numerador mediante descomposición o aspa simple:
+                $$2x^2 + 5x - 3 = (2x - 1)(x + 3)$$
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Factorizar el denominador utilizando diferencia de cuadrados.
+                $$4x^2 - 1 = (2x - 1)(2x + 1)$$
+            </div>
+            <div class="step">
+                <strong>Paso 3:</strong> Cancelar el binomio común $(2x - 1)$.
+                $$\frac{(2x - 1)(x + 3)}{(2x - 1)(2x + 1)} = \frac{x + 3}{2x + 1}$$
+            </div>
+            <div class="final-answer">
+                $$\text{Resultado final: } \frac{x + 3}{2x + 1}$$
+            </div>
+        </div>
+    </div>
+
+    <!-- Ejercicio 8 -->
+    <div class="exercise-card">
+        <div class="exercise-title">
+            <span class="exercise-number">Ejercicio 8</span>
+            <span class="exercise-topic">Factorización por agrupación de términos</span>
+        </div>
+        <div class="problem-statement">
+            $$\frac{ax + bx - ay - by}{a^2 - b^2}$$
+        </div>
+        <button class="btn-solution" onclick="toggleSolution('sol8', this)">
+            <span>Mostrar Solución</span>
+        </button>
+        <div id="sol8" class="solution-content">
+            <div class="step">
+                <strong>Paso 1:</strong> Factorizar el numerador agrupando de dos en dos términos.
+                $$ax + bx - ay - by = x(a + b) - y(a + b) = (a + b)(x - y)$$
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Factorizar la diferencia de cuadrados en el denominador.
+                $$a^2 - b^2 = (a + b)(a - b)$$
+            </div>
+            <div class="step">
+                <strong>Paso 3:</strong> Cancelar el factor común $(a + b)$.
+                $$\frac{(a + b)(x - y)}{(a + b)(a - b)} = \frac{x - y}{a - b}$$
+            </div>
+            <div class="final-answer">
+                $$\text{Resultado final: } \frac{x - y}{a - b}$$
+            </div>
+        </div>
+    </div>
+
+    <!-- Ejercicio 9 -->
+    <div class="exercise-card">
+        <div class="exercise-title">
+            <span class="exercise-number">Ejercicio 9</span>
+            <span class="exercise-topic">Factorización compuesta (múltiples pasos)</span>
+        </div>
+        <div class="problem-statement">
+            $$\frac{3x^3 - 12x}{x^2 - 4x + 4}$$
+        </div>
+        <button class="btn-solution" onclick="toggleSolution('sol9', this)">
+            <span>Mostrar Solución</span>
+        </button>
+        <div id="sol9" class="solution-content">
+            <div class="step">
+                <strong>Paso 1:</strong> En el numerador, extraer primero el factor común monomio $3x$ y luego aplicar diferencia de cuadrados.
+                $$3x^3 - 12x = 3x(x^2 - 4) = 3x(x - 2)(x + 2)$$
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Factorizar el denominador (trinomio cuadrado perfecto).
+                $$x^2 - 4x + 4 = (x - 2)^2 = (x - 2)(x - 2)$$
+            </div>
+            <div class="step">
+                <strong>Paso 3:</strong> Cancelar un factor $(x - 2)$ tanto del numerador como del denominador.
+                $$\frac{3x(x - 2)(x + 2)}{(x - 2)(x - 2)} = \frac{3x(x + 2)}{x - 2}$$
+            </div>
+            <div class="final-answer">
+                $$\text{Resultado final: } \frac{3x(x + 2)}{x - 2} \quad \text{o} \quad \frac{3x^2 + 6x}{x - 2}$$
+            </div>
+        </div>
+    </div>
+
+    <!-- Ejercicio 10 -->
+    <div class="exercise-card">
+        <div class="exercise-title">
+            <span class="exercise-number">Ejercicio 10</span>
+            <span class="exercise-topic">Diferencia de cubos y trinomios mixtos</span>
+        </div>
+        <div class="problem-statement">
+            $$\frac{a^3 + 27}{a^2 - 3a + 9}$$
+        </div>
+        <button class="btn-solution" onclick="toggleSolution('sol10', this)">
+            <span>Mostrar Solución</span>
+        </button>
+        <div id="sol10" class="solution-content">
+            <div class="step">
+                <strong>Paso 1:</strong> Factorizar la suma de cubos del numerador utilizando la identidad: $x^3 + y^3 = (x + y)(x^2 - xy + y^2)$.
+                $$\text{Donde } x = a \text{ e } y = 3:$$
+                $$a^3 + 27 = (a + 3)(a^2 - 3a + 9)$$
+            </div>
+            <div class="step">
+                <strong>Paso 2:</strong> Escribir la relación con el denominador original.
+                $$\frac{(a + 3)(a^2 - 3a + 9)}{a^2 - 3a + 9}$$
+            </div>
+            <div class="step">
+                <strong>Paso 3:</strong> Cancelar el factor irreducible del trinomio $(a^2 - 3a + 9)$.
+                $$a + 3$$
+            </div>
+            <div class="final-answer">
+                $$\text{Resultado final: } a + 3$$
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Documento interactivo generado con HTML, CSS y MathJax.</p>
+    </footer>
+</div>
+
+<script>
+    function toggleSolution(id, btn) {
+        var solution = document.getElementById(id);
+        var btnText = btn.querySelector('span');
+        
+        if (solution.style.display === "block") {
+            solution.style.display = "none";
+            btnText.textContent = "Mostrar Solución";
+            btn.style.backgroundColor = "var(--secondary-color)";
+        } else {
+            solution.style.display = "block";
+            btnText.textContent = "Ocultar Solución";
+            btn.style.backgroundColor = "#7f8c8d";
+        }
+    }
+</script>
+
+</body>
+</html>
