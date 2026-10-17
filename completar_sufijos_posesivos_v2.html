@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario Quechua - Msc. Bladimir Arias Mejia</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --light: #f4f7f6;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            color: var(--primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+        }
+        h1 { color: var(--primary); margin-bottom: 5px; }
+        .author-top { font-size: 0.9em; color: #7f8c8d; margin-bottom: 20px; }
+        
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        button:hover { background: #2980b9; }
+
+        .hidden { display: none; }
+        
+        /* Estilos del Juego */
+        .player-tag { font-size: 1.2em; font-weight: bold; color: var(--accent); margin-bottom: 10px; }
+        .question-text { font-size: 1.4em; margin: 20px 0; font-weight: 600; }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .option-btn {
+            background: #fff;
+            border: 2px solid #3498db;
+            color: #3498db;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: 0.2s;
+        }
+        .option-btn:hover { background: #ebf5fb; }
+        
+        /* Mensajes de Feedback */
+        #feedback {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 40px;
+        }
+        .allin { color: var(--success); }
+        .mana-allin { color: var(--error); }
+
+        /* Historial */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: var(--primary); color: white; }
+        
+        footer { margin-top: 40px; font-size: 0.9em; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="setup-screen">
+        <h1>Cuestionario de Quechua: Sufijos posesivos</h1>
+        
+        
+        <p>Ingrese los nombres de los participantes (uno por línea):</p>
+        <textarea id="participants-list" rows="5" placeholder="Ejemplo:&#10;Juan Perez&#10;Maria Gomez"></textarea>
+        
+        <p>Número de preguntas por participante:</p>
+        <input type="number" id="rounds-count" value="5" min="1">
+        
+        <button onclick="initGame()">Comenzar Cuestionario</button>
+    </div>
+
+    <div class="container hidden" id="game-screen">
+        <div id="player-turn-display" class="player-tag"></div>
+        <div id="progress-display"></div>
+        <div class="question-text" id="question-label"></div>
+        
+        <div class="options-grid" id="options-container">
+            </div>
+        
+        <div id="feedback"></div>
+    </div>
+
+    <div class="container hidden" id="results-screen">
+        <h1>Resultados Finales</h1>
+        <div id="stats-summary"></div>
+        
+        <h3>Historial Detallado</h3>
+        <table id="history-table">
+            <thead>
+                <tr>
+                    <th>Participante</th>
+                    <th>Pregunta</th>
+                    <th>Respuesta</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        
+        <br>
+        <button onclick="location.reload()">Reiniciar Programa</button>
+    </div>
+
+    <footer>
+        Autor: Msc. Bladimir Arias Mejia 2026
+    </footer>
+
+    <script>
+        // --- BASE DE DATOS MODIFICABLE ---
+        // Puedes añadir más líneas siguiendo el formato: Español = Quechua
+        const RAW_DATABASE = `Nuestra(exclusivo) mano = makiyku
+Tu cara = uyayki
+Nuestra(inclusivo) garganta = tunqurinchik
+Tu estómago = wiksayki
+Nuestro(exclusivo) diente = kiruyku
+De él/ella su saliva = thuqaynin
+De ustedes su hombro = rikraykichik
+Tu ojo = ñawiyki
+De él/ella su oreja = ninrin
+De ustedes su pantorrila = t'usuykichik
+Nuestra(exclusivo) piel = qarayku
+De ustedes su cuello = kunkaykichik
+Tu corazón = sunquyki
+Nuestra(inclusivo) oreja = ninrinchik
+Nuestra(exclusivo) boca = simiyku
+De ustedes su rodilla = muquykichik
+Nuestra(exclusivo) rodilla = muquyku
+De él/ella su axila = wallak'un
+De ustedes su axila = wallak'uykichik
+Nuestra(inclusivo) nuca = much'unchik
+Tu uña = silluyki
+Tu mano = makiyki
+Nuestra(inclusivo) piel = qaranchik
+De él/ella su cabello = chukchan
+Nuestra(exclusivo) rodilla = muquyku
+Tu diente = kiruyki
+Nuestro(exclusivo) párpado = ñawi qarayku
+Mi diente = kiruy
+De ustedes su ombligo = pupuykichik
+Nuestro(exclusivo) cuello = kunkayku
+Tu espalda = wasayki
+Tu corazón = sunquyki
+De ustedes su nuca = much'uykichik
+Mi uña = silluy
+Nuestra(exclusivo) espalda = wasayku
+Mi pantorrila = t'usuy
+Mi ombligo = pupuy
+De ustedes su ceja = q'isipraykichik
+De ustedes su nariz = sinqaykichik
+Mi nuca = much'uy
+De ustedes su boca = simiykichik
+De él/ella su garganta = tunqurin
+Nuestra(exclusivo) piel = qarayku
+Nuestra(exclusivo) frente = mat'iyku
+Nuestra(exclusivo) piel = qarayku
+Tu saliva = thuqayniyki
+Tu saliva = thuqayniyki
+Tu nariz = sinqayki
+De ustedes su axila = wallak'uykichik
+Mi cabeza = umay
+Nuestro(inclusivo) hombro = rikranchik
+De él/ella su cabello = chukchan
+De él/ella su axila = wallak'un
+Mi garganta = tunquriy
+De ustedes su saliva = thuqayniykichik
+De él/ella su ceja = q'isipran
+De ustedes su cabeza = umaykichik
+De él/ella su cabeza = uman
+De ustedes su frente = mat'iykichik
+De ustedes su rodilla = muquykichik
+De él/ella su pantorrila = t'usun
+Tu frente = mat'iyki
+Tu boca = simiyki
+Nuestra(exclusivo) ceja = q'isiprayku
+De ustedes su axila = wallak'uykichik
+Tu corazón = sunquyki
+De él/ella su ombligo = pupun
+Mi diente = kiruy
+Mi hombro = rikray
+Mi ceja = q'isipray
+Mi hombro = rikray
+Nuestro(exclusivo) cabello = chukchayku
+Mi oreja = ninriy
+Mi oreja = ninriy
+Tu cabeza = umayki
+Nuestra(inclusivo) axila = wallak'unchik
+Tu mano = makiyki
+Mi codo = maki muquy
+Nuestra(exclusivo) nuca = much'uyku
+Tu ceja = q'isiprayki
+Nuestra(inclusivo) espalda = wasanchik
+De ustedes su piel = qaraykichik
+Mi ojo = ñawiy
+Nuestra(inclusivo) axila = wallak'unchik
+De él/ella su oreja = ninrin
+De él/ella su hombro = rikran
+Nuestra(exclusivo) nuca = much'uyku
+De ustedes su boca = simiykichik
+De él/ella su cara = uyan
+Nuestro(exclusivo) diente = kiruyku
+Nuestro(exclusivo) cuello = kunkayku
+Nuestro(exclusivo) pie = chakiyku
+Nuestro(exclusivo) hombro = rikrayku
+Nuestra(exclusivo) piel = qarayku
+De él/ella su párpado = ñawi qaran
+Nuestra(inclusivo) oreja = ninrinchik
+De él/ella su frente = mat'in
+De él/ella su espalda = wasan`;
+
+        const SUFFIXES = ['-y', '-yki', '-n', '-nchik', '-yku', '-ykichik', '-nku'];
+
+        // --- LÓGICA DEL PROGRAMA ---
+        let state = {
+            players: [],
+            questionsPerPlayer: 0,
+            currentRound: 0,
+            totalRounds: 0,
+            db: [],
+            history: [],
+            scores: {},
+            isAnswering: false
+        };
+
+        function parseDatabase() {
+            return RAW_DATABASE.trim().split('\n').map(line => {
+                const parts = line.split('=');
+                return {
+                    esp: parts[0].trim(),
+                    que: parts[1].trim()
+                };
+            });
+        }
+
+        // Algoritmo Fisher-Yates para barajado robusto
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[array[j] ? j : i]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function generateDistractors(correctAnswer) {
+            // Extraer la raíz (asumiendo que los sufijos están al final)
+            // Para garantizar complejidad, cambiamos el sufijo de la palabra correcta
+            let root = correctAnswer;
+            SUFFIXES.forEach(s => {
+                let cleanS = s.replace('-', '');
+                if(correctAnswer.endsWith(cleanS)) {
+                    root = correctAnswer.substring(0, correctAnswer.lastIndexOf(cleanS));
+                }
+            });
+
+            let distractors = new Set();
+            // Intentar crear variaciones con otros sufijos
+            while(distractors.size < 4) {
+                let randomSuffix = SUFFIXES[Math.floor(Math.random() * SUFFIXES.length)].replace('-', '');
+                let fake = root + randomSuffix;
+                if(fake !== correctAnswer) distractors.add(fake);
+            }
+            return Array.from(distractors);
+        }
+
+        function initGame() {
+            const list = document.getElementById('participants-list').value.trim();
+            if(!list) return alert("Ingrese al menos un participante");
+            
+            state.players = list.split('\n').map(n => n.trim());
+            state.questionsPerPlayer = parseInt(document.getElementById('rounds-count').value);
+            state.db = parseDatabase();
+            state.totalRounds = state.players.length * state.questionsPerPlayer;
+            
+            state.players.forEach(p => state.scores[p] = 0);
+            
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            renderRound();
+        }
+
+        function renderRound() {
+            if(state.currentRound >= state.totalRounds) {
+                return showResults();
+            }
+
+            state.isAnswering = false;
+            const currentPlayer = state.players[state.currentRound % state.players.length];
+            const item = state.db[Math.floor(Math.random() * state.db.length)];
+            
+            document.getElementById('player-turn-display').innerText = `Turno de: ${currentPlayer}`;
+            document.getElementById('progress-display').innerText = `Pregunta ${state.currentRound + 1} de ${state.totalRounds}`;
+            document.getElementById('question-label').innerText = `¿Cómo se dice "${item.esp}"?`;
+            document.getElementById('feedback').innerText = "";
+
+            // Generar 5 incisos
+            const distractors = generateDistractors(item.que);
+            let options = shuffle([item.que, ...distractors]);
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = "";
+            
+            const labels = ['a', 'b', 'c', 'd', 'e'];
+            options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn";
+                btn.innerHTML = `<b>${labels[index]})</b> ${opt}`;
+                btn.onclick = () => handleAnswer(opt, item.que, currentPlayer, item.esp);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selected, correct, player, question) {
+            if(state.isAnswering) return;
+            state.isAnswering = true;
+
+            const feedbackEl = document.getElementById('feedback');
+            const isCorrect = selected === correct;
+            let waitTime = 1000;
+
+            if(isCorrect) {
+                feedbackEl.innerHTML = '<span class="allin">ALLIN</span>';
+                state.scores[player]++;
+                state.history.push({ player, question, selected, status: '✅' });
+            } else {
+                feedbackEl.innerHTML = `<span class="mana-allin">MANA ALLINCHU</span><br><small>Respuesta correcta: ${correct}</small>`;
+                state.history.push({ player, question, selected, status: '❌' });
+                waitTime = 2000;
+            }
+
+            state.currentRound++;
+            setTimeout(renderRound, waitTime);
+        }
+
+        function showResults() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('results-screen').classList.remove('hidden');
+
+            const summary = document.getElementById('stats-summary');
+            summary.innerHTML = "<h2>Porcentaje de Aciertos</h2>";
+            
+            state.players.forEach(p => {
+                const total = state.questionsPerPlayer;
+                const score = state.scores[p];
+                const pct = ((score / total) * 100).toFixed(1);
+                summary.innerHTML += `<p><b>${p}:</b> ${score}/${total} aciertos (${pct}%)</p>`;
+            });
+
+            const tbody = document.querySelector('#history-table tbody');
+            state.history.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.player}</td><td>${row.question}</td><td>${row.selected}</td><td>${row.status}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
