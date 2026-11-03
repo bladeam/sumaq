@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario Aleatorio: Quechua para Optometría</title>
+    <style>
+        :root {
+            --primary: #1a5276;
+            --secondary: #2980b9;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --bg: #f4f6f7;
+            --card: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            max-width: 850px;
+            margin: 0 auto;
+            background-color: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 10px 0;
+        }
+
+        p.subtitle {
+            color: #666;
+            font-style: italic;
+            margin: 0;
+        }
+
+        .question-card {
+            background-color: #f8f9fa;
+            border-left: 5px solid var(--secondary);
+            border-radius: 4px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .question-title {
+            font-weight: 600;
+            font-size: 1.05em;
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            margin-bottom: 8px;
+        }
+
+        .option-item label {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 10px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .option-item label:hover {
+            background-color: #ebf5fb;
+        }
+
+        .option-item input[type="radio"] {
+            margin-right: 12px;
+            accent-color: var(--secondary);
+        }
+
+        .btn-submit {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 30px;
+        }
+
+        .btn-submit:hover {
+            background-color: #114b5f;
+        }
+
+        #result-screen {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .score-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 15px 0;
+        }
+
+        .correct-answer {
+            background-color: #d4edda !important;
+            border-color: #c3e6cb !important;
+            color: #155724;
+        }
+
+        .wrong-answer {
+            background-color: #f8d7da !important;
+            border-color: #f5c6cb !important;
+            color: #721c24;
+        }
+
+        .btn-reset {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <header>
+        <h1>Cuestionario: Ñawi Unquykuna</h1>
+        <p class="subtitle">Evaluación de Quechua para Optometría (Orden Aleatorio)</p>
+    </header>
+
+    <form id="quizForm">
+        <div id="questions-container"></div>
+        <button type="button" class="btn-submit" onclick="gradeQuiz()">Finalizar y Evaluar Cuestionario</button>
+    </form>
+
+    <div id="result-screen">
+        <h2>Resultado de la Evaluación</h2>
+        <div class="score-display" id="score">0 / 40</div>
+        <p id="feedback"></p>
+        <button class="btn-reset" onclick="location.reload()">Volver aintentar (Nuevo Orden)</button>
+    </div>
+</div>
+
+<script>
+const quizData = [
+    // Enfermedades y Condiciones Visuales (1-10)
+    { q: "¿Cómo se dice 'Conjuntivitis (Ojo rojo)' en Quechua?", options: ["puka ñawi unquy", "ch'aki ñawi unquy", "q'uyu ñawi unquy", "ñawisa unquy"], answer: 0 },
+    { q: "La traducción de 'q'uyu ñawi unquy' al español es:", options: ["Ojo seco", "Catarata / Ojo nublado", "Astigmatismo", "Glaucoma"], answer: 1 },
+    { q: "¿Qué enfermedad corresponde a 'tutalla qhawana unquy'?", options: ["Estrabismo", "Miopía", "Ceguera nocturna", "Nistagmo"], answer: 2 },
+    { q: "'Karullamanta qhawana unquy' hace referencia a:", options: ["Hipermetropía (Solo ve de lejos)", "Miopía (Solo ve de cerca)", "Ceguera total", "Dolor de ojos"], answer: 1 },
+    { q: "¿Cómo se expresa 'Hipermetropía / Presbicia' en Quechua?", options: ["kayllallamanta qhawana unquy", "p'akisqa qhaway unquy", "wirp'a ñawi", "t'uqu ñawi unquy"], answer: 0 },
+    { q: "Los términos 'wirp'a ñawi' o 'q'iwi ñawi' traducen como:", options: ["Infección ocular", "Nistagmo", "Estrabismo (Ojo desviado)", "Úlcera corneal"], answer: 2 },
+    { q: "¿Cuál es la traducción de 'ch'ujchu ñawi unquy'?", options: ["Nistagmo (Movimiento involuntario del ojo)", "Ceguera nocturna", "Conjuntivitis", "Glaucoma"], answer: 0 },
+    { q: "'Ñawisa unquy' significa:", options: ["Ojo seco", "Ceguera total", "Dolor de cabeza", "Pestañas encarnadas"], answer: 1 },
+    { q: "¿Cómo se traduce la oración 'Ñuqa ch'aki ñawi unquywan kani'?", options: ["Él tiene conjuntivitis", "Yo estoy enfermo con ojo seco", "Tú tienes miopía", "Nosotros tenemos cataratas"], answer: 1 },
+    { q: "Traduzca al español: 'Pay q'uyu ñawi unquywan kan'", options: ["Tú tienes dolor de ojos", "Él / Ella tiene cataratas", "Yo tengo conjuntivitis", "Ella no ve de noche"], answer: 1 },
+    
+    // Dolores y Síntomas (11-16)
+    { q: "¿Qué significa 'Ñawi siqsi'?", options: ["Ardor de ojos", "Lagrimeo excesivo", "Picazón de ojos", "Legaña"], answer: 2 },
+    { q: "'Ñawi ruphay' corresponde a la sintomatología de:", options: ["Ardor de ojos", "Dolor de cabeza", "Ceguera", "Visión distorsionada"], answer: 0 },
+    { q: "¿Cómo se dice 'Lagrimeo excesivo' en Quechua?", options: ["Ñawi llawsa", "Ñawi yaku phaway", "Inti k'anchay nanay", "Ñawi nanay"], answer: 1 },
+    { q: "La palabra 'Ñawi llawsa' hace referencia a:", options: ["Párpado", "Legaña / Secreción ocular", "Córnea", "Pestaña"], answer: 1 },
+    { q: "'Inti k'anchay nanay' es el equivalente clínico en Quechua para:", options: ["Miopía", "Fotofobia / Molestia a la luz", "Astigmatismo", "Glaucoma"], answer: 1 },
+    { q: "¿Qué traduce la oración 'Qam ñawi siqsiwan kachkanki'?", options: ["Yo estoy con dolor de ojos", "Él está con dolor de cabeza", "Tú estás con picazón de ojos", "Ustedes tienen ojo rojo"], answer: 2 },
+
+    // Partes del Ojo / Anatomía (17-24)
+    { q: "¿Cómo se denomina al 'Iris' en Quechua según el texto?", options: ["Ñawi qulana / Llimphi", "Ñawi ruru", "Yuraq ñawi", "Qñi phichu"], answer: 0 },
+    { q: "La 'Pupila' se conoce en Quechua como:", options: ["K'illimsani", "Ñawi ruru / Liyun", "Ñawi qara", "Llawsa irqi"], answer: 1 },
+    { q: "¿Qué parte anatómica es 'Yuraq ñawi'?", options: ["Córnea", "Párpado", "Esclera (Parte blanca del ojo)", "Cejas"], answer: 2 },
+    { q: "'Ñawi qara' o 'Qara p'istuna' traducen como:", options: ["Párpado", "Pestaña", "Glándula lagrimal", "Córnea"], answer: 0 },
+    { q: "¿Cómo se dice 'Pestañas' en Quechua?", options: ["Ñawip qichipran", "Qñi phichu / Qñipha", "Llimphi", "Liyun"], answer: 1 },
+    { q: "'Ñawip qichipran' corresponde a:", options: ["Las Cejas", "Las Pestañas", "La Pupila", "La Esclera"], answer: 0 },
+    { q: "¿Qué estructura anatómica es 'Llawsa irqi'?", options: ["Córnea transparente", "Glándula lagrimal", "Iris", "Párpado"], answer: 1 },
+    { q: "La 'Córnea transparente' se denomina:", options: ["K'illimsani", "Yuraq ñawi", "Qñipha", "Llimphi"], answer: 0 },
+
+    // Recomendaciones / Prevención (25-27)
+    { q: "¿Qué significa 'Ama ñawiykita q'apinkichu'?", options: ["No mires el sol", "No te frotes los ojos", "No te laves con agua sucia", "No uses lentes"], answer: 1 },
+    { q: "Traduzca: 'Ama ch'ichi makiwan ñawita llamkhankichu'", options: ["No tocar el ojo con las manos sucias", "No estar en el sol sin protección", "No mirar pantallas de noche", "No frotarse las cejas"], answer: 0 },
+    { q: "¿Qué recomendación expresa 'Ama rupha intipi unayta kankichu'?", options: ["No lavarse con agua fría", "No estar mucho tiempo en el sol fuerte sin protección", "No tocarse la cara", "No parpadear frecuentemente"], answer: 1 },
+
+    // Accidentes Oculares (28-31)
+    { q: "En accidentes oculares, 'ruphasqa' significa:", options: ["Cortado", "Quemado (químico/térmico)", "Golpeado", "Incisado"], answer: 1 },
+    { q: "La palabra 't'uqsisqa' indica un ojo:", options: ["Incisado / Perforado / Hincado", "Golpeado", "Con cuerpo extraño", "Quemado"], answer: 0 },
+    { q: "¿Qué tipo de accidente es 'waqtasqa / p'anasqa'?", options: ["Cortado", "Golpeado (Trauma ocular)", "Perforado", "Infección"], answer: 1 },
+    { q: "Si un paciente presenta 'sat'isqa', significa que su ojo está:", options: ["Quemado", "Con cuerpo extraño introducido", "Perforado", "Cortado"], answer: 1 },
+
+    // Instrucciones y Consultas (32-36)
+    { q: "¿Cómo ordena el optómetra 'Siéntate en esta silla'?", options: ["Qhawariy kay k'anchayta", "Tiyarikuy kay tiyanapi", "Ama chimpaychu", "Paña ñawiykita wisk'ay"], answer: 1 },
+    { q: "'Juk ñawiykita q'ipichay (wisk'ay)' significa:", options: ["Abre un ojo", "Tápate un ojo", "Mira esta luz", "No parpadees"], answer: 1 },
+    { q: "¿Qué le pide el optómetra al decir 'Lluq'i ñawiykita wisk'ay'?", options: ["Cierra/Tápate el ojo izquierdo", "Cierra/Tápate el ojo derecho", "No te muevas", "Siéntate derecho"], answer: 0 },
+    { q: "La instrucción 'Ama ch'irchiychu / Ama kuyuychu' indica:", options: ["No te acerques", "No parpadees / No te muevas", "No mires de lejos", "Tápate ambos ojos"], answer: 1 },
+    { q: "¿Qué pregunta el especialista al decir 'Sut'itachu kay qillqata qhawachkanki?'?", options: ["¿Te duele la cabeza?", "¿Ves claramente esta letra?", "¿Te molesta la luz?", "¿Cuánto ves aquí?"], answer: 1 },
+
+    // Casos Clínicos (37-40)
+    { q: "Según el texto, la causa principal de la Conjuntivitis (Puka Ñawi) por contagio es[cite: 1]:", options: ["Mirar fijamente el sol", "Tocarse con las manos sucias (ch'ichi makiwan)[cite: 1]", "Uso de pantallas de noche", "Golpes oculares"], answer: 1 },
+    { q: "¿Qué sucede en el ojo cuando hay Catarata (Q'uyu Ñawi)[cite: 1]?", options: ["El ojo se llena de sangre", "El cristalino/pupila se oscurece o nubla[cite: 1]", "El párpado se cae", "Aumenta la presión ocular"], answer: 1 },
+    { q: "El tratamiento indicado en el documento para 'Q'uyu ñawi' (Catarata) es[cite: 1]:", options: ["Uso de gotas", "Lavado con agua hervida", "Operación para extraer la catarata (operacionwan... urqhuna)[cite: 1]", "Descanso visual"], answer: 2 },
+    { q: "¿Qué significa la expresión 'Ñawi yaku phaway' en el contexto de síntomas oculares[cite: 1]?", options: ["Dolor ocular agudo", "Lagrimeo excesivo[cite: 1]", "Infección por tierra", "Secreción espesa"], answer: 1 }
+];
+
+// Arreglo para almacenar la relación con el índice original tras barajar
+let shuffledIndices = [];
+
+function shuffle(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
+
+function renderQuiz() {
+    const container = document.getElementById('questions-container');
+    container.innerHTML = '';
+    
+    // Crear un arreglo de índices del 0 al 39 y barajarlo aleatoriamente
+    shuffledIndices = Array.from({length: quizData.length}, (_, i) => i);
+    shuffle(shuffledIndices);
+
+    shuffledIndices.forEach((originalIndex, displayIndex) => {
+        const item = quizData[originalIndex];
+        const card = document.createElement('div');
+        card.className = 'question-card';
+
+        const title = document.createElement('div');
+        title.className = 'question-title';
+        // Se enumera visualmente del 1 al 40 según el orden aleatorio actual
+        title.innerText = `${displayIndex + 1}. ${item.q}`;
+        card.appendChild(title);
+
+        const optionsList = document.createElement('ul');
+        optionsList.className = 'options-list';
+
+        item.options.forEach((opt, optIdx) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            li.innerHTML = `
+                <label id="label-${originalIndex}-${optIdx}">
+                    <input type="radio" name="question-${originalIndex}" value="${optIdx}">
+                    ${opt}
+                </label>
+            `;
+            optionsList.appendChild(li);
+        });
+
+        card.appendChild(optionsList);
+        container.appendChild(card);
+    });
+}
+
+function gradeQuiz() {
+    let score = 0;
+
+    shuffledIndices.forEach((originalIndex) => {
+        const item = quizData[originalIndex];
+        const selected = document.querySelector(`input[name="question-${originalIndex}"]:checked`);
+        const correctLabel = document.getElementById(`label-${originalIndex}-${item.answer}`);
+        
+        if (selected) {
+            const selectedVal = parseInt(selected.value);
+            const selectedLabel = document.getElementById(`label-${originalIndex}-${selectedVal}`);
+            
+            if (selectedVal === item.answer) {
+                score++;
+                selectedLabel.classList.add('correct-answer');
+            } else {
+                selectedLabel.classList.add('wrong-answer');
+                correctLabel.classList.add('correct-answer');
+            }
+        } else {
+            correctLabel.classList.add('correct-answer');
+        }
+    });
+
+    document.getElementById('quizForm').style.display = 'none';
+    const resultScreen = document.getElementById('result-screen');
+    resultScreen.style.display = 'block';
+
+    const scoreDisplay = document.getElementById('score');
+    scoreDisplay.innerText = `${score} / ${quizData.length}`;
+
+    const feedback = document.getElementById('feedback');
+    const percentage = (score / quizData.length) * 100;
+
+    if (percentage >= 90) {
+        feedback.innerText = "¡Excelente! Tienes un dominio sobresaliente del vocabulario optométrico en Quechua.";
+    } else if (percentage >= 70) {
+        feedback.innerText = "¡Buen trabajo! Buen conocimiento general, pero repasa los términos anatómicos y sintomáticos.";
+    } else {
+        feedback.innerText = "Necesitas repasar el documento. Revisa los cuadros de enfermedades, preguntas y diálogos.";
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Ejecutar la mezcla y renderizado al cargar la página
+window.onload = renderQuiz;
+</script>
+
+</body>
+</html>
