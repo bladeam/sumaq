@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emparejamiento Quechua - Óptica y Optometría</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans text-slate-800 pb-12">
+
+  <!-- Header -->
+  <header class="bg-teal-700 text-white shadow-lg py-6 px-4">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-glasses text-3xl text-teal-200"></i>
+        <div>
+          <h1 class="text-2xl font-bold tracking-wide">Simulador de Emparejamiento Óptico</h1>
+          <p class="text-xs text-teal-100">Atención Paciente - Optometrista (Quechua / Español)</p>
+        </div>
+      </div>
+      <div id="userInfoHeader" class="hidden text-right bg-teal-800/60 px-4 py-2 rounded-lg border border-teal-600">
+        <p class="text-xs text-teal-200">Estudiante:</p>
+        <p id="headerStudentName" class="font-semibold text-sm text-white"></p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto mt-8 px-4">
+
+    <!-- Configuración Inicial -->
+    <section id="setupSection" class="glass-card max-w-xl mx-auto rounded-2xl shadow-xl p-8 border border-slate-200">
+      <h2 class="text-xl font-bold text-teal-900 mb-6 flex items-center gap-2">
+        <i class="fa-solid fa-user-pen text-teal-600"></i> Registro de Evaluación
+      </h2>
+
+      <form id="startForm" onsubmit="startQuiz(event)" class="space-y-5">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo del Estudiante:</label>
+          <input type="text" id="studentName" required placeholder="Ej. Bladimir Arias" 
+                 class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none transition">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Cantidad de Frases a Evaluar:</label>
+          <select id="questionCount" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none transition">
+            <option value="5">5 Frases</option>
+            <option value="10" selected>10 Frases</option>
+            <option value="15">15 Frases</option>
+            <option value="20">20 Frases</option>
+            <option value="30">30 Frases</option>
+            <option value="48">Todas las 48 Frases (Base Completa)</option>
+          </select>
+        </div>
+
+        <button type="submit" 
+                class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-lg">
+          <i class="fa-solid fa-play"></i> Iniciar Emparejamiento
+        </button>
+      </form>
+    </section>
+
+    <!-- Área del Juego -->
+    <section id="quizSection" class="hidden space-y-6">
+      
+      <!-- Panel de Control del Juego -->
+      <div class="bg-white p-4 rounded-xl shadow-md border border-slate-200 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <span class="text-xs font-bold text-slate-400 uppercase">Progreso</span>
+          <p class="text-sm font-semibold text-slate-700" id="progressText">0 de 0 completados</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="checkAnswers()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2">
+            <i class="fa-solid fa-check-double"></i> Calificar y Finalizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tablas de Emparejamiento -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Columna 1: Español (Con número objetivo e input dinámico) -->
+        <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200">
+          <h3 class="text-md font-bold text-slate-700 pb-3 mb-4 border-b flex items-center gap-2">
+            <span class="bg-slate-800 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-xs">1</span>
+            Frases en Español (Ingresa el N°)
+          </h3>
+          <div id="spanishList" class="space-y-3"></div>
+        </div>
+
+        <!-- Columna 2: Quechua (Lista numerada de opciones con feedback visual) -->
+        <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200">
+          <h3 class="text-md font-bold text-slate-700 pb-3 mb-4 border-b flex items-center gap-2">
+            <span class="bg-teal-700 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-xs">2</span>
+            Opciones en Quechua (Numeradas)
+          </h3>
+          <div id="quechuaList" class="space-y-3"></div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Pantalla de Resultados -->
+    <section id="resultsSection" class="hidden space-y-6 max-w-4xl mx-auto">
+      <div class="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 text-center space-y-6">
+        
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-teal-100 text-teal-700 text-3xl mb-2">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800" id="resultStudentName"></h2>
+          <p class="text-sm text-slate-500">Resumen de evaluación de emparejamiento</p>
+        </div>
+
+        <!-- Score Card -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <p class="text-xs text-slate-500 font-bold uppercase">Nota Porcentaje</p>
+            <p class="text-3xl font-extrabold text-teal-600 mt-1" id="scorePercent">0%</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <p class="text-xs text-slate-500 font-bold uppercase">Aciertos</p>
+            <p class="text-3xl font-extrabold text-emerald-600 mt-1" id="correctCount">0</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <p class="text-xs text-slate-500 font-bold uppercase">Errores</p>
+            <p class="text-3xl font-extrabold text-rose-600 mt-1" id="wrongCount">0</p>
+          </div>
+        </div>
+
+        <!-- Desglose de Errores/Aciertos -->
+        <div class="text-left space-y-4 pt-4 border-t border-slate-200">
+          <h3 class="text-lg font-bold text-slate-800">Desglose Detallado de Respuestas:</h3>
+          <div id="breakdownList" class="space-y-3"></div>
+        </div>
+
+        <div class="flex justify-center gap-4 pt-4">
+          <button onclick="restartQuiz()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold px-6 py-3 rounded-xl transition">
+            <i class="fa-solid fa-rotate-right"></i> Intentar Nuevamente
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Base de datos completa (48 pares extraídos del archivo de referencia)
+    const database = [
+      { es: "Buenos días", qu: "Sumaq P’unchay" },
+      { es: "Buenas tardes", qu: "Sumaq sukhayay" },
+      { es: "Buenas noches", qu: "Sumaq tuta" },
+      { es: "¿Cuál es tu nombre?", qu: "Ima sutiyki?" },
+      { es: "¿Cuál es tu apellido?", qu: "Ima sana sutiyki?" },
+      { es: "¿Cuántos años tienes?", qu: "Machkha watayuq kanki?" },
+      { es: "¿En qué trabajas?", qu: "Imapi llamk’anki?" },
+      { es: "¿Por qué has venido?", qu: "Imarayku jamurqanki?" },
+      { es: "Aquí te vas a sentar por favor", qu: "Kaypi tiyarinki" },
+      { es: "No te vas a mover por favor", qu: "Ama kuyurinkichu" },
+      { es: "¿Puedes ver bien?", qu: "Allinta rikhunkichu?" },
+      { es: "¿Qué letra puedes leer?", qu: "Ima letrata ñawiriyta atinki?" },
+      { es: "Veo borroso", qu: "Chharpuyata rikhuni" },
+      { es: "Veo un poco borroso", qu: "Tumpa chharputa qhawani" },
+      { es: "Veo muy borroso", qu: "Ancha chharputa rikhuni" },
+      { es: "Veo solo un poco", qu: "Tumpallata qhawani" },
+      { es: "Veo bastante bien", qu: "Sumaqllata qhawani" },
+      { es: "Mi papá /mamá tenía este mismo problema", qu: "Tatay/mamay kikillantaq karqa" },
+      { es: "¿Que enfermedad tengo?", qu: "Ima unquywan kani?" },
+      { es: "¿Por qué no puedo ver bien?", qu: "Imarayku mana sumaqta qhawanichu?" },
+      { es: "Como me puedo curar", qu: "Imawan sanillaywan?" },
+      { es: "¿Hay lentes para mí?", qu: "Ñuqapaq chujas kanchu?" },
+      { es: "Quiero que me cambie estos lentes", qu: "Ñuqa munani wak chujasta" },
+      { es: "Quiero que me lo arregle estos lentes", qu: "Ñuqa munani kay chujasta allinchapunawayqita" },
+      { es: "Estos lentes se han roto", qu: "Kay chujas lintarpakun" },
+      { es: "Estos lentes se han quebrado", qu: "Kay chujas p’akirpakun" },
+      { es: "Estos lentes no son buenos", qu: "Kay chujas mana sumaqchu" },
+      { es: "Quiero lentes mejores", qu: "Asun sumaq chujasta munani" },
+      { es: "Rompí estos lente", qu: "Kay chujasta p’akirpani" },
+      { es: "Mira esas letras", qu: "Qhaway chay letrasta" },
+      { es: "Por favor espera un poco", qu: "Suyariway" },
+      { es: "Gracias", qu: "Pachi" },
+      { es: "Subí aquí", qu: "Kayman wichariy" },
+      { es: "Bajar", qu: "juraq’ay" },
+      { es: "Pararse", qu: "Sayakuy" },
+      { es: "Empieza a leer las letras", qu: "Kay qillqakunata ñawiriyta qallariy" },
+      { es: "Lee las letras en la tercera posición", qu: "Kimsañiqipi kaqta qillqakunata ñawiriy" },
+      { es: "Si, son esas letras", qu: "Ari chay qillqakuna" },
+      { es: "Está bien (sin novedad)", qu: "Kusalla" },
+      { es: "Te has equivocado", qu: "Pantarpanki" },
+      { es: "Me he equivocado", qu: "Pantarpani" },
+      { es: "Él se ha equivocado", qu: "Pantarpan" },
+      { es: "Nosotros nos hemos equivocado", qu: "Pantarpanchik" },
+      { es: "No son esas letras", qu: "Mana chay qillqakunachu" },
+      { es: "Una vez mas dime", qu: "Juk kutitawan ñiway" },
+      { es: "Quiero lentes de color rojo", qu: "Ñuqa munani puka lentesta" },
+      { es: "Quiero marco de color azul", qu: "Ñuqa munani anqas marcoyuqta" },
+      { es: "Quiero comprarme lentes de calidad", qu: "Ñuqa kusa lentesta rantiyta munani" },
+      { es: "Debes esperar una semana/hora", qu: "Juk semanata/horata suyanki" }
+    ];
+
+    let currentQuestions = [];
+    let currentQuechuaOptions = [];
+    let studentName = "";
+
+    function startQuiz(e) {
+      e.preventDefault();
+      studentName = document.getElementById('studentName').value.trim();
+      const count = parseInt(document.getElementById('questionCount').value);
+
+      if(!studentName) return;
+
+      const shuffled = [...database].sort(() => 0.5 - Math.random());
+      currentQuestions = shuffled.slice(0, count);
+      currentQuechuaOptions = currentQuestions.map(q => q.qu).sort(() => 0.5 - Math.random());
+
+      document.getElementById('setupSection').classList.add('hidden');
+      document.getElementById('quizSection').classList.remove('hidden');
+      document.getElementById('userInfoHeader').classList.remove('hidden');
+      document.getElementById('headerStudentName').innerText = studentName;
+
+      renderMatchingInterface();
+    }
+
+    function renderMatchingInterface() {
+      const spanishContainer = document.getElementById('spanishList');
+      const quechuaContainer = document.getElementById('quechuaList');
+
+      spanishContainer.innerHTML = "";
+      quechuaContainer.innerHTML = "";
+
+      // 1. Renderizar Lista en Español
+      currentQuestions.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.id = `es-row-${index}`;
+        row.className = "flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl transition-all duration-200";
+        row.innerHTML = `
+          <input type="number" 
+                 min="1" 
+                 max="${currentQuechuaOptions.length}" 
+                 data-spanish-index="${index}"
+                 oninput="handleInputChange()"
+                 placeholder="N°"
+                 class="match-input w-14 py-2 px-1 text-center font-bold text-teal-800 bg-white border-2 border-teal-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400">
+          <span class="text-sm font-medium text-slate-800 flex-1">${item.es}</span>
+        `;
+        spanishContainer.appendChild(row);
+      });
+
+      // 2. Renderizar Lista en Quechua
+      currentQuechuaOptions.forEach((option, index) => {
+        const row = document.createElement('div');
+        row.id = `qu-row-${index + 1}`;
+        row.className = "flex items-center justify-between p-3 bg-teal-50/60 border border-teal-100 rounded-xl transition-all duration-200";
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="badge-num w-8 h-8 rounded-lg bg-teal-700 text-white font-bold flex items-center justify-center text-sm shadow-sm transition-colors">${index + 1}</span>
+            <span class="text-sm font-semibold text-teal-900">${option}</span>
+          </div>
+          <span class="selected-tag hidden text-xs font-bold bg-amber-500 text-white px-2 py-1 rounded-md shadow-sm">
+            <i class="fa-solid fa-check"></i> ELEGIDO
+          </span>
+        `;
+        quechuaContainer.appendChild(row);
+      });
+
+      handleInputChange();
+    }
+
+    function handleInputChange() {
+      const inputs = document.querySelectorAll('.match-input');
+      const selectedNumbers = new Set();
+      let filledCount = 0;
+
+      // Resetear estilos en Español
+      inputs.forEach(input => {
+        const idx = input.getAttribute('data-spanish-index');
+        const row = document.getElementById(`es-row-${idx}`);
+        const val = parseInt(input.value);
+
+        if (!isNaN(val) && val >= 1 && val <= currentQuechuaOptions.length) {
+          filledCount++;
+          selectedNumbers.add(val);
+          // Estilo de completado para la tarjeta en Español
+          row.className = "flex items-center gap-3 p-3 bg-teal-100/70 border-2 border-teal-500 rounded-xl transition-all duration-200 shadow-sm";
+        } else {
+          row.className = "flex items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl transition-all duration-200";
+        }
+      });
+
+      // Actualizar los estilos de la columna de Quechua según los números seleccionados
+      for (let i = 1; i <= currentQuechuaOptions.length; i++) {
+        const quRow = document.getElementById(`qu-row-${i}`);
+        const badge = quRow.querySelector('.badge-num');
+        const tag = quRow.querySelector('.selected-tag');
+
+        if (selectedNumbers.has(i)) {
+          // Cambia a color naranja/ámbar destacado al ser seleccionado
+          quRow.className = "flex items-center justify-between p-3 bg-amber-50 border-2 border-amber-400 rounded-xl transition-all duration-200 shadow-sm";
+          badge.className = "badge-num w-8 h-8 rounded-lg bg-amber-500 text-white font-bold flex items-center justify-center text-sm shadow-sm";
+          tag.classList.remove('hidden');
+        } else {
+          // Estado normal
+          quRow.className = "flex items-center justify-between p-3 bg-teal-50/60 border border-teal-100 rounded-xl transition-all duration-200";
+          badge.className = "badge-num w-8 h-8 rounded-lg bg-teal-700 text-white font-bold flex items-center justify-center text-sm shadow-sm";
+          tag.classList.add('hidden');
+        }
+      }
+
+      document.getElementById('progressText').innerText = `${filledCount} de ${currentQuestions.length} completados`;
+    }
+
+    function checkAnswers() {
+      const inputs = document.querySelectorAll('.match-input');
+      let correct = 0;
+      let wrong = 0;
+      const breakdown = [];
+
+      inputs.forEach((input) => {
+        const spanishIdx = parseInt(input.getAttribute('data-spanish-index'));
+        const userNum = parseInt(input.value);
+        const pair = currentQuestions[spanishIdx];
+
+        let isCorrect = false;
+        if (!isNaN(userNum) && userNum >= 1 && userNum <= currentQuechuaOptions.length) {
+          const selectedQuechuaText = currentQuechuaOptions[userNum - 1];
+          if (selectedQuechuaText === pair.qu) {
+            isCorrect = true;
+          }
+        }
+
+        if (isCorrect) correct++;
+        else wrong++;
+
+        breakdown.push({
+          es: pair.es,
+          correctQu: pair.qu,
+          userSelectedQu: (!isNaN(userNum) && userNum >= 1 && userNum <= currentQuechuaOptions.length) ? currentQuechuaOptions[userNum - 1] : "Ninguno / Inválido",
+          isCorrect
+        });
+      });
+
+      const total = currentQuestions.length;
+      const scorePercent = Math.round((correct / total) * 100);
+
+      document.getElementById('quizSection').classList.add('hidden');
+      document.getElementById('resultsSection').classList.remove('hidden');
+      
+      document.getElementById('resultStudentName').innerText = studentName;
+      document.getElementById('scorePercent').innerText = `${scorePercent}%`;
+      document.getElementById('correctCount').innerText = correct;
+      document.getElementById('wrongCount').innerText = wrong;
+
+      const breakdownContainer = document.getElementById('breakdownList');
+      breakdownContainer.innerHTML = "";
+
+      breakdown.forEach((item) => {
+        const box = document.createElement('div');
+        box.className = `p-4 rounded-xl border ${item.isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`;
+        box.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <p class="text-sm font-bold text-slate-800">${item.es}</p>
+              <p class="text-xs ${item.isCorrect ? 'text-emerald-700' : 'text-rose-700'} font-semibold mt-1">
+                Tu respuesta: ${item.userSelectedQu}
+              </p>
+              ${!item.isCorrect ? `<p class="text-xs text-slate-500 mt-0.5">Traducción correcta: <strong class="text-teal-800">${item.correctQu}</strong></p>` : ''}
+            </div>
+            <span class="text-lg">
+              ${item.isCorrect ? '<i class="fa-solid fa-circle-check text-emerald-600"></i>' : '<i class="fa-solid fa-circle-xmark text-rose-600"></i>'}
+            </span>
+          </div>
+        `;
+        breakdownContainer.appendChild(box);
+      });
+    }
+
+    function restartQuiz() {
+      document.getElementById('resultsSection').classList.add('hidden');
+      document.getElementById('setupSection').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
