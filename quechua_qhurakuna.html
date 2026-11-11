@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="qu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qhurakuna - Jampi Qhurakuna Yachay</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter and Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            andean: {
+              green: '#2d5a27',
+              lightgreen: '#4a7c59',
+              terracotta: '#c85a32',
+              warmyellow: '#e5a93b',
+              cream: '#f9f6f0',
+              earth: '#3a2e2b',
+              cardbg: '#ffffff'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Outfit', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom 3D Flip Card Effect */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+
+    /* Pattern background */
+    .bg-pattern {
+      background-color: #f9f6f0;
+      background-image: radial-gradient(#2d5a27 0.75px, transparent 0.75px), radial-gradient(#c85a32 0.75px, #f9f6f0 0.75px);
+      background-size: 30px 30px;
+      background-position: 0 0, 15px 15px;
+      background-opacity: 0.05;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1ebd9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #8b9d83;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-pattern min-h-screen font-sans text-andean-earth flex flex-col justify-between">
+
+  <!-- TOP HEADER -->
+  <header class="bg-gradient-to-r from-andean-green via-andean-lightgreen to-andean-terracotta text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-4 sm:px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-white/20 p-3 rounded-2xl backdrop-blur-md border border-white/30 text-2xl">
+          🌿
+        </div>
+        <div>
+          <h1 class="font-heading font-extrabold text-2xl sm:text-3xl tracking-tight leading-tight">Qhurakuna</h1>
+          <p class="text-xs sm:text-sm text-amber-100 font-medium">Jampi Qhurakuna Yachay • Plantas Medicinales en Quechua</p>
+        </div>
+      </div>
+
+      <!-- TAB NAVIGATION BUTTONS -->
+      <nav class="flex bg-black/20 p-1.5 rounded-xl backdrop-blur-md w-full sm:w-auto justify-around">
+        <button id="tab-btn-flashcards" onclick="switchTab('flashcards')" class="tab-btn active px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-2 bg-white text-andean-green shadow">
+          <i class="fa-solid fa-clone"></i>
+          <span>Qhurakuna</span>
+        </button>
+        <button id="tab-btn-dialogue" onclick="switchTab('dialogue')" class="tab-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-2 text-white hover:bg-white/10">
+          <i class="fa-solid fa-comments"></i>
+          <span>Rimakuna</span>
+        </button>
+        <button id="tab-btn-quiz" onclick="switchTab('quiz')" class="tab-btn px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-2 text-white hover:bg-white/10">
+          <i class="fa-solid fa-circle-question"></i>
+          <span>Tapuykuna</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-6xl mx-auto px-4 py-6 sm:px-6 flex-grow w-full flex flex-col justify-center">
+
+    <!-- ==================== TAB 1: FULLSCREEN / SINGLE CARD SHOWCASE ==================== -->
+    <section id="tab-flashcards" class="tab-content block space-y-4 max-w-2xl mx-auto w-full">
+      
+      <!-- Top Control & Indicator Bar -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-amber-100 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="bg-andean-terracotta text-white font-extrabold text-xs px-3 py-1 rounded-full uppercase tracking-wider">Yupay</span>
+          <span id="cardCounter" class="text-xs font-bold text-gray-500">1 / 19</span>
+        </div>
+
+        <button onclick="speakCurrentPlant()" class="bg-andean-green/10 hover:bg-andean-green hover:text-white text-andean-green px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5">
+          <i class="fa-solid fa-volume-high"></i>
+          <span>Uyariy</span>
+        </button>
+      </div>
+
+      <!-- Single Fullscreen Flashcard Component -->
+      <div class="perspective-1000 min-h-[420px] sm:min-h-[480px] w-full cursor-pointer select-none" onclick="flipSingleCard()">
+        <div id="singleCardInner" class="transform-style-3d relative w-full h-full min-h-[420px] sm:min-h-[480px] shadow-xl rounded-3xl border border-amber-200/80 transition-all">
+          
+          <!-- FRONT OF CARD (ONLY IMAGE - NO NAME) -->
+          <div class="absolute inset-0 w-full h-full backface-hidden bg-white rounded-3xl overflow-hidden flex flex-col border-4 border-white shadow-inner">
+            <div class="relative w-full h-full bg-emerald-50/50 flex items-center justify-center overflow-hidden">
+              <img id="cardImageFront" src="" alt="Plant Image" 
+                   class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                   onerror="this.onerror=null; this.src='https://placehold.co/600x800/e2ece9/2d5a27?text=Qhuraqa+Wanki';">
+              
+              <!-- Floating Hint Overlay -->
+              <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md text-white text-xs px-4 py-2 rounded-full flex items-center gap-2 shadow-lg border border-white/20">
+                <i class="fa-solid fa-hand-pointer animate-bounce text-amber-300"></i>
+                <span>T'ikranaykipaq kaypi ñit'iy (Toca para voltear)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- BACK OF CARD (LARGE PLANT NAME & DETAILED QUECHUA USES) -->
+          <div class="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-andean-green via-andean-lightgreen to-emerald-800 text-white rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl border-4 border-emerald-600">
+            <div>
+              <div class="flex justify-between items-center border-b border-white/20 pb-4 mb-6">
+                <span class="bg-amber-400 text-andean-earth text-xs font-black px-3 py-1 rounded-md uppercase tracking-wider">Jampi Qhuraqa</span>
+                <span class="text-xs text-emerald-200"><i class="fa-solid fa-rotate-left mr-1"></i> Kutichiy</span>
+              </div>
+
+              <!-- LARGE PLANT NAME -->
+              <h3 id="cardNameBack" class="font-heading font-black text-3xl sm:text-5xl text-amber-300 mb-6 drop-shadow-md tracking-wide">
+                <!-- Dynamic Name -->
+              </h3>
+
+              <div class="space-y-3">
+                <p class="text-xs uppercase tracking-widest text-emerald-200 font-extrabold flex items-center gap-1.5">
+                  <i class="fa-solid fa-leaf text-amber-300"></i>
+                  Imatataq allinyachin (Aplicaciones):
+                </p>
+
+                <ul id="cardUsesBack" class="space-y-3 text-lg sm:text-2xl font-bold text-white leading-relaxed">
+                  <!-- Dynamic Uses -->
+                </ul>
+              </div>
+            </div>
+
+            <div class="text-center pt-4 border-t border-white/15 text-xs text-emerald-200/80 font-medium">
+              <i class="fa-solid fa-arrow-rotate-right mr-1"></i> K'uyuchiy ñawpaqman cutinaykipaq
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Navigation Arrows & Controls -->
+      <div class="flex justify-between items-center gap-4 pt-2">
+        <button onclick="prevCard()" class="flex-1 bg-white hover:bg-andean-green hover:text-white text-andean-earth border border-amber-200 shadow-md py-3 px-4 rounded-2xl font-bold text-sm sm:text-base transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-chevron-left"></i>
+          <span>Ñawpaq (Anterior)</span>
+        </button>
+        
+        <button onclick="nextCard()" class="flex-1 bg-andean-green hover:bg-andean-lightgreen text-white shadow-md py-3 px-4 rounded-2xl font-bold text-sm sm:text-base transition-all flex items-center justify-center gap-2">
+          <span>Qhipan (Siguiente)</span>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Quick Selector Thumbnails Bar -->
+      <div id="thumbnailsBar" class="flex items-center gap-2 overflow-x-auto py-2 px-1 scrollbar-none">
+        <!-- Dynamic Thumbnails inserted by JS -->
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 2: DIALOGUE ==================== -->
+    <section id="tab-dialogue" class="tab-content hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 shadow-md border border-amber-100 max-w-4xl mx-auto">
+        <div class="border-b border-gray-100 pb-4 mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <span class="bg-andean-terracotta/10 text-andean-terracotta text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Parlanata</span>
+            <h2 class="font-heading font-extrabold text-2xl text-andean-earth mt-1">Unqusqamanta Uyarisunchik</h2>
+            <p class="text-xs text-gray-500">Unqusqamanwan jampiqmanwan kuskachakuynin (Conversación entre Juan y la Médica)</p>
+          </div>
+          <button onclick="readEntireDialogue()" class="bg-andean-green hover:bg-andean-lightgreen text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow transition-all">
+            <i class="fa-solid fa-volume-high"></i>
+            <span>Uyariy (Escuchar Todo)</span>
+          </button>
+        </div>
+
+        <!-- Dialogue Chat Interface -->
+        <div class="space-y-6">
+          
+          <!-- Line 1: Juan -->
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-full bg-amber-100 border-2 border-amber-400 flex-shrink-0 flex items-center justify-center text-xl shadow-sm">
+              👨‍🌾
+            </div>
+            <div class="flex-grow bg-amber-50/80 border border-amber-200/80 p-4 rounded-2xl rounded-tl-none shadow-sm relative group">
+              <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm text-amber-900">Juan (Unquq)</span>
+                <button onclick="speakText('Juan: Jampiq, Mana walliqchu kani, wiksay, umay nanachkawan, chirichirita jump’ichkani')" class="text-amber-700 hover:text-amber-900 text-sm p-1 rounded hover:bg-amber-100 transition-colors" title="Uyariy">
+                  <i class="fa-solid fa-volume-low"></i>
+                </button>
+              </div>
+              <p class="text-base text-gray-800 font-medium leading-relaxed">
+                "Jampiq, Mana walliqchu kani, wiksay, umay nanachkawan, chirichirita jump’ichkani"
+              </p>
+              <span class="inline-block mt-2 text-xs text-amber-800/70 italic bg-amber-100/60 px-2 py-0.5 rounded">
+                (Doctora, no me siento bien. Me duele el estómago, la cabeza y estoy sudando frío)
+              </span>
+            </div>
+          </div>
+
+          <!-- Line 2: Jampiq -->
+          <div class="flex items-start gap-4 flex-row-reverse">
+            <div class="w-12 h-12 rounded-full bg-emerald-100 border-2 border-emerald-400 flex-shrink-0 flex items-center justify-center text-xl shadow-sm">
+              👩‍⚕️
+            </div>
+            <div class="flex-grow bg-emerald-50/80 border border-emerald-200/80 p-4 rounded-2xl rounded-tr-none shadow-sm relative group">
+              <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm text-emerald-900">Jampiq (Médica)</span>
+                <button onclick="speakText('Jampiq: Ima unquycha jap’ichkasunki')" class="text-emerald-700 hover:text-emerald-900 text-sm p-1 rounded hover:bg-emerald-100 transition-colors" title="Uyariy">
+                  <i class="fa-solid fa-volume-low"></i>
+                </button>
+              </div>
+              <p class="text-base text-gray-800 font-medium leading-relaxed">
+                "Ima unquycha jap’ichkasunki"
+              </p>
+              <span class="inline-block mt-2 text-xs text-emerald-800/70 italic bg-emerald-100/60 px-2 py-0.5 rounded">
+                (¿Qué enfermedad te habrá agarrado?)
+              </span>
+            </div>
+          </div>
+
+          <!-- Line 3: Juan -->
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-full bg-amber-100 border-2 border-amber-400 flex-shrink-0 flex items-center justify-center text-xl shadow-sm">
+              👨‍🌾
+            </div>
+            <div class="flex-grow bg-amber-50/80 border border-amber-200/80 p-4 rounded-2xl rounded-tl-none shadow-sm relative group">
+              <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm text-amber-900">Juan (Unquq)</span>
+                <button onclick="speakText('Juan: Kunanri ! utqhayta llamk’anaypaq waliqyanay tiyan')" class="text-amber-700 hover:text-amber-900 text-sm p-1 rounded hover:bg-amber-100 transition-colors" title="Uyariy">
+                  <i class="fa-solid fa-volume-low"></i>
+                </button>
+              </div>
+              <p class="text-base text-gray-800 font-medium leading-relaxed">
+                "Kunanri ! utqhayta llamk’anaypaq waliqyanay tiyan"
+              </p>
+              <span class="inline-block mt-2 text-xs text-amber-800/70 italic bg-amber-100/60 px-2 py-0.5 rounded">
+                (¡Y ahora! Tengo que curarme rápido para ir a trabajar)
+              </span>
+            </div>
+          </div>
+
+          <!-- Line 4: Jampiq -->
+          <div class="flex items-start gap-4 flex-row-reverse">
+            <div class="w-12 h-12 rounded-full bg-emerald-100 border-2 border-emerald-400 flex-shrink-0 flex items-center justify-center text-xl shadow-sm">
+              👩‍⚕️
+            </div>
+            <div class="flex-grow bg-emerald-50/80 border border-emerald-200/80 p-4 rounded-2xl rounded-tr-none shadow-sm relative group">
+              <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm text-emerald-900">Jampiq (Médica)</span>
+                <button onclick="speakText('Jampiq: Kay jampikunata upyanki')" class="text-emerald-700 hover:text-emerald-900 text-sm p-1 rounded hover:bg-emerald-100 transition-colors" title="Uyariy">
+                  <i class="fa-solid fa-volume-low"></i>
+                </button>
+              </div>
+              <p class="text-base text-gray-800 font-medium leading-relaxed">
+                "Kay jampikunata upyanki"
+              </p>
+              <span class="inline-block mt-2 text-xs text-emerald-800/70 italic bg-emerald-100/60 px-2 py-0.5 rounded">
+                (Toma estas medicinas)
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Visual Illustration Banner -->
+        <div class="mt-8 p-4 bg-gradient-to-r from-andean-cream to-amber-50 rounded-xl border border-amber-200 text-center">
+          <p class="text-xs text-andean-earth font-semibold flex items-center justify-center gap-2">
+            <i class="fa-solid fa-lightbulb text-amber-500"></i>
+            Unquykunata allinyachinapaqqa qhurakuna allin jampimi kanku.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: QUIZ ==================== -->
+    <section id="tab-quiz" class="tab-content hidden space-y-6">
+      <div class="bg-white rounded-2xl p-6 shadow-md border border-amber-100 max-w-3xl mx-auto">
+        
+        <!-- Quiz Header -->
+        <div class="flex justify-between items-center border-b border-gray-100 pb-4 mb-6">
+          <div>
+            <span class="bg-andean-green/10 text-andean-green text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Tapukuy K'iti</span>
+            <h2 class="font-heading font-extrabold text-2xl text-andean-earth mt-1">Tapuykuna (Cuestionario)</h2>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-gray-400 font-medium">Puntaje</span>
+            <div class="text-2xl font-black text-andean-terracotta" id="quizScore">0 / 5</div>
+          </div>
+        </div>
+
+        <!-- Quiz Container -->
+        <div id="quizContainer" class="space-y-8">
+          <!-- Dynamic Quiz Questions JS -->
+        </div>
+
+        <!-- Quiz Results & Reset -->
+        <div id="quizFooter" class="mt-8 pt-6 border-t border-gray-100 flex justify-between items-center">
+          <button onclick="resetQuiz()" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition-all flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span>Waqmanta Qallariy</span>
+          </button>
+          <div id="quizFeedback" class="text-sm font-bold text-gray-600"></div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-andean-earth text-amber-100 py-6 border-t-4 border-andean-terracotta mt-8">
+    <div class="max-w-6xl mx-auto px-4 text-center space-y-2">
+      <p class="font-heading font-bold text-base text-white">Qhurakuna • Jampi Qhurakuna Yachay</p>
+      <p class="text-xs text-amber-200/70">Yachay Wasi • Runasimi Yachachiy 2026</p>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Plant Data directly aligned with provided Quechua PDF content
+    const plantsData = [
+      { id: 'ruda', name: 'Ruda', filename: 'Ruda.jpg', uses: ['Wayra unquykunapaq', 'Uma nanaypaq'] },
+      { id: 'romero', name: 'Romero', filename: 'Romero.jpg', uses: ['Yawar llimphuchanapaq', 'Wayra unquykunapaqpis', 'Wiksa unquykunapaqpis'] },
+      { id: 'anis', name: 'Anis', filename: 'Anis.jpg', uses: ['Wiksa nanaypaq', 'Willallita achkhayachin'] },
+      { id: 'kuka', name: 'Kuka', filename: 'Kuka.jpg', uses: ['Wawa paqariyta yanapananpaq', 'Wiksa nanaypaq', 'Yawar apayta jampinapaq'] },
+      { id: 'manzanilla', name: 'Manzanilla', filename: 'Manzanilla.jpg', uses: ["Jisp'ay phukuchu nanaypaq", 'Ruru nanaypaq', 'Uma nanaypaq'] },
+      { id: 'payqu', name: 'Payqu', filename: 'Payqu.jpg', uses: ["Wiksa k'ajaypaq", "Ch'unchulapi khurukunatapis wañuchin"] },
+      { id: 'muqu_muqu', name: 'Muqu muqu (Cola de caballo)', filename: 'Muqu_muqu.jpg', uses: ['Ukhunchikta llimphuchan'] },
+      { id: 'ritamu', name: 'Ritamu (Retama)', filename: 'Ritamu.jpg', uses: ["Tukuy ch'ichita mayllan", "Jap'iqa unquykunata saniyachin", 'Ariwatutapis saniyachin'] },
+      { id: 'perejil', name: 'Perejil', filename: 'Perejil.jpg', uses: ['Yawarta llimphuchan', 'Yawar apaykunata sayachin', 'Wawakunata mikhunayachin'] },
+      { id: 'wira_wira', name: 'Wira wira', filename: 'Wira_wira.jpg', uses: ["Ch'ujuta thañichin / thañin"] },
+      { id: 'hierbabuena', name: 'Hierbabuena', filename: 'Hierbabuena.jpg', uses: ['Wiksa punkiyta walliqyachin', 'Wiksapi khurutapis wañuchin'] },
+      { id: 'altamisa', name: 'Altamisa', filename: 'Altamisa.jpg', uses: ['Uma nanaypaq'] },
+      { id: 'yana_muna', name: 'Yana muña', filename: 'Yana_muna.jpg', uses: ['Wiksa nanaypaq'] },
+      { id: 'jugo_de_papa', name: 'Jugo de papa', filename: 'Jugo_de_papa.jpg', uses: ['Gastritis nisqapaq'] },
+      { id: 'kalisto', name: 'Kalisto', filename: 'Kalisto.jpg', uses: ["Surq'anakunata saniyachin"] },
+      { id: 'jengibre', name: 'Jengibre', filename: 'Jengibre.jpg', uses: ["Tunquri k'arayta saniyachin"] },
+      { id: 'llantin', name: 'Llantén', filename: 'Llantin.jpg', uses: ["Ch'aki ch'ujupaq"] },
+      { id: 'menta', name: 'Menta', filename: 'Menta.jpg', uses: ['Uma nanaypaq'] },
+      { id: 'malva', name: 'Malva', filename: 'Malva.jpg', uses: ['Tunqurita saniyachin'] }
+    ];
+
+    let currentIndex = 0;
+    let isFlipped = false;
+
+    // Quiz Questions Data from PDF
+    const quizQuestions = [
+      {
+        question: "Ch'ujuta thañichin",
+        options: ["Kuka", "Anis", "Wira wira"],
+        correct: 2
+      },
+      {
+        question: "Wayra unquykunapaq, uma nanaypaq",
+        options: ["Ruda", "Cola de caballo", "Perejil"],
+        correct: 0
+      },
+      {
+        question: "Jap'iqa unquykunata saniyachin, ariwatutapis saniyachin",
+        options: ["Kuka", "Retama", "Romero"],
+        correct: 1
+      },
+      {
+        question: "Yawarta llimphuchan, yawar apaykunata sayachin, wawakunata mikhunayachin",
+        options: ["Perejil", "Anis", "Romero"],
+        correct: 0
+      },
+      {
+        question: "Gastritis nisqapaq",
+        options: ["Jugo de papa", "Kalisto", "Malva"],
+        correct: 0
+      }
+    ];
+
+    let quizAnswers = Array(quizQuestions.length).fill(null);
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSingleCard();
+      renderThumbnails();
+      renderQuiz();
+
+      // Touch Swipe Gesture Support for Flashcards
+      let touchstartX = 0;
+      let touchendX = 0;
+      const cardContainer = document.getElementById('tab-flashcards');
+
+      cardContainer.addEventListener('touchstart', e => {
+        touchstartX = e.changedTouches[0].screenX;
+      }, false);
+
+      cardContainer.addEventListener('touchend', e => {
+        touchendX = e.changedTouches[0].screenX;
+        handleSwipe();
+      }, false);
+
+      function handleSwipe() {
+        if (touchendX < touchstartX - 50) nextCard();
+        if (touchendX > touchstartX + 50) prevCard();
+      }
+    });
+
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-white', 'text-andean-green', 'shadow');
+        btn.classList.add('text-white');
+      });
+
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      activeBtn.classList.add('bg-white', 'text-andean-green', 'shadow');
+      activeBtn.classList.remove('text-white');
+    }
+
+    // Render Single Showcase Flashcard
+    function renderSingleCard() {
+      const plant = plantsData[currentIndex];
+      const cardInner = document.getElementById('singleCardInner');
+
+      // Reset flip state when switching cards
+      if (isFlipped) {
+        cardInner.classList.remove('rotate-y-180');
+        isFlipped = false;
+      }
+
+      // Counter
+      document.getElementById('cardCounter').innerText = `${currentIndex + 1} / ${plantsData.length}`;
+
+      // Set Front Image (NO NAME ON FRONT)
+      const frontImg = document.getElementById('cardImageFront');
+      frontImg.src = plant.filename;
+      frontImg.alt = plant.name;
+
+      // Set Back Details
+      document.getElementById('cardNameBack').innerText = plant.name;
+      
+      const usesList = document.getElementById('cardUsesBack');
+      usesList.innerHTML = plant.uses.map(use => `
+        <li class="flex items-start gap-3">
+          <i class="fa-solid fa-circle-check text-amber-300 text-xl mt-1 flex-shrink-0"></i>
+          <span>${use}</span>
+        </li>
+      `).join('');
+
+      updateThumbnailsUI();
+    }
+
+    // Flip Single Card Action
+    function flipSingleCard() {
+      const cardInner = document.getElementById('singleCardInner');
+      cardInner.classList.toggle('rotate-y-180');
+      isFlipped = !isFlipped;
+    }
+
+    // Next Card
+    function nextCard() {
+      currentIndex = (currentIndex + 1) % plantsData.length;
+      renderSingleCard();
+    }
+
+    // Previous Card
+    function prevCard() {
+      currentIndex = (currentIndex - 1 + plantsData.length) % plantsData.length;
+      renderSingleCard();
+    }
+
+    // Render Thumbnail Bar
+    function renderThumbnails() {
+      const bar = document.getElementById('thumbnailsBar');
+      bar.innerHTML = '';
+      plantsData.forEach((plant, idx) => {
+        const thumb = document.createElement('button');
+        thumb.id = `thumb-${idx}`;
+        thumb.onclick = (e) => {
+          e.stopPropagation();
+          currentIndex = idx;
+          renderSingleCard();
+        };
+        thumb.className = `flex-shrink-0 w-12 h-12 rounded-xl border-2 overflow-hidden transition-all duration-300 ${idx === currentIndex ? 'border-andean-terracotta scale-110 shadow-md' : 'border-white opacity-60 hover:opacity-100'}`;
+        thumb.innerHTML = `<img src="${plant.filename}" alt="${plant.name}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/e2ece9/2d5a27?text=${plant.name[0]}';">`;
+        bar.appendChild(thumb);
+      });
+    }
+
+    function updateThumbnailsUI() {
+      plantsData.forEach((_, idx) => {
+        const thumb = document.getElementById(`thumb-${idx}`);
+        if (thumb) {
+          if (idx === currentIndex) {
+            thumb.className = "flex-shrink-0 w-12 h-12 rounded-xl border-2 border-andean-terracotta scale-110 shadow-md ring-2 ring-andean-warmyellow overflow-hidden transition-all duration-300 opacity-100";
+            thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          } else {
+            thumb.className = "flex-shrink-0 w-12 h-12 rounded-xl border-2 border-white opacity-60 hover:opacity-100 overflow-hidden transition-all duration-300";
+          }
+        }
+      });
+    }
+
+    function speakCurrentPlant() {
+      const plant = plantsData[currentIndex];
+      const text = `${plant.name}. ${plant.uses.join('. ')}`;
+      speakText(text);
+    }
+
+    // Text to Speech Functionality
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function readEntireDialogue() {
+      const script = [
+        "Juan: Jampiq, Mana walliqchu kani, wiksay, umay nanachkawan, chirichirita jump’ichkani",
+        "Jampiq: Ima unquycha jap’ichkasunki",
+        "Juan: Kunanri ! utqhayta llamk’anaypaq waliqyanay tiyan",
+        "Jampiq: Kay jampikunata upyanki"
+      ];
+      speakText(script.join(". "));
+    }
+
+    // Render Quiz Tab
+    function renderQuiz() {
+      const container = document.getElementById('quizContainer');
+      container.innerHTML = '';
+
+      quizQuestions.forEach((q, qIndex) => {
+        const qHTML = `
+          <div class="bg-gray-50/80 rounded-2xl p-5 border border-gray-200" id="question-${qIndex}">
+            <h3 class="font-heading font-bold text-lg text-andean-earth mb-3 flex items-start gap-3">
+              <span class="bg-andean-terracotta text-white text-xs w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">${qIndex + 1}</span>
+              <span>${q.question}</span>
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              ${q.options.map((opt, oIndex) => `
+                <button onclick="selectAnswer(${qIndex}, ${oIndex})" 
+                        id="opt-${qIndex}-${oIndex}"
+                        class="quiz-option text-left p-3.5 rounded-xl border border-gray-200 bg-white hover:border-andean-green hover:bg-emerald-50/50 font-medium text-sm transition-all flex items-center justify-between">
+                  <span>${opt}</span>
+                  <i class="fa-regular fa-circle text-gray-300 status-icon"></i>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', qHTML);
+      });
+    }
+
+    // Handle Quiz Answer Selection
+    function selectAnswer(qIndex, oIndex) {
+      const q = quizQuestions[qIndex];
+      quizAnswers[qIndex] = oIndex;
+
+      q.options.forEach((_, i) => {
+        const btn = document.getElementById(`opt-${qIndex}-${i}`);
+        btn.className = "quiz-option text-left p-3.5 rounded-xl border border-gray-200 bg-white font-medium text-sm transition-all flex items-center justify-between opacity-60";
+        btn.querySelector('.status-icon').className = "fa-regular fa-circle text-gray-300 status-icon";
+      });
+
+      const selectedBtn = document.getElementById(`opt-${qIndex}-${oIndex}`);
+      selectedBtn.classList.remove('opacity-60');
+
+      if (oIndex === q.correct) {
+        selectedBtn.className = "quiz-option text-left p-3.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-bold text-emerald-900 transition-all flex items-center justify-between shadow-sm";
+        selectedBtn.querySelector('.status-icon').className = "fa-solid fa-circle-check text-emerald-600 status-icon text-lg";
+      } else {
+        selectedBtn.className = "quiz-option text-left p-3.5 rounded-xl border-2 border-rose-400 bg-rose-50 font-bold text-rose-900 transition-all flex items-center justify-between shadow-sm";
+        selectedBtn.querySelector('.status-icon').className = "fa-solid fa-circle-xmark text-rose-500 status-icon text-lg";
+
+        const correctBtn = document.getElementById(`opt-${qIndex}-${q.correct}`);
+        correctBtn.classList.remove('opacity-60');
+        correctBtn.className = "quiz-option text-left p-3.5 rounded-xl border-2 border-emerald-500 bg-emerald-50 font-bold text-emerald-900 transition-all flex items-center justify-between";
+        correctBtn.querySelector('.status-icon').className = "fa-solid fa-circle-check text-emerald-600 status-icon text-lg";
+      }
+
+      updateScore();
+    }
+
+    // Calculate and update score display
+    function updateScore() {
+      let score = 0;
+      let answeredCount = 0;
+
+      quizAnswers.forEach((ans, idx) => {
+        if (ans !== null) {
+          answeredCount++;
+          if (ans === quizQuestions[idx].correct) {
+            score++;
+          }
+        }
+      });
+
+      document.getElementById('quizScore').innerText = `${score} / ${quizQuestions.length}`;
+
+      const feedback = document.getElementById('quizFeedback');
+      if (answeredCount === quizQuestions.length) {
+        if (score === quizQuestions.length) {
+          feedback.innerHTML = `<span class="text-emerald-600"><i class="fa-solid fa-trophy mr-1"></i> Mayqanpis pantasqanchu! (¡Excelente, 100% Correcto!)</span>`;
+        } else {
+          feedback.innerHTML = `<span class="text-amber-600"><i class="fa-solid fa-star-half-stroke mr-1"></i> ${score} allinkuna tarisqa. Waqmanta yapay!</span>`;
+        }
+      } else {
+        feedback.innerText = `${answeredCount} de ${quizQuestions.length} tapuykuna kutichisqa`;
+      }
+    }
+
+    // Reset Quiz
+    function resetQuiz() {
+      quizAnswers = Array(quizQuestions.length).fill(null);
+      renderQuiz();
+      document.getElementById('quizScore').innerText = `0 / ${quizQuestions.length}`;
+      document.getElementById('quizFeedback').innerText = '';
+    }
+  </script>
+
+</body>
+</html>
