@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emparejamiento Quechua - Qhurakuna (Plantas Medicinales)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+    option.selected-option {
+      background-color: #f1f5f9;
+      color: #94a3b8;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans text-slate-800 pb-12">
+
+  <!-- Header -->
+  <header class="bg-emerald-800 text-white shadow-lg py-6 px-4">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-leaf text-3xl text-emerald-300"></i>
+        <div>
+          <h1 class="text-2xl font-bold tracking-wide">Simulador de Emparejamiento: Qhurakuna</h1>
+          <p class="text-xs text-emerald-100">Plantas Medicinales y Aplicaciones (Quechua / Castellano)</p>
+        </div>
+      </div>
+      <div id="userInfoHeader" class="hidden text-right bg-emerald-900/60 px-4 py-2 rounded-lg border border-emerald-600">
+        <p class="text-xs text-emerald-200">Yachakaq (Estudiante):</p>
+        <p id="headerStudentName" class="font-semibold text-sm text-white"></p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto mt-8 px-4">
+
+    <!-- Configuración Inicial -->
+    <section id="setupSection" class="glass-card max-w-xl mx-auto rounded-2xl shadow-xl p-8 border border-slate-200">
+      <h2 class="text-xl font-bold text-emerald-900 mb-6 flex items-center gap-2">
+        <i class="fa-solid fa-user-pen text-emerald-600"></i> Yachakuypaq Qillqay (Registro)
+      </h2>
+
+      <form id="startForm" onsubmit="startQuiz(event)" class="space-y-5">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Nombre Completo del Estudiante:</label>
+          <input type="text" id="studentName" required placeholder="Ej. Bladimir Arias" 
+                 class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Cantidad de Plantas/Aplicaciones a Evaluar:</label>
+          <select id="questionCount" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+            <option value="5">5 Pares</option>
+            <option value="10" selected>10 Pares</option>
+            <option value="15">15 Pares</option>
+            <option value="20">20 Pares (Base Completa - Qhurakuna)</option>
+          </select>
+        </div>
+
+        <button type="submit" 
+                class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-lg">
+          <i class="fa-solid fa-play"></i> Qallariy (Iniciar Emparejamiento)
+        </button>
+      </form>
+    </section>
+
+    <!-- Área del Juego -->
+    <section id="quizSection" class="hidden space-y-6">
+      
+      <!-- Panel de Control -->
+      <div class="bg-white p-4 rounded-xl shadow-md border border-slate-200 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <span class="text-xs font-bold text-slate-400 uppercase">Progreso</span>
+          <p class="text-sm font-semibold text-slate-700" id="progressText">0 de 0 completados</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="checkAnswers()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2">
+            <i class="fa-solid fa-check-double"></i> Calificar y Finalizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Tablas de Emparejamiento -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Columna 1: Planta / Indicación (Con Combo Box) -->
+        <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200">
+          <h3 class="text-md font-bold text-slate-700 pb-3 mb-4 border-b flex items-center gap-2">
+            <span class="bg-emerald-800 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-xs">1</span>
+            Planta o Enfermedad (Selecciona la pareja)
+          </h3>
+          <div id="leftList" class="space-y-3"></div>
+        </div>
+
+        <!-- Columna 2: Aplicación en Quechua (Referencia) -->
+        <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-200">
+          <h3 class="text-md font-bold text-slate-700 pb-3 mb-4 border-b flex items-center gap-2">
+            <span class="bg-emerald-700 text-white w-6 h-6 rounded-full inline-flex items-center justify-center text-xs">2</span>
+            Opciones en Quechua (Referencia Visual)
+          </h3>
+          <div id="rightList" class="space-y-3"></div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Pantalla de Resultados -->
+    <section id="resultsSection" class="hidden space-y-6 max-w-4xl mx-auto">
+      <div class="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 text-center space-y-6">
+        
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 text-emerald-700 text-3xl mb-2">
+          <i class="fa-solid fa-award"></i>
+        </div>
+
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800" id="resultStudentName"></h2>
+          <p class="text-sm text-slate-500">Resumen de evaluación - Qhurakuna Jampiy</p>
+        </div>
+
+        <!-- Score Card -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <p class="text-xs text-slate-500 font-bold uppercase">Nota Porcentaje</p>
+            <p class="text-3xl font-extrabold text-emerald-600 mt-1" id="scorePercent">0%</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <p class="text-xs text-slate-500 font-bold uppercase">Aciertos</p>
+            <p class="text-3xl font-extrabold text-teal-600 mt-1" id="correctCount">0</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <p class="text-xs text-slate-500 font-bold uppercase">Errores</p>
+            <p class="text-3xl font-extrabold text-rose-600 mt-1" id="wrongCount">0</p>
+          </div>
+        </div>
+
+        <!-- Desglose -->
+        <div class="text-left space-y-4 pt-4 border-t border-slate-200">
+          <h3 class="text-lg font-bold text-slate-800">Desglose Detallado de Respuestas:</h3>
+          <div id="breakdownList" class="space-y-3"></div>
+        </div>
+
+        <div class="flex justify-center gap-4 pt-4">
+          <button onclick="restartQuiz()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-6 py-3 rounded-xl transition">
+            <i class="fa-solid fa-rotate-right"></i> Kutipariy (Intentar Nuevamente)
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Base de datos de plantas medicinales extraída directamente de qhurakuna2026.pdf
+    const database = [
+      { es: "Ruda (Rura)", qu: "Wayra unquykunapaq, uma nanaypaq" },
+      { es: "Romero (Rumiru)", qu: "Yawar llimphuchanapaq, wayra unquykunapaqpis, wiksa unquykunapaqpis" },
+      { es: "Anis", qu: "Wiksa nanaypaq, willallita achkhayachin" },
+      { es: "Kuka (Coca)", qu: "Wawa paqariyta yanapananpaq, wiksa nanaypaq, yawar apayta jampinapaq" },
+      { es: "Manzanilla", qu: "Jisp'ay phukuchu nanaypaq, ruru nanaypaq, uma nanaypaq" },
+      { es: "Payqu (Paico)", qu: "Wiksa k'ajaypaq, ch'unchulapi khurukunatapis wañuchin" },
+      { es: "Muqu muqu (Cola de caballo)", qu: "Ukhunchikta llimphuchan, tukuy ch'ichita mayllan" },
+      { es: "Ritamu (Retama)", qu: "Jap'iqa unquykunata saniyachin, ariwatutapis saniyachin" },
+      { es: "Perejil", qu: "Yawarta llimphuchan, yawar apaykunata sayachin, wawakunata mikhunayachin" },
+      { es: "Wira wira", qu: "Ch'ujuta thañichin / thañin" },
+      { es: "Hierbabuena", qu: "Wiksa punkiyta walliqyachin, wiksapi khurutapis wañuchin" },
+      { es: "Altamisa", qu: "Uma nanaypaq" },
+      { es: "Yana muña", qu: "Wiksa nanaypaq" },
+      { es: "Jugo de papa", qu: "Gastritis nisqapaq" },
+      { es: "Kalisto (Eucalipto)", qu: "Surq'anakunata saniyachin" },
+      { es: "Jengibre", qu: "Tunquri k'arayta saniyachin" },
+      { es: "Llantén", qu: "Ch'aki ch'ujupaq" },
+      { es: "Menta", qu: "Uma nanaypaq" },
+      { es: "Malva", qu: "Tunqurita saniyachin" },
+      { es: "Qhura Jampi (Jampiq rimay)", qu: "Kay jampikunata upyanki" }
+    ];
+
+    let currentQuestions = [];
+    let currentRightOptions = [];
+    let studentName = "";
+
+    function startQuiz(e) {
+      e.preventDefault();
+      studentName = document.getElementById('studentName').value.trim();
+      const count = parseInt(document.getElementById('questionCount').value);
+
+      if(!studentName) return;
+
+      const shuffled = [...database].sort(() => 0.5 - Math.random());
+      currentQuestions = shuffled.slice(0, count);
+      currentRightOptions = currentQuestions.map(q => q.qu).sort(() => 0.5 - Math.random());
+
+      document.getElementById('setupSection').classList.add('hidden');
+      document.getElementById('quizSection').classList.remove('hidden');
+      document.getElementById('userInfoHeader').classList.remove('hidden');
+      document.getElementById('headerStudentName').innerText = studentName;
+
+      renderMatchingInterface();
+    }
+
+    function renderMatchingInterface() {
+      const leftContainer = document.getElementById('leftList');
+      const rightContainer = document.getElementById('rightList');
+
+      leftContainer.innerHTML = "";
+      rightContainer.innerHTML = "";
+
+      // 1. Columna Izquierda (Nombre de la Planta)
+      currentQuestions.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.id = `left-row-${index}`;
+        row.className = "flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl transition-all duration-200";
+        
+        let optionsHTML = `<option value="">-- Seleccionar Aplicación --</option>`;
+        currentRightOptions.forEach((opt, qIdx) => {
+          optionsHTML += `<option value="${qIdx}">${opt}</option>`;
+        });
+
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-leaf text-emerald-600 text-sm"></i>
+            <span class="text-sm font-bold text-slate-800 flex-1">${item.es}</span>
+          </div>
+          <select data-left-index="${index}" 
+                  onchange="handleSelectChange()"
+                  class="match-select px-3 py-2 text-xs font-semibold text-emerald-900 bg-white border border-emerald-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 max-w-full sm:max-w-[240px]">
+            ${optionsHTML}
+          </select>
+        `;
+        leftContainer.appendChild(row);
+      });
+
+      // 2. Columna Derecha (Opciones en Quechua)
+      currentRightOptions.forEach((option, index) => {
+        const row = document.createElement('div');
+        row.id = `right-row-${index}`;
+        row.className = "flex items-center justify-between p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl transition-all duration-200";
+        row.innerHTML = `
+          <div class="flex items-start gap-2.5">
+            <i class="fa-solid fa-kit-medical text-emerald-600 text-sm mt-0.5"></i>
+            <span class="text-xs font-semibold text-emerald-950">${option}</span>
+          </div>
+          <span class="selected-tag hidden text-[10px] font-bold bg-amber-500 text-white px-2 py-0.5 rounded-md shadow-sm shrink-0 ml-2">
+            <i class="fa-solid fa-check"></i> ELEGIDO
+          </span>
+        `;
+        rightContainer.appendChild(row);
+      });
+
+      handleSelectChange();
+    }
+
+    function handleSelectChange() {
+      const selects = document.querySelectorAll('.match-select');
+      const selectedRightIndices = new Set();
+      let filledCount = 0;
+
+      selects.forEach(select => {
+        const val = select.value;
+        if (val !== "") {
+          selectedRightIndices.add(parseInt(val));
+        }
+      });
+
+      selects.forEach(select => {
+        const idx = select.getAttribute('data-left-index');
+        const row = document.getElementById(`left-row-${idx}`);
+        const currentVal = select.value;
+
+        if (currentVal !== "") {
+          filledCount++;
+          row.className = "flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-emerald-100/70 border-2 border-emerald-500 rounded-xl transition-all duration-200 shadow-sm";
+          select.className = "match-select px-3 py-2 text-xs font-bold text-emerald-900 bg-emerald-50 border-2 border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 max-w-full sm:max-w-[240px]";
+        } else {
+          row.className = "flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl transition-all duration-200";
+          select.className = "match-select px-3 py-2 text-xs font-semibold text-emerald-900 bg-white border border-emerald-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 max-w-full sm:max-w-[240px]";
+        }
+
+        const options = select.querySelectorAll('option');
+        options.forEach(opt => {
+          if (opt.value === "") return;
+          const optIdx = parseInt(opt.value);
+          if (selectedRightIndices.has(optIdx) && opt.value !== currentVal) {
+            opt.classList.add('selected-option');
+            opt.text = "✓ [USADO] " + currentRightOptions[optIdx];
+          } else {
+            opt.classList.remove('selected-option');
+            opt.text = currentRightOptions[optIdx];
+          }
+        });
+      });
+
+      currentRightOptions.forEach((_, qIdx) => {
+        const rightRow = document.getElementById(`right-row-${qIdx}`);
+        const tag = rightRow.querySelector('.selected-tag');
+
+        if (selectedRightIndices.has(qIdx)) {
+          rightRow.className = "flex items-center justify-between p-3 bg-amber-50 border-2 border-amber-400 rounded-xl transition-all duration-200 shadow-sm";
+          tag.classList.remove('hidden');
+        } else {
+          rightRow.className = "flex items-center justify-between p-3 bg-emerald-50/60 border border-emerald-100 rounded-xl transition-all duration-200";
+          tag.classList.add('hidden');
+        }
+      });
+
+      document.getElementById('progressText').innerText = `${filledCount} de ${currentQuestions.length} completados`;
+    }
+
+    function checkAnswers() {
+      const selects = document.querySelectorAll('.match-select');
+      let correct = 0;
+      let wrong = 0;
+      const breakdown = [];
+
+      selects.forEach((select) => {
+        const leftIdx = parseInt(select.getAttribute('data-left-index'));
+        const userVal = select.value;
+        const pair = currentQuestions[leftIdx];
+
+        let isCorrect = false;
+        let selectedText = "Sin seleccionar";
+
+        if (userVal !== "") {
+          const qIdx = parseInt(userVal);
+          selectedText = currentRightOptions[qIdx];
+          if (selectedText === pair.qu) {
+            isCorrect = true;
+          }
+        }
+
+        if (isCorrect) correct++;
+        else wrong++;
+
+        breakdown.push({
+          es: pair.es,
+          correctQu: pair.qu,
+          userSelectedQu: selectedText,
+          isCorrect
+        });
+      });
+
+      const total = currentQuestions.length;
+      const scorePercent = Math.round((correct / total) * 100);
+
+      document.getElementById('quizSection').classList.add('hidden');
+      document.getElementById('resultsSection').classList.remove('hidden');
+      
+      document.getElementById('resultStudentName').innerText = studentName;
+      document.getElementById('scorePercent').innerText = `${scorePercent}%`;
+      document.getElementById('correctCount').innerText = correct;
+      document.getElementById('wrongCount').innerText = wrong;
+
+      const breakdownContainer = document.getElementById('breakdownList');
+      breakdownContainer.innerHTML = "";
+
+      breakdown.forEach((item) => {
+        const box = document.createElement('div');
+        box.className = `p-4 rounded-xl border ${item.isCorrect ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`;
+        box.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <p class="text-sm font-bold text-slate-800">${item.es}</p>
+              <p class="text-xs ${item.isCorrect ? 'text-emerald-700' : 'text-rose-700'} font-semibold mt-1">
+                Tu respuesta: ${item.userSelectedQu}
+              </p>
+              ${!item.isCorrect ? `<p class="text-xs text-slate-500 mt-0.5">Traducción/Indicación correcta: <strong class="text-emerald-900">${item.correctQu}</strong></p>` : ''}
+            </div>
+            <span class="text-lg">
+              ${item.isCorrect ? '<i class="fa-solid fa-circle-check text-emerald-600"></i>' : '<i class="fa-solid fa-circle-xmark text-rose-600"></i>'}
+            </span>
+          </div>
+        `;
+        breakdownContainer.appendChild(box);
+      });
+    }
+
+    function restartQuiz() {
+      document.getElementById('resultsSection').classList.remove('hidden');
+      document.getElementById('resultsSection').classList.add('hidden');
+      document.getElementById('setupSection').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
